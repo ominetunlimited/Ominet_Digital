@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-fb0ade87-764c-4e1d-a416-8407c6f239cf/styles.css">
+<script src="_ds/modernist-fb0ade87-764c-4e1d-a416-8407c6f239cf/_ds_bundle.js"></script>
+<link rel="stylesheet" href="./theme-tokens.css">
+<style>
+a{color:var(--color-accent-700);text-decoration:underline;}
+body{margin:0;background:var(--color-bg);}
+h2{border-top:2px solid var(--color-divider);padding-top:var(--space-6);margin-top:var(--space-8);}
+code{background:var(--color-surface);padding:2px 5px;font-family:monospace;font-size:13px;}
+td,th{padding:var(--space-2) var(--space-3);text-align:left;}
+</style>
+</helmet>
+<div style="max-width:820px;margin:0 auto;padding:var(--space-8) var(--space-6);">
+
+<div style="font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);">DEVELOPER HANDOFF</div>
+<h1 style="font-family:var(--font-heading);font-size:40px;margin:0 0 var(--space-4);">Claude Code Implementation Handoff</h1>
+
+<div class="card" style="background:var(--color-neutral-100);border:2px solid var(--color-accent);margin-bottom:var(--space-6);">
+  <div class="card-title" style="color:var(--color-accent-700);">Claude Code design lock</div>
+  <p class="card-body">This is an implementation task. Do not design a new website, reinterpret this design, or create a second design system. Do not turn Ominet Digital into a generic corporate site, and do not turn Omini Nfawa into the master brand — it is a major section within Ominet Digital, not the whole website. Do not remove the geometric language, replace the colour system, substitute generic fonts, or redesign the navigation or homepage. Implement the approved design faithfully; if a technical constraint forces a change, document it before making it.</p>
+</div>
+
+<div class="card" style="border:2px solid var(--color-divider);margin-bottom:var(--space-8);">
+  <div class="card-title">Brand hierarchy correction</div>
+  <p class="card-body"><strong>Ominet Digital is the master website identity</strong> (site title, footer, metadata). Omini Nfawa is a major section/identity within it — not the entire website. PROFILE, Cortexa Office and Media are ecosystem sections/products alongside Omini Nfawa. Books, essays, poems, articles, research and videos remain globally discoverable across Home, Search, Writing, Books and Media — not confined to the Omini Nfawa section.</p>
+</div>
+
+<h2>1. Product overview</h2>
+<p><strong>Ominet Digital</strong> is the master website identity — a digital ecosystem for publishing, creativity, professional identity and technology, founded by Omini Nfawa. Replaces ominet.wordpress.com and ominet.blogspot.com as the canonical public site.</p>
+
+<h2>2. Brand architecture</h2>
+<ul>
+<li><strong>Ominet Digital</strong> — the master brand. Site title, footer and homepage hub belong to it, not to Omini personally.</li>
+<li><strong>Omini Nfawa</strong> — a major section within the ecosystem: writing, books, media, about. Voice: literary, editorial. Its work (books, essays, articles, videos) stays globally discoverable via Home, Search, Writing, Books and Media — not siloed in the Omini Nfawa page.</li>
+<li><strong>PROFILE</strong> — an ecosystem product with its own identity, gateway only, blue accent, own pipeline (Activity → Verification → Attribution → Identity → CV/Portfolio → Opportunity).</li>
+<li><strong>Cortexa Office</strong> — an emerging ecosystem product/office; placeholder page, architecture left open for services/tools/resources/contact.</li>
+<li><strong>Media</strong> — shared content environment (video, photography) spanning Omini's work and future ecosystem projects.</li>
+</ul>
+
+<h2>3. Site map / route map</h2>
+<table class="table" style="width:100%;">
+<tr><th>Page</th><th>Route</th><th>File</th></tr>
+<tr><td>Home (Ominet Digital hub)</td><td><code>/</code></td><td>Home.dc.html</td></tr>
+<tr><td>Omini Nfawa section</td><td><code>/omini-nfawa</code></td><td>OminiNfawa.dc.html</td></tr>
+<tr><td>Cortexa Office</td><td><code>/cortexa-office</code></td><td>CortexaOffice.dc.html</td></tr>
+<tr><td>Writing archive</td><td><code>/writing</code></td><td>Writing.dc.html</td></tr>
+<tr><td>Article</td><td><code>/writing/:slug</code></td><td>Article.dc.html</td></tr>
+<tr><td>Books catalogue</td><td><code>/books</code></td><td>Books.dc.html</td></tr>
+<tr><td>Book detail</td><td><code>/books/:slug</code></td><td>BookDetail.dc.html</td></tr>
+<tr><td>Media</td><td><code>/media</code></td><td>Media.dc.html</td></tr>
+<tr><td>Ominet Digital</td><td><code>/ominet-digital</code></td><td>OminetDigital.dc.html</td></tr>
+<tr><td>PROFILE gateway</td><td><code>/profile</code></td><td>Profile.dc.html</td></tr>
+<tr><td>Store</td><td><code>/store</code></td><td>Store.dc.html</td></tr>
+<tr><td>About</td><td><code>/about</code></td><td>About.dc.html</td></tr>
+<tr><td>Search</td><td><code>/search</code></td><td>Search.dc.html</td></tr>
+<tr><td>404 / error / empty / loading</td><td>n/a</td><td>States.dc.html</td></tr>
+<tr><td>Admin overview + CMS</td><td><code>/admin/*</code></td><td>Admin.dc.html</td></tr>
+</table>
+<p style="font-size:13px;opacity:0.6;">Not yet designed as separate screens (represented at IA level only): Research/Fiction/Poetry as Writing filters; Book Excerpt/Reviews as BookDetail sections; individual admin managers (Book/Media/Product/Social/Advertisement/Analytics/Settings) beyond the Overview shown.</p>
+
+<h2>4. Design tokens</h2>
+<p><strong>Base system:</strong> the page structure/components still load Modernist's stylesheet and bundle for its class set (<code>.btn</code>, <code>.card</code>, <code>.tag</code>, <code>.input</code>, <code>.table</code>, <code>.hr</code>) and Archivo type, but <code>theme-tokens.css</code> (linked second, in every page's helmet) <strong>overrides Modernist's own <code>--color-*</code>/<code>--radius-*</code>/<code>--shadow-*</code> variables</strong>. This retheme is deliberate and current — do not read the Modernist source repo's own visual guidance (flat/zero-radius/red) as binding; theme-tokens.css is the real source of truth for color and radius.</p>
+<p><strong>Live palette</strong> (all pages except PROFILE's own content sections):</p>
+<table class="table" style="width:100%;">
+<tr><th>Token</th><th>Value</th><th>Use</th></tr>
+<tr><td><code>--om-navy</code></td><td>#023337</td><td>Dark ground — Nav, Footer, dark banners, dark-mode background</td></tr>
+<tr><td><code>--om-teal</code> (= <code>--color-accent</code>)</td><td>#4ea674</td><td>Primary accent — buttons, links, active states</td></tr>
+<tr><td><code>--om-teal-light</code></td><td>#c0e6b9</td><td>Light tint fills</td></tr>
+<tr><td><code>--om-cream</code> (= <code>--color-bg</code>)</td><td>#e9f8e7</td><td>Page background</td></tr>
+<tr><td><code>--radius-sm/md/lg</code></td><td>10px / 18px / 28px</td><td>All cards, buttons, photo/cover frames — rounded, not flat</td></tr>
+<tr><td><code>--om-blue</code> family</td><td>#4B648D etc.</td><td>PROFILE's own content sections only — not used elsewhere</td></tr>
+</table>
+<p><strong>Dark mode:</strong> toggled via <code>[data-theme="dark"]</code> on <code>&lt;html&gt;</code>, set in <code>Nav</code>'s logic and persisted to <code>localStorage["omd-theme"]</code>. It swaps <code>--color-bg</code>/<code>--color-surface</code>/<code>--color-text</code> to the navy ground with light text; components reading <code>var(--color-*)</code> switch automatically.</p>
+<p><strong>Photography:</strong> full color, not grayscale — an earlier grayscale-filter pass was reverted. All photo/cover slots are <code>&lt;image-slot&gt;</code> placeholders (drag-and-drop, from the <code>image-slot.js</code> starter) for the user's own images.</p>
+
+<h2>5. Typography</h2>
+<p>Single family: Archivo (heading weight 800, body 400) — per Modernist. No secondary display/serif was introduced; if literary distinctiveness beyond Archivo is wanted, treat as a proposed change to flag before implementing.</p>
+
+<h2>6. Geometric background system</h2>
+<p>Inline SVG motifs (rings, dot grids, frames, fine-line grids) remain on most pages' opening sections, low opacity (0.08–0.2), stroke/fill via <code>var(--color-accent)</code> so they re-tint automatically with the palette/dark mode. This layer is secondary now — the dominant visual language is the rounded, color-photography card system (Home's split navy-panel/photo hero card is the reference; ref image was a rounded dark-panel/photo travel-site hero). Do not reintroduce flat/zero-radius corners or strip color from photography to "fix" a perceived inconsistency — both are intentional.</p>
+
+<h2>7. Navigation</h2>
+<p>Desktop: single-row bar (<code>Nav.dc.html</code>), links inline, search icon, theme toggle, Subscribe button. Below 860px (<code>@media</code> in Nav's helmet) the link row hides and a hamburger button appears; it opens a full-screen overlay grouped into CONTENT / PRODUCTS / ABOUT sections plus Subscribe, theme toggle and social row. Escape key and the visible close (×) both dismiss it. <code>Nav</code> and <code>Footer</code> are shared components, mounted via <code>&lt;dc-import&gt;</code> on every page.</p>
+
+<h2>8. Responsive rules</h2>
+<p>No fixed breakpoint-specific layouts were built; grids/heroes use fluid CSS (<code>flex-wrap</code>, <code>grid-template-columns:repeat(auto-fit,minmax(...))</code>) so columns reflow to 1-up on narrow viewports without media queries, per the flex/grid-first approach. The nav collapse is the one true breakpoint (860px). Test at 1440/1024/768/480 as the brief specifies; no horizontal-scroll or overlap was observed at those widths in the pages built.</p>
+
+<h2>9. Component states</h2>
+<p>Buttons/tags/inputs/tables inherit Modernist's built-in hover/focus/active/disabled states — do not restyle per page. Paywall states designed on Article.dc.html (locked continuation block with price + CTA + restore-access link); full success/failed/cancelled payment states were not built as separate screens — flag if needed.</p>
+
+<h2>10. Data model (representational, not implemented)</h2>
+<p>Entities referenced by the design: <code>Article</code> (title, slug, accessType: free/paid/members/preview, price, category, tags, publishedAt), <code>Book</code> (title, cover, formats[], purchaseLinks[]), <code>PurchaseLink</code> (platform, label, url, active, displayOrder — renders as the "Where to buy" button row, generic across Selar/Amazon/Google Books/KDP/custom), <code>MediaItem</code>, <code>Product</code>, <code>NewsletterSubscriber</code>. None of this is wired to a real backend; all content on every page is placeholder.</p>
+
+<h2>11. What Claude Code should NOT do</h2>
+<ul>
+<li>Substitute Archivo for a generic sans</li>
+<li>Flatten corners back to zero-radius, or apply a grayscale filter to photography</li>
+<li>Merge PROFILE's own content-section identity (blue) into the navy/teal palette used everywhere else</li>
+<li>Invent a new nav structure or component set</li>
+<li>Re-read the Modernist design system's own bundled guide as a styling authority — theme-tokens.css already overrides it; that guide describes the pre-retheme look</li>
+</ul>
+
+<h2>13. Project file inventory (as of handoff)</h2>
+<table class="table" style="width:100%;">
+<tr><th>File</th><th>Role</th></tr>
+<tr><td><code>theme-tokens.css</code></td><td>Palette + radius + shadow token overrides — edit here to retheme, not per-page</td></tr>
+<tr><td><code>Nav.dc.html</code> / <code>Footer.dc.html</code></td><td>Shared chrome, mounted via <code>&lt;dc-import&gt;</code> on every page</td></tr>
+<tr><td><code>Home.dc.html</code></td><td>Ominet Digital ecosystem hub (master homepage)</td></tr>
+<tr><td><code>OminiNfawa.dc.html</code>, <code>Writing.dc.html</code>, <code>Article.dc.html</code>, <code>Books.dc.html</code>, <code>BookDetail.dc.html</code>, <code>Media.dc.html</code>, <code>About.dc.html</code></td><td>Omini Nfawa section pages</td></tr>
+<tr><td><code>Profile.dc.html</code>, <code>CortexaOffice.dc.html</code>, <code>OminetDigital.dc.html</code> (studio/services, footer-linked), <code>Store.dc.html</code></td><td>Ecosystem product pages</td></tr>
+<tr><td><code>Search.dc.html</code>, <code>States.dc.html</code>, <code>Admin.dc.html</code></td><td>Search, 404/error/empty/loading states, admin overview + CMS mockup</td></tr>
+<tr><td><code>image-slot.js</code></td><td>Drag-and-drop image placeholder component used for every photo/cover</td></tr>
+<tr><td><code>_ds/modernist-.../</code></td><td>Base component library (classes only — palette is overridden, do not restore its default colors/radius)</td></tr>
+</table>
+<p>All page content is placeholder text/images for design purposes; nothing is wired to a real backend, CMS, payment provider or auth system — those are represented as UI only, per sections 10 and 12.</p>
+
+<h2>12. Open items for a future pass</h2>
+<ul>
+<li>Per-manager admin screens (Book/Media/Product/Social/Ad/Analytics/Settings) beyond the Overview shown</li>
+<li>Research/Fiction/Poetry/Review/Interview as distinct templates rather than Writing-archive filters</li>
+<li>Full payment success/fail/cancel/restore states</li>
+<li>Migration and redirect-management UI</li>
+<li>Schema.org / SEO meta authoring per page (structurally straightforward given the semantic HTML already in place)</li>
+</ul>
+
+</div>
+
+</x-dc>
+</body>
+</html>

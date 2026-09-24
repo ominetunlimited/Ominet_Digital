@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-fb0ade87-764c-4e1d-a416-8407c6f239cf/styles.css">
+<script src="_ds/modernist-fb0ade87-764c-4e1d-a416-8407c6f239cf/_ds_bundle.js"></script>
+<link rel="stylesheet" href="./theme-tokens.css">
+<style>a{color:var(--color-text);text-decoration:none;}a:hover{color:var(--color-accent-700);}body{margin:0;background:var(--color-bg);}</style>
+</helmet>
+<div style="max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;">
+<dc-import name="Nav" hint-size="100%,60px"></dc-import>
+<svg width="240" height="150" viewBox="0 0 240 150" style="position:absolute;right:0;top:0;pointer-events:none;" aria-hidden="true">
+  <g stroke="var(--color-accent)" stroke-width="1" opacity="0.12">
+    <line x1="0" y1="35" x2="240" y2="35"/><line x1="0" y1="75" x2="240" y2="75"/><line x1="0" y1="115" x2="240" y2="115"/>
+    <line x1="60" y1="0" x2="60" y2="150"/><line x1="120" y1="0" x2="120" y2="150"/><line x1="180" y1="0" x2="180" y2="150"/>
+  </g>
+</svg>
+
+<section style="padding:var(--space-8) var(--space-6) var(--space-4);">
+  <div style="display:flex;gap:var(--space-3);max-width:640px;">
+    <input type="search" class="input" placeholder="Search articles, books, media&hellip;" value="{{ query }}" onChange="{{ onQuery }}" style="flex:1;font-size:18px;">
+  </div>
+  <div style="display:flex;gap:var(--space-2);flex-wrap:wrap;margin-top:var(--space-4);">
+    <span class="tag tag-accent">All</span>
+    <span class="tag tag-outline">Writing</span>
+    <span class="tag tag-outline">Books</span>
+    <span class="tag tag-outline">Media</span>
+    <span class="tag tag-outline">PROFILE</span>
+    <span class="tag tag-outline">Ominet Digital</span>
+  </div>
+</section>
+
+<div class="hr"></div>
+
+<sc-if value="{{ hasQuery }}" hint-placeholder-val="{{ true }}">
+<section style="padding:var(--space-6);">
+  <div style="font-size:13px;opacity:0.6;margin-bottom:var(--space-4);">3 results for &ldquo;{{ query }}&rdquo;</div>
+  <div style="display:grid;gap:var(--space-4);">
+    <a href="Article.dc.html" style="display:flex;gap:var(--space-4);flex-wrap:wrap;">
+      <span class="tag tag-neutral" style="flex-shrink:0;">ESSAY</span>
+      <div><div style="font-family:var(--font-heading);font-size:18px;">On Writing as a Second Country</div><div style="font-size:13px;opacity:0.6;">Sept 12, 2026</div></div>
+    </a>
+    <a href="BookDetail.dc.html" style="display:flex;gap:var(--space-4);flex-wrap:wrap;">
+      <span class="tag tag-neutral" style="flex-shrink:0;">BOOK</span>
+      <div><div style="font-family:var(--font-heading);font-size:18px;">The Long Return</div><div style="font-size:13px;opacity:0.6;">Novel &middot; 2026</div></div>
+    </a>
+    <a href="#" style="display:flex;gap:var(--space-4);flex-wrap:wrap;">
+      <span class="tag tag-neutral" style="flex-shrink:0;">VIDEO</span>
+      <div><div style="font-family:var(--font-heading);font-size:18px;">The Long Return &mdash; Trailer</div><div style="font-size:13px;opacity:0.6;">6 min</div></div>
+    </a>
+  </div>
+</section>
+</sc-if>
+<sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+<section style="padding:var(--space-8) var(--space-6);text-align:center;">
+  <div style="font-family:var(--font-heading);font-size:22px;margin-bottom:var(--space-2);">No results for &ldquo;{{ query }}&rdquo;</div>
+  <p style="font-size:14px;opacity:0.6;">Try a different word, or browse Writing and Books directly.</p>
+</section>
+</sc-if>
+
+<div class="hr"></div>
+<dc-import name="Footer" hint-size="100%,260px"></dc-import>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { query: "publishing" };
+  renderVals() {
+    const q = this.state.query.trim();
+    return {
+      query: this.state.query,
+      onQuery: (e) => this.setState({ query: e.target.value }),
+      hasQuery: q.length > 0 && q.toLowerCase() !== "nomatch",
+      noResults: q.toLowerCase() === "nomatch" || q.length === 0,
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+/* Ominet Digital visual system — dark navy / orange / rounded, replacing Modernist's flat red/white look per approved direction. */
+:root {
+  /* Site palette (all pages except PROFILE, which keeps the blue identity below) */
+  --om-navy: #023337;
+  --om-navy-2: #03474d;
+  --om-teal: #4ea674;
+  --om-teal-light: #c0e6b9;
+  --om-orange: #4ea674;
+  --om-orange-2: #3d8a5e;
+  --om-cream: #e9f8e7;
+
+  /* Override Modernist's own tokens so every existing .btn/.card/.tag/.input
+     picks up the new palette + rounded corners without per-page edits. */
+  --color-bg: #e9f8e7;
+  --color-surface: #ffffff;
+  --color-text: var(--om-navy);
+  --color-accent: var(--om-teal);
+  --color-accent-2: var(--om-teal);
+  --color-divider: color-mix(in srgb, var(--om-navy) 14%, transparent);
+
+  --color-neutral-100: #ffffff;
+  --color-neutral-200: #eef8ec;
+  --color-neutral-300: #d9ecd3;
+  --color-neutral-400: #b7d9ac;
+  --color-neutral-500: #8fb884;
+  --color-neutral-600: #5f8f5c;
+  --color-neutral-700: #3a6640;
+  --color-neutral-800: #1c3f2e;
+  --color-neutral-900: var(--om-navy);
+
+  --color-accent-100: #e9f8e7;
+  --color-accent-200: #c0e6b9;
+  --color-accent-300: #9ad692;
+  --color-accent-400: #6fbb7f;
+  --color-accent-500: var(--om-teal);
+  --color-accent-600: var(--om-orange-2);
+  --color-accent-700: #2c6b45;
+  --color-accent-800: #1c4a30;
+  --color-accent-900: #0f2f1e;
+  --color-accent-2-100: #e9f8e7; --color-accent-2-200: #c0e6b9; --color-accent-2-300: #9ad692;
+  --color-accent-2-400: #6fbb7f; --color-accent-2-500: var(--om-teal); --color-accent-2-600: var(--om-orange-2);
+  --color-accent-2-700: #2c6b45; --color-accent-2-800: #1c4a30; --color-accent-2-900: #0f2f1e;
+
+  --radius-sm: 10px;
+  --radius-md: 18px;
+  --radius-lg: 28px;
+
+  --shadow-sm: 0 2px 8px color-mix(in srgb, var(--om-navy) 18%, transparent);
+  --shadow-md: 0 8px 24px color-mix(in srgb, var(--om-navy) 20%, transparent);
+  --shadow-lg: 0 20px 50px color-mix(in srgb, var(--om-navy) 26%, transparent);
+
+  /* PROFILE keeps this blue identity untouched */
+  --om-blue: #4B648D; --om-blue-2: #5987A8; --om-powder: #B9E4F4; --om-mist: #E7FBF9;
+  --om-plum: #30232D; --om-coral: #D55053; --om-peach: #F1C095;
+}
+
+[data-theme="dark"] {
+  --color-bg: var(--om-navy);
+  --color-surface: var(--om-navy-2);
+  --color-text: #eafaf0;
+  --color-divider: color-mix(in srgb, var(--om-teal-light) 25%, transparent);
+  --color-neutral-100: var(--om-navy-2); --color-neutral-200: #0a4a45; --color-neutral-300: #135c50;
+  --color-neutral-700: #bfe8cf; --color-neutral-800: #dcf3e3; --color-neutral-900: #f2fbf5;
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.4);
+  --shadow-md: 0 8px 24px rgba(0,0,0,0.45);
+  --shadow-lg: 0 20px 50px rgba(0,0,0,0.55);
+}

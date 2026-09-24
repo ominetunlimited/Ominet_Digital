@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-fb0ade87-764c-4e1d-a416-8407c6f239cf/styles.css">
+<script src="_ds/modernist-fb0ade87-764c-4e1d-a416-8407c6f239cf/_ds_bundle.js"></script>
+<link rel="stylesheet" href="./theme-tokens.css">
+<style>a{color:var(--color-text);text-decoration:none;}a:hover{color:var(--color-accent-700);}body{margin:0;background:var(--color-bg);}</style>
+</helmet>
+<div style="display:flex;min-height:600px;background:var(--color-bg);">
+  <aside style="width:220px;flex-shrink:0;border-right:2px solid var(--color-divider);padding:var(--space-6) var(--space-4);">
+    <div style="font-weight:700;letter-spacing:0.02em;margin-bottom:var(--space-6);">OMINI NFAWA</div>
+    <div style="display:grid;gap:var(--space-1);font-size:14px;">
+      <a href="#" style="padding:var(--space-2) var(--space-2);background:var(--color-surface);font-weight:700;">Overview</a>
+      <a href="#" style="padding:var(--space-2) var(--space-2);">Content</a>
+      <a href="#" style="padding:var(--space-2) var(--space-2);">Books</a>
+      <a href="#" style="padding:var(--space-2) var(--space-2);">Media</a>
+      <a href="#" style="padding:var(--space-2) var(--space-2);">Work</a>
+      <a href="#" style="padding:var(--space-2) var(--space-2);">Store</a>
+      <a href="#" style="padding:var(--space-2) var(--space-2);">Social</a>
+      <a href="#" style="padding:var(--space-2) var(--space-2);">Newsletter</a>
+      <a href="#" style="padding:var(--space-2) var(--space-2);">Advertising</a>
+      <a href="#" style="padding:var(--space-2) var(--space-2);">Analytics</a>
+      <a href="#" style="padding:var(--space-2) var(--space-2);">Media Library</a>
+      <a href="#" style="padding:var(--space-2) var(--space-2);">Users</a>
+      <a href="#" style="padding:var(--space-2) var(--space-2);">Settings</a>
+    </div>
+  </aside>
+
+  <main style="flex:1;min-width:0;padding:var(--space-6) var(--space-8);position:relative;overflow:hidden;">
+    <svg width="160" height="160" viewBox="0 0 160 160" style="position:absolute;right:-30px;top:-10px;pointer-events:none;" aria-hidden="true">
+      <circle cx="80" cy="80" r="79" fill="none" stroke="var(--color-accent)" stroke-width="1" opacity="0.1"/>
+    </svg>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-6);flex-wrap:wrap;gap:var(--space-3);">
+      <h1 style="font-family:var(--font-heading);font-size:28px;margin:0;">Overview</h1>
+      <button type="button" class="btn btn-primary">New article</button>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:var(--space-4);margin-bottom:var(--space-8);">
+      <div class="card"><div class="card-kicker">DRAFTS</div><div style="font-family:var(--font-heading);font-size:32px;">4</div></div>
+      <div class="card"><div class="card-kicker">SCHEDULED</div><div style="font-family:var(--font-heading);font-size:32px;">2</div></div>
+      <div class="card"><div class="card-kicker">PUBLISHED</div><div style="font-family:var(--font-heading);font-size:32px;">86</div></div>
+      <div class="card"><div class="card-kicker">VIEWS (30D)</div><div style="font-family:var(--font-heading);font-size:32px;">12.4K</div></div>
+      <div class="card"><div class="card-kicker">OUTBOUND CLICKS</div><div style="font-family:var(--font-heading);font-size:32px;">318</div></div>
+      <div class="card"><div class="card-kicker">SUBSCRIBERS</div><div style="font-family:var(--font-heading);font-size:32px;">2,051</div></div>
+    </div>
+
+    <div style="font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);">RECENT CONTENT</div>
+    <table class="table" style="width:100%;margin-bottom:var(--space-8);">
+      <thead><tr><th>Title</th><th>Type</th><th>Access</th><th>Status</th><th>Views</th></tr></thead>
+      <tbody>
+        <tr><td>On Writing as a Second Country</td><td>Essay</td><td><span class="tag tag-outline">Free</span></td><td>Published</td><td>4,210</td></tr>
+        <tr><td>Coastal Erosion and the Politics of Retreat</td><td>Research</td><td><span class="tag tag-accent">Paid</span></td><td>Published</td><td>1,904</td></tr>
+        <tr><td>A Small Country of Rain</td><td>Book</td><td><span class="tag tag-outline">&mdash;</span></td><td>Draft</td><td>&mdash;</td></tr>
+        <tr><td>Notes from the Archive</td><td>Note</td><td><span class="tag tag-outline">Free</span></td><td>Scheduled</td><td>&mdash;</td></tr>
+      </tbody>
+    </table>
+
+    <div style="font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);">CONTENT EDITOR &mdash; PUBLISH SETTINGS</div>
+    <div class="card" style="max-width:520px;">
+      <div class="field" style="margin-bottom:var(--space-4);"><label>Access</label>
+        <div class="seg"><span class="seg-opt">Free</span><span class="seg-opt">Paid</span><span class="seg-opt">Members</span><span class="seg-opt">Preview</span></div>
+      </div>
+      <div class="field" style="margin-bottom:var(--space-4);"><label>Category</label><input class="input" value="Essay"></div>
+      <div class="field" style="margin-bottom:var(--space-4);"><label>Publish date</label><input class="input" value="Sept 30, 2026"></div>
+      <div style="display:flex;gap:var(--space-3);">
+        <button type="button" class="btn btn-secondary">Save draft</button>
+        <button type="button" class="btn btn-primary">Publish</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+</x-dc>
+</body>
+</html>

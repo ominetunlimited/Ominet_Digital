@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-fb0ade87-764c-4e1d-a416-8407c6f239cf/styles.css">
+<script src="_ds/modernist-fb0ade87-764c-4e1d-a416-8407c6f239cf/_ds_bundle.js"></script>
+<script src="./image-slot.js"></script>
+<link rel="stylesheet" href="./theme-tokens.css">
+<style>
+a{color:var(--color-text);text-decoration:none;}
+a:hover{color:var(--color-accent-700);}
+body{margin:0;background:var(--color-bg);}
+</style>
+</helmet>
+<div style="max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;">
+
+<dc-import name="Nav" active="home" hint-size="100%,60px"></dc-import>
+
+<section style="padding:var(--space-8) var(--space-6);background:var(--om-teal-light);">
+  <div style="max-width:1280px;margin:0 auto;border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-lg);display:flex;flex-wrap:wrap;min-height:520px;">
+    <div style="flex:1 1 380px;background:var(--om-navy);color:#eafaf0;padding:var(--space-8);display:flex;flex-direction:column;justify-content:center;gap:var(--space-4);">
+      <div style="font-family:var(--font-heading);font-size:13px;letter-spacing:0.14em;color:var(--om-orange);font-weight:800;">OMINET DIGITAL</div>
+      <h1 style="font-family:var(--font-heading);font-size:clamp(38px,5vw,56px);line-height:1.05;margin:0;color:#fff;">Ideas. Stories.<br>Creative Work.</h1>
+      <p style="font-size:16px;line-height:1.6;opacity:0.85;max-width:40ch;margin:0;">A digital ecosystem for publishing, professional identity and technology &mdash; built by Omini Nfawa.</p>
+      <div style="display:flex;gap:var(--space-2);margin-top:var(--space-2);">
+        <input type="text" class="input" placeholder="Search the ecosystem" style="flex:1;border-radius:var(--radius-md);border:none;">
+        <button type="button" class="btn btn-primary" style="border-radius:var(--radius-md);" aria-label="Search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+      <div style="display:flex;gap:var(--space-3);margin-top:var(--space-2);opacity:0.8;">
+        <span>Facebook</span><span>X</span><span>Instagram</span>
+      </div>
+    </div>
+    <div style="flex:1 1 380px;position:relative;">
+      <image-slot id="home-hero-photo" placeholder="Hero photograph (color)"></image-slot>
+    </div>
+  </div>
+</section>
+
+<div class="hr"></div>
+
+<section style="padding:var(--space-8) var(--space-6);">
+  <div style="font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-4);">THE ECOSYSTEM</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--space-6);">
+    <a href="OminiNfawa.dc.html" style="grid-column:span 2;border:2px solid var(--color-divider);border-radius:var(--radius-md);padding:var(--space-6);display:block;background:var(--color-surface);box-shadow:var(--shadow-sm);">
+      <div style="font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-2);">WRITER &middot; RESEARCHER &middot; CREATIVE</div>
+      <div style="font-family:var(--font-heading);font-size:30px;margin-bottom:var(--space-2);">Omini Nfawa</div>
+      <p style="font-size:15px;opacity:0.7;max-width:52ch;margin:0 0 var(--space-3);">Books, essays, fiction, research, film and photography from the ecosystem's founder.</p>
+      <span style="text-decoration:underline;">Explore Omini Nfawa &rarr;</span>
+    </a>
+    <a href="Profile.dc.html" style="border:2px solid var(--om-navy);border-radius:var(--radius-md);padding:var(--space-6);display:block;background:var(--color-surface);box-shadow:var(--shadow-sm);">
+      <div style="font-family:var(--font-heading);font-size:22px;margin-bottom:var(--space-2);color:var(--om-navy);">PROFILE</div>
+      <p style="font-size:14px;opacity:0.8;margin:0 0 var(--space-3);">A professional identity built from verified activity.</p>
+      <span style="text-decoration:underline;">Explore Profile &rarr;</span>
+    </a>
+    <a href="CortexaOffice.dc.html" style="border:2px solid var(--color-divider);border-radius:var(--radius-md);padding:var(--space-6);display:block;background:var(--color-surface);box-shadow:var(--shadow-sm);">
+      <div style="font-family:var(--font-heading);font-size:22px;margin-bottom:var(--space-2);">Cortexa Office</div>
+      <p style="font-size:14px;opacity:0.7;margin:0 0 var(--space-3);">An emerging Ominet Digital product and office.</p>
+      <span style="text-decoration:underline;">Learn more &rarr;</span>
+    </a>
+    <a href="Media.dc.html" style="border:2px solid var(--color-divider);border-radius:var(--radius-md);padding:var(--space-6);display:block;background:var(--color-surface);box-shadow:var(--shadow-sm);">
+      <div style="font-family:var(--font-heading);font-size:22px;margin-bottom:var(--space-2);">Media</div>
+      <p style="font-size:14px;opacity:0.7;margin:0 0 var(--space-3);">Video, photography and documentary work.</p>
+      <span style="text-decoration:underline;">Watch &amp; view &rarr;</span>
+    </a>
+  </div>
+</section>
+
+<div class="hr"></div>
+
+<section style="padding:var(--space-8) var(--space-6);display:flex;flex-wrap:wrap;gap:var(--space-8);">
+  <div style="aspect-ratio:2/3;flex:1 1 240px;max-width:320px;border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-md);"><image-slot id="home-featured-book" placeholder="Book cover"></image-slot></div>
+  <div style="flex:2 1 380px;display:flex;flex-direction:column;justify-content:center;">
+    <div style="font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);">FEATURED BOOK &middot; OMINI NFAWA</div>
+    <h2 style="font-family:var(--font-heading);font-size:36px;margin:0 0 var(--space-2);">The Long Return</h2>
+    <p style="font-size:16px;line-height:1.7;opacity:0.75;max-width:52ch;margin:0 0 var(--space-4);">A family separated by three borders finds its way back to a single house, one letter at a time.</p>
+    <div style="display:flex;gap:var(--space-3);flex-wrap:wrap;">
+      <a href="BookDetail.dc.html"><button type="button" class="btn btn-primary">View book</button></a>
+      <a href="BookDetail.dc.html">Where to buy &rarr;</a>
+    </div>
+  </div>
+</section>
+
+<div class="hr"></div>
+
+<section style="padding:var(--space-8) var(--space-6);display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--space-6);">
+  <div class="card">
+    <div class="card-kicker">LATEST WRITING</div>
+    <div class="card-title">On Writing as a Second Country</div>
+    <p class="card-body">An essay on migration, memory and the languages we write in.</p>
+    <div class="card-meta"><span>Sept 2026</span></div>
+  </div>
+  <div class="card">
+    <div class="card-kicker">FEATURED MEDIA</div>
+    <div class="card-title">The Long Return &mdash; Trailer</div>
+    <p class="card-body">A short film introducing the novel, shot on location.</p>
+    <div class="card-meta"><span>6 min</span></div>
+  </div>
+</section>
+
+<div class="hr"></div>
+
+<section style="padding:var(--space-8) var(--space-6);background:var(--om-navy);color:#eafaf0;">
+  <div style="max-width:640px;">
+    <div style="font-family:var(--font-heading);font-size:14px;font-weight:800;letter-spacing:0.08em;color:var(--om-orange);margin-bottom:var(--space-3);">PROFILE</div>
+    <h2 style="font-family:var(--font-heading);font-size:32px;margin:0 0 var(--space-3);color:#fff;">Your professional identity should be more than a CV.</h2>
+    <p style="font-size:16px;line-height:1.7;opacity:0.85;margin:0 0 var(--space-4);">Activity, verification and attribution &mdash; built into one identity you carry between opportunities.</p>
+    <a href="Profile.dc.html"><button type="button" class="btn btn-primary" style="border-radius:var(--radius-md);">Explore Profile</button></a>
+  </div>
+</section>
+
+<div class="hr"></div>
+
+<section style="padding:var(--space-8) var(--space-6);">
+  <div style="font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);">CORTEXA OFFICE</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:var(--space-6);flex-wrap:wrap;">
+    <div style="font-family:var(--font-heading);font-size:26px;max-width:44ch;">An emerging office and product within Ominet Digital.</div>
+    <a href="CortexaOffice.dc.html"><button type="button" class="btn btn-secondary">Learn more</button></a>
+  </div>
+</section>
+
+<div class="hr"></div>
+
+<section style="padding:var(--space-8) var(--space-6);display:flex;justify-content:space-between;align-items:center;gap:var(--space-6);flex-wrap:wrap;">
+  <div style="flex:1 1 260px;">
+    <div style="font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-2);">NEWSLETTER</div>
+    <div style="font-family:var(--font-heading);font-size:24px;">News from across the ecosystem, occasionally.</div>
+  </div>
+  <div style="display:flex;gap:var(--space-2);flex-wrap:wrap;flex:1 1 260px;">
+    <input type="email" class="input" placeholder="you@email.com" style="min-width:200px;flex:1;">
+    <button type="button" class="btn btn-primary">Subscribe</button>
+  </div>
+</section>
+
+<dc-import name="Footer" hint-size="100%,260px"></dc-import>
+
+</div>
+
+</x-dc>
+</body>
+</html>

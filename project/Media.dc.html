@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-fb0ade87-764c-4e1d-a416-8407c6f239cf/styles.css">
+<script src="_ds/modernist-fb0ade87-764c-4e1d-a416-8407c6f239cf/_ds_bundle.js"></script>
+<script src="./image-slot.js"></script>
+<link rel="stylesheet" href="./theme-tokens.css">
+<style>a{color:var(--color-text);text-decoration:none;}a:hover{color:var(--color-accent-700);}body{margin:0;background:var(--color-bg);}</style>
+</helmet>
+<div style="max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;">
+<dc-import name="Nav" active="media" hint-size="100%,60px"></dc-import>
+<svg width="220" height="220" viewBox="0 0 220 220" style="position:absolute;right:-40px;top:20px;pointer-events:none;" aria-hidden="true">
+  <rect x="1" y="1" width="218" height="218" fill="none" stroke="var(--color-accent)" stroke-width="1" opacity="0.18"/>
+  <rect x="35" y="35" width="150" height="150" fill="none" stroke="var(--color-accent)" stroke-width="1" opacity="0.13"/>
+  <circle cx="110" cy="110" r="40" fill="none" stroke="var(--color-accent)" stroke-width="1" opacity="0.12"/>
+</svg>
+
+<section style="padding:var(--space-8) var(--space-6) var(--space-6);">
+  <div style="font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);">MEDIA</div>
+  <h1 style="font-family:var(--font-heading);font-size:56px;margin:0;">Video &amp; Photography</h1>
+</section>
+
+<div class="hr"></div>
+
+<section style="padding:var(--space-4) var(--space-6);display:flex;gap:var(--space-2);flex-wrap:wrap;">
+  <span class="tag tag-accent">All</span>
+  <span class="tag tag-outline">Videos</span>
+  <span class="tag tag-outline">Photography</span>
+  <span class="tag tag-outline">Documentaries</span>
+  <span class="tag tag-outline">Interviews</span>
+  <span class="tag tag-outline">Short Films</span>
+</section>
+
+<div class="hr"></div>
+
+<section style="padding:var(--space-8) var(--space-6);">
+  <div style="font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-4);">VIDEOS</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--space-6);">
+    <a href="#">
+      <div style="aspect-ratio:16/9;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-3);position:relative;"><image-slot id="video-1" placeholder="Thumbnail"></image-slot></div>
+      <div style="font-family:var(--font-heading);font-size:18px;margin-bottom:var(--space-1);">The Long Return &mdash; Trailer</div>
+      <div style="font-size:12px;opacity:0.55;">Short Film &middot; 6 min</div>
+    </a>
+    <a href="#">
+      <div style="aspect-ratio:16/9;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-3);"><image-slot id="video-2" placeholder="Thumbnail"></image-slot></div>
+      <div style="font-family:var(--font-heading);font-size:18px;margin-bottom:var(--space-1);">Delta Towns: A Documentary</div>
+      <div style="font-size:12px;opacity:0.55;">Documentary &middot; 24 min</div>
+    </a>
+    <a href="#">
+      <div style="aspect-ratio:16/9;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-3);"><image-slot id="video-3" placeholder="Thumbnail"></image-slot></div>
+      <div style="font-family:var(--font-heading);font-size:18px;margin-bottom:var(--space-1);">On Independent Publishing</div>
+      <div style="font-size:12px;opacity:0.55;">Interview &middot; 32 min</div>
+    </a>
+  </div>
+</section>
+
+<div class="hr"></div>
+
+<section style="padding:var(--space-8) var(--space-6);">
+  <div style="font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-4);">PHOTOGRAPHY</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--space-3);">
+    <div style="aspect-ratio:1;border-radius:var(--radius-md);overflow:hidden;"><image-slot id="photo-1" placeholder="Photo"></image-slot></div>
+    <div style="aspect-ratio:1;border-radius:var(--radius-md);overflow:hidden;"><image-slot id="photo-2" placeholder="Photo"></image-slot></div>
+    <div style="aspect-ratio:1;border-radius:var(--radius-md);overflow:hidden;"><image-slot id="photo-3" placeholder="Photo"></image-slot></div>
+    <div style="aspect-ratio:1;border-radius:var(--radius-md);overflow:hidden;"><image-slot id="photo-4" placeholder="Photo"></image-slot></div>
+  </div>
+  <p style="font-size:13px;opacity:0.55;margin-top:var(--space-3);">Coastline Series &middot; Niger Delta, 2026</p>
+</section>
+
+<div class="hr"></div>
+<dc-import name="Footer" hint-size="100%,260px"></dc-import>
+</div>
+
+</x-dc>
+</body>
+</html>

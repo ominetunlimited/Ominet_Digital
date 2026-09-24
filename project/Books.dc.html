@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-fb0ade87-764c-4e1d-a416-8407c6f239cf/styles.css">
+<script src="_ds/modernist-fb0ade87-764c-4e1d-a416-8407c6f239cf/_ds_bundle.js"></script>
+<script src="./image-slot.js"></script>
+<link rel="stylesheet" href="./theme-tokens.css">
+<style>
+a{color:var(--color-text);text-decoration:none;}
+a:hover{color:var(--color-accent-700);}
+body{margin:0;background:var(--color-bg);}
+</style>
+</helmet>
+<div style="max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;">
+
+<dc-import name="Nav" active="books" hint-size="100%,60px"></dc-import>
+<svg width="150" height="150" viewBox="0 0 150 150" style="position:absolute;right:32px;top:24px;pointer-events:none;" aria-hidden="true">
+  <g fill="var(--color-accent)" opacity="0.18">
+    <circle cx="10" cy="10" r="2"/><circle cx="40" cy="10" r="2"/><circle cx="70" cy="10" r="2"/><circle cx="100" cy="10" r="2"/><circle cx="130" cy="10" r="2"/>
+    <circle cx="10" cy="40" r="2"/><circle cx="40" cy="40" r="2"/><circle cx="70" cy="40" r="2"/><circle cx="100" cy="40" r="2"/><circle cx="130" cy="40" r="2"/>
+    <circle cx="10" cy="70" r="2"/><circle cx="40" cy="70" r="2"/><circle cx="70" cy="70" r="2"/><circle cx="100" cy="70" r="2"/><circle cx="130" cy="70" r="2"/>
+  </g>
+</svg>
+
+<section style="padding:var(--space-8) var(--space-6) var(--space-6);">
+  <div style="font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);">BOOKS</div>
+  <h1 style="font-family:var(--font-heading);font-size:56px;margin:0;">Books</h1>
+</section>
+
+<div class="hr"></div>
+
+<section style="padding:var(--space-8) var(--space-6);display:flex;flex-wrap:wrap;gap:var(--space-8);">
+  <div style="aspect-ratio:2/3;border-radius:var(--radius-md);overflow:hidden;flex:1 1 240px;max-width:320px;">
+    <image-slot id="books-featured" placeholder="Book cover"></image-slot>
+  </div>
+  <div style="flex:2 1 380px;display:flex;flex-direction:column;justify-content:center;">
+    <div style="font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);">FEATURED</div>
+    <h2 style="font-family:var(--font-heading);font-size:36px;margin:0 0 var(--space-2);">The Long Return</h2>
+    <p style="font-size:16px;line-height:1.7;opacity:0.75;max-width:52ch;margin:0 0 var(--space-4);">A family separated by three borders finds its way back to a single house, one letter at a time.</p>
+    <a href="BookDetail.dc.html"><button type="button" class="btn btn-primary">View book</button></a>
+  </div>
+</section>
+
+<div class="hr"></div>
+
+<section style="padding:var(--space-6);">
+  <div style="font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-4);">UPCOMING</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--space-6);">
+    <div>
+      <div style="aspect-ratio:2/3;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-3);"><image-slot id="upcoming-1" placeholder="Cover"></image-slot></div>
+      <div style="font-family:var(--font-heading);font-size:18px;">A Small Country of Rain</div>
+      <div style="font-size:12px;opacity:0.55;">Essays &middot; 2027</div>
+    </div>
+    <div>
+      <div style="aspect-ratio:2/3;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-3);"><image-slot id="upcoming-2" placeholder="Cover"></image-slot></div>
+      <div style="font-family:var(--font-heading);font-size:18px;">Field Notes</div>
+      <div style="font-size:12px;opacity:0.55;">Research &middot; 2027</div>
+    </div>
+    <div>
+      <div style="aspect-ratio:2/3;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-3);"><image-slot id="upcoming-3" placeholder="Cover"></image-slot></div>
+      <div style="font-family:var(--font-heading);font-size:18px;">Ndoli Street &amp; Other Stories</div>
+      <div style="font-size:12px;opacity:0.55;">Fiction &middot; 2027</div>
+    </div>
+  </div>
+</section>
+
+<div class="hr"></div>
+
+<section style="padding:var(--space-6);">
+  <div style="font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-4);">PUBLISHED</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:var(--space-4);">
+    <a href="BookDetail.dc.html">
+      <div style="aspect-ratio:2/3;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-3);"><image-slot id="pub-1" placeholder="Cover"></image-slot></div>
+      <div style="font-family:var(--font-heading);font-size:16px;">The Long Return</div>
+      <div style="font-size:12px;opacity:0.55;">2026</div>
+    </a>
+    <a href="#">
+      <div style="aspect-ratio:2/3;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-3);"><image-slot id="pub-2" placeholder="Cover"></image-slot></div>
+      <div style="font-family:var(--font-heading);font-size:16px;">Correspondence</div>
+      <div style="font-size:12px;opacity:0.55;">2022</div>
+    </a>
+    <a href="#">
+      <div style="aspect-ratio:2/3;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-3);"><image-slot id="pub-3" placeholder="Cover"></image-slot></div>
+      <div style="font-family:var(--font-heading);font-size:16px;">The Water Line</div>
+      <div style="font-size:12px;opacity:0.55;">2019</div>
+    </a>
+    <a href="#">
+      <div style="aspect-ratio:2/3;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-3);"><image-slot id="pub-4" placeholder="Cover"></image-slot></div>
+      <div style="font-family:var(--font-heading);font-size:16px;">Small Hours</div>
+      <div style="font-size:12px;opacity:0.55;">2016</div>
+    </a>
+  </div>
+</section>
+
+<div class="hr"></div>
+
+<dc-import name="Footer" hint-size="100%,260px"></dc-import>
+
+</div>
+
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,79 @@
+import Link from "next/link";
+import Nav from "@/components/Nav";
+import Footer from "@/components/Footer";
+import PlaceholderImage from "@/components/PlaceholderImage";
+import { css } from "@/lib/css";
+import { books, upcomingBooks } from "@/lib/content";
+
+export const metadata = { title: "Books — Ominet Digital" };
+
+export default function BooksPage() {
+  const featured = books[0];
+  const published = books;
+
+  return (
+    <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>
+      <Nav />
+      <svg width="150" height="150" viewBox="0 0 150 150" style={css("position:absolute;right:32px;top:24px;pointer-events:none;")} aria-hidden="true">
+        <g fill="var(--color-accent)" opacity="0.18">
+          <circle cx="10" cy="10" r="2" /><circle cx="40" cy="10" r="2" /><circle cx="70" cy="10" r="2" /><circle cx="100" cy="10" r="2" /><circle cx="130" cy="10" r="2" />
+          <circle cx="10" cy="40" r="2" /><circle cx="40" cy="40" r="2" /><circle cx="70" cy="40" r="2" /><circle cx="100" cy="40" r="2" /><circle cx="130" cy="40" r="2" />
+          <circle cx="10" cy="70" r="2" /><circle cx="40" cy="70" r="2" /><circle cx="70" cy="70" r="2" /><circle cx="100" cy="70" r="2" /><circle cx="130" cy="70" r="2" />
+        </g>
+      </svg>
+
+      <section style={css("padding:var(--space-8) var(--space-6) var(--space-6);")}>
+        <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>BOOKS</div>
+        <h1 style={css("font-family:var(--font-heading);font-size:56px;margin:0;")}>Books</h1>
+      </section>
+
+      <div className="hr" />
+
+      <section style={css("padding:var(--space-8) var(--space-6);display:flex;flex-wrap:wrap;gap:var(--space-8);")}>
+        <div style={css("aspect-ratio:2/3;border-radius:var(--radius-md);overflow:hidden;flex:1 1 240px;max-width:320px;")}>
+          <PlaceholderImage label="Book cover" />
+        </div>
+        <div style={css("flex:2 1 380px;display:flex;flex-direction:column;justify-content:center;")}>
+          <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>FEATURED</div>
+          <h2 style={css("font-family:var(--font-heading);font-size:36px;margin:0 0 var(--space-2);")}>{featured.title}</h2>
+          <p style={css("font-size:16px;line-height:1.7;opacity:0.75;max-width:52ch;margin:0 0 var(--space-4);")}>{featured.excerpt}</p>
+          <Link href={`/books/${featured.slug}`}><button type="button" className="btn btn-primary">View book</button></Link>
+        </div>
+      </section>
+
+      <div className="hr" />
+
+      <section style={css("padding:var(--space-6);")}>
+        <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-4);")}>UPCOMING</div>
+        <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--space-6);")}>
+          {upcomingBooks.map((b) => (
+            <div key={b.slug}>
+              <div style={css("aspect-ratio:2/3;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-3);")}><PlaceholderImage label="Cover" /></div>
+              <div style={css("font-family:var(--font-heading);font-size:18px;")}>{b.title}</div>
+              <div style={css("font-size:12px;opacity:0.55;")}>{b.kind} &middot; {b.year}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <div className="hr" />
+
+      <section style={css("padding:var(--space-6);")}>
+        <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-4);")}>PUBLISHED</div>
+        <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:var(--space-4);")}>
+          {published.map((b) => (
+            <Link key={b.slug} href={`/books/${b.slug}`}>
+              <div style={css("aspect-ratio:2/3;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-3);")}><PlaceholderImage label="Cover" /></div>
+              <div style={css("font-family:var(--font-heading);font-size:16px;")}>{b.title}</div>
+              <div style={css("font-size:12px;opacity:0.55;")}>{b.year}</div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <div className="hr" />
+
+      <Footer />
+    </div>
+  );
+}
