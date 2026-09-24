@@ -2,11 +2,18 @@ import Link from "next/link";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import { css } from "@/lib/css";
-import { articles } from "@/lib/content";
+import { getArticles } from "@/lib/data";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata = { title: "Writing — Ominet Digital" };
+export const metadata = pageMetadata(
+  "Writing",
+  "Articles, essays, research, fiction and interviews from Omini Nfawa.",
+  "/writing"
+);
+export const revalidate = 60;
 
-export default function WritingPage() {
+export default async function WritingPage() {
+  const articles = await getArticles();
   return (
     <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>
       <Nav />

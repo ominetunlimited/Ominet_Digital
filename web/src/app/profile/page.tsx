@@ -1,8 +1,13 @@
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import { css } from "@/lib/css";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata = { title: "PROFILE — Ominet Digital" };
+export const metadata = pageMetadata(
+  "PROFILE",
+  "A verified record of activity, attribution and identity — carried between opportunities instead of rebuilt for each one.",
+  "/profile"
+);
 
 const steps = [
   { n: "01", title: "Activity", body: "Your work is logged as it happens." },

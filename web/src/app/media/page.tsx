@@ -2,8 +2,13 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import PlaceholderImage from "@/components/PlaceholderImage";
 import { css } from "@/lib/css";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata = { title: "Media — Ominet Digital" };
+export const metadata = pageMetadata(
+  "Media",
+  "Video, photography and documentary work from Omini Nfawa and the Ominet Digital ecosystem.",
+  "/media"
+);
 
 const videos = [
   { title: "The Long Return — Trailer", meta: "Short Film · 6 min" },

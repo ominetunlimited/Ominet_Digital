@@ -2,14 +2,21 @@ import Link from "next/link";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import PlaceholderImage from "@/components/PlaceholderImage";
+import EmptyState from "@/components/EmptyState";
 import { css } from "@/lib/css";
-import { books, upcomingBooks } from "@/lib/content";
+import { getBooks } from "@/lib/data";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata = { title: "Books — Ominet Digital" };
+export const metadata = pageMetadata(
+  "Books",
+  "Books by Omini Nfawa — novels, essays and poetry, with purchase links to Selar, Amazon, Google Books and more.",
+  "/books"
+);
+export const revalidate = 60;
 
-export default function BooksPage() {
-  const featured = books[0];
-  const published = books;
+export default async function BooksPage() {
+  const { published, upcoming: upcomingBooks } = await getBooks();
+  const featured = published[0];
 
   return (
     <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>
@@ -27,39 +34,48 @@ export default function BooksPage() {
         <h1 style={css("font-family:var(--font-heading);font-size:56px;margin:0;")}>Books</h1>
       </section>
 
-      <div className="hr" />
-
-      <section style={css("padding:var(--space-8) var(--space-6);display:flex;flex-wrap:wrap;gap:var(--space-8);")}>
-        <div style={css("aspect-ratio:2/3;border-radius:var(--radius-md);overflow:hidden;flex:1 1 240px;max-width:320px;")}>
-          <PlaceholderImage label="Book cover" />
-        </div>
-        <div style={css("flex:2 1 380px;display:flex;flex-direction:column;justify-content:center;")}>
-          <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>FEATURED</div>
-          <h2 style={css("font-family:var(--font-heading);font-size:36px;margin:0 0 var(--space-2);")}>{featured.title}</h2>
-          <p style={css("font-size:16px;line-height:1.7;opacity:0.75;max-width:52ch;margin:0 0 var(--space-4);")}>{featured.excerpt}</p>
-          <Link href={`/books/${featured.slug}`}><button type="button" className="btn btn-primary">View book</button></Link>
-        </div>
-      </section>
-
-      <div className="hr" />
-
-      <section style={css("padding:var(--space-6);")}>
-        <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-4);")}>UPCOMING</div>
-        <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--space-6);")}>
-          {upcomingBooks.map((b) => (
-            <div key={b.slug}>
-              <div style={css("aspect-ratio:2/3;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-3);")}><PlaceholderImage label="Cover" /></div>
-              <div style={css("font-family:var(--font-heading);font-size:18px;")}>{b.title}</div>
-              <div style={css("font-size:12px;opacity:0.55;")}>{b.kind} &middot; {b.year}</div>
+      {featured && (
+        <>
+          <div className="hr" />
+          <section style={css("padding:var(--space-8) var(--space-6);display:flex;flex-wrap:wrap;gap:var(--space-8);")}>
+            <div style={css("aspect-ratio:2/3;border-radius:var(--radius-md);overflow:hidden;flex:1 1 240px;max-width:320px;")}>
+              <PlaceholderImage label="Book cover" />
             </div>
-          ))}
-        </div>
-      </section>
+            <div style={css("flex:2 1 380px;display:flex;flex-direction:column;justify-content:center;")}>
+              <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>FEATURED</div>
+              <h2 style={css("font-family:var(--font-heading);font-size:36px;margin:0 0 var(--space-2);")}>{featured.title}</h2>
+              <p style={css("font-size:16px;line-height:1.7;opacity:0.75;max-width:52ch;margin:0 0 var(--space-4);")}>{featured.excerpt}</p>
+              <Link href={`/books/${featured.slug}`}><button type="button" className="btn btn-primary">View book</button></Link>
+            </div>
+          </section>
+        </>
+      )}
+
+      {upcomingBooks.length > 0 && (
+        <>
+          <div className="hr" />
+          <section style={css("padding:var(--space-6);")}>
+            <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-4);")}>UPCOMING</div>
+            <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--space-6);")}>
+              {upcomingBooks.map((b) => (
+                <div key={b.slug}>
+                  <div style={css("aspect-ratio:2/3;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-3);")}><PlaceholderImage label="Cover" /></div>
+                  <div style={css("font-family:var(--font-heading);font-size:18px;")}>{b.title}</div>
+                  <div style={css("font-size:12px;opacity:0.55;")}>{b.kind} &middot; {b.year}</div>
+                </div>
+              ))}
+            </div>
+          </section>
+        </>
+      )}
 
       <div className="hr" />
 
       <section style={css("padding:var(--space-6);")}>
         <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-4);")}>PUBLISHED</div>
+        {published.length === 0 ? (
+          <EmptyState title="No books published yet." body="Published books will appear here." />
+        ) : (
         <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:var(--space-4);")}>
           {published.map((b) => (
             <Link key={b.slug} href={`/books/${b.slug}`}>
@@ -69,6 +85,7 @@ export default function BooksPage() {
             </Link>
           ))}
         </div>
+        )}
       </section>
 
       <div className="hr" />

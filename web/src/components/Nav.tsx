@@ -18,13 +18,15 @@ export default function Nav() {
   const pathname = usePathname();
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [theme, setTheme] = useState<"light" | "dark">("light");
-
-  useEffect(() => {
-    const saved = (localStorage.getItem("omd-theme") as "light" | "dark" | null) || "light";
-    document.documentElement.setAttribute("data-theme", saved);
-    setTheme(saved);
-  }, []);
+  // Not rendered anywhere — only drives toggleTheme's direction — so lazily
+  // reading it (rather than syncing via an effect) can't cause a hydration
+  // mismatch. The layout's blocking script already set data-theme on <html>
+  // before this component mounts.
+  const [theme, setTheme] = useState<"light" | "dark">(() =>
+    typeof document === "undefined"
+      ? "light"
+      : (localStorage.getItem("omd-theme") as "light" | "dark" | null) || "light"
+  );
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

@@ -2,11 +2,29 @@ import Link from "next/link";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import PlaceholderImage from "@/components/PlaceholderImage";
+import AdSlot from "@/components/AdSlot";
+import NewsletterForm from "@/components/NewsletterForm";
 import { css } from "@/lib/css";
+import { pageMetadata, SITE_URL, SITE_NAME } from "@/lib/seo";
+
+export const metadata = pageMetadata(
+  "Ominet Digital",
+  "A digital ecosystem for publishing, creativity, professional identity and technology, founded by Omini Nfawa.",
+  "/"
+);
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: SITE_NAME,
+  url: SITE_URL,
+  publisher: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
+};
 
 export default function Home() {
   return (
     <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;")}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Nav />
 
       <section style={css("padding:var(--space-8) var(--space-6);background:var(--om-teal-light);")}>
@@ -30,6 +48,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <AdSlot slotKey="home_top" />
 
       <div className="hr" />
 
@@ -122,10 +142,7 @@ export default function Home() {
           <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-2);")}>NEWSLETTER</div>
           <div style={css("font-family:var(--font-heading);font-size:24px;")}>News from across the ecosystem, occasionally.</div>
         </div>
-        <div style={css("display:flex;gap:var(--space-2);flex-wrap:wrap;flex:1 1 260px;")}>
-          <input type="email" className="input" placeholder="you@email.com" style={css("min-width:200px;flex:1;")} />
-          <button type="button" className="btn btn-primary">Subscribe</button>
-        </div>
+        <NewsletterForm />
       </section>
 
       <Footer />

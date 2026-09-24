@@ -6,6 +6,7 @@
 export type Access = "free" | "paid" | "members" | "preview";
 
 export type Article = {
+  id?: string;
   slug: string;
   title: string;
   excerpt: string;
@@ -16,6 +17,10 @@ export type Article = {
   date: string;
   readTime: string;
   author?: string;
+  body?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  ogImageUrl?: string;
 };
 
 export const articles: Article[] = [
@@ -78,7 +83,7 @@ export type Book = {
   year: string;
   pages?: string;
   excerpt: string;
-  purchaseLinks: { label: string; platform: string }[];
+  purchaseLinks: { label: string; platform: string; url: string }[];
   formats: string[];
   upcoming?: boolean;
 };
@@ -93,9 +98,9 @@ export const books: Book[] = [
     excerpt:
       "A family separated by three borders finds its way back to a single house, one letter at a time. Told across four decades and three countries, it is a novel about what a house remembers when the people who built it are gone.",
     purchaseLinks: [
-      { label: "Buy on Selar", platform: "selar" },
-      { label: "Buy on Amazon", platform: "amazon" },
-      { label: "Google Books", platform: "google" },
+      { label: "Buy on Selar", platform: "selar", url: "https://selar.co/" },
+      { label: "Buy on Amazon", platform: "amazon", url: "https://amazon.com/" },
+      { label: "Google Books", platform: "google", url: "https://books.google.com/" },
     ],
     formats: ["Ebook", "Paperback", "Audio"],
   },
@@ -105,7 +110,7 @@ export const books: Book[] = [
     kind: "Novel",
     year: "2022",
     excerpt: "A novel told entirely in letters between two estranged siblings.",
-    purchaseLinks: [{ label: "Buy on Amazon", platform: "amazon" }],
+    purchaseLinks: [{ label: "Buy on Amazon", platform: "amazon", url: "https://amazon.com/" }],
     formats: ["Ebook", "Paperback"],
   },
   {
@@ -114,7 +119,7 @@ export const books: Book[] = [
     kind: "Essays",
     year: "2019",
     excerpt: "Essays on the Niger Delta's shifting coastline.",
-    purchaseLinks: [{ label: "Buy on Amazon", platform: "amazon" }],
+    purchaseLinks: [{ label: "Buy on Amazon", platform: "amazon", url: "https://amazon.com/" }],
     formats: ["Ebook", "Paperback"],
   },
   {
@@ -123,7 +128,7 @@ export const books: Book[] = [
     kind: "Poetry",
     year: "2016",
     excerpt: "A debut poetry collection.",
-    purchaseLinks: [{ label: "Buy on Amazon", platform: "amazon" }],
+    purchaseLinks: [{ label: "Buy on Amazon", platform: "amazon", url: "https://amazon.com/" }],
     formats: ["Paperback"],
   },
 ];

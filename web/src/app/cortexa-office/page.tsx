@@ -1,8 +1,13 @@
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import { css } from "@/lib/css";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata = { title: "Cortexa Office — Ominet Digital" };
+export const metadata = pageMetadata(
+  "Cortexa Office",
+  "An emerging product and office within the Ominet Digital ecosystem.",
+  "/cortexa-office"
+);
 
 export default function CortexaOfficePage() {
   return (

@@ -2,8 +2,13 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import PlaceholderImage from "@/components/PlaceholderImage";
 import { css } from "@/lib/css";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata = { title: "About — Ominet Digital" };
+export const metadata = pageMetadata(
+  "About",
+  "Omini Nfawa — writer, researcher and filmmaker working across essays, fiction and documentary. Founder of Ominet Digital and PROFILE.",
+  "/about"
+);
 
 const work = [
   { label: "The Long Return, novel", year: "2026" },

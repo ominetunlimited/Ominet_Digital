@@ -1,15 +1,36 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import { css } from "@/lib/css";
+import type { Article, Book } from "@/lib/content";
 
 export default function SearchPage() {
-  const [query, setQuery] = useState("publishing");
-  const q = query.trim();
-  const hasQuery = q.length > 0 && q.toLowerCase() !== "nomatch";
-  const noResults = q.toLowerCase() === "nomatch" || q.length === 0;
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<{ articles: Article[]; books: Book[] } | null>(null);
+  // The query `results` actually answers — lets loading be derived instead
+  // of tracked as its own state set synchronously inside the effect.
+  const [resultsQuery, setResultsQuery] = useState<string | null>(null);
+
+  useEffect(() => {
+    const q = query.trim();
+    if (!q) return;
+    const timer = setTimeout(() => {
+      fetch(`/api/search?q=${encodeURIComponent(q)}`)
+        .then((r) => r.json())
+        .then((data) => {
+          setResults(data);
+          setResultsQuery(q);
+        });
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  const hasQuery = query.trim().length > 0;
+  const loading = hasQuery && resultsQuery !== query.trim();
+  const total = (results?.articles.length ?? 0) + (results?.books.length ?? 0);
+  const noResults = hasQuery && !loading && total === 0;
 
   return (
     <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>
@@ -29,6 +50,7 @@ export default function SearchPage() {
             placeholder="Search articles, books, media…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            autoFocus
             style={css("flex:1;font-size:18px;")}
           />
         </div>
@@ -44,22 +66,22 @@ export default function SearchPage() {
 
       <div className="hr" />
 
-      {hasQuery && (
+      {hasQuery && !noResults && results && total > 0 && (
         <section style={css("padding:var(--space-6);")}>
-          <div style={css("font-size:13px;opacity:0.6;margin-bottom:var(--space-4);")}>3 results for &ldquo;{query}&rdquo;</div>
+          <div style={css("font-size:13px;opacity:0.6;margin-bottom:var(--space-4);")}>{total} result{total === 1 ? "" : "s"} for &ldquo;{query}&rdquo;</div>
           <div style={css("display:grid;gap:var(--space-4);")}>
-            <a href="/writing/on-writing-as-a-second-country" style={css("display:flex;gap:var(--space-4);flex-wrap:wrap;")}>
-              <span className="tag tag-neutral" style={css("flex-shrink:0;")}>ESSAY</span>
-              <div><div style={css("font-family:var(--font-heading);font-size:18px;")}>On Writing as a Second Country</div><div style={css("font-size:13px;opacity:0.6;")}>Sept 12, 2026</div></div>
-            </a>
-            <a href="/books/the-long-return" style={css("display:flex;gap:var(--space-4);flex-wrap:wrap;")}>
-              <span className="tag tag-neutral" style={css("flex-shrink:0;")}>BOOK</span>
-              <div><div style={css("font-family:var(--font-heading);font-size:18px;")}>The Long Return</div><div style={css("font-size:13px;opacity:0.6;")}>Novel &middot; 2026</div></div>
-            </a>
-            <a href="#" style={css("display:flex;gap:var(--space-4);flex-wrap:wrap;")}>
-              <span className="tag tag-neutral" style={css("flex-shrink:0;")}>VIDEO</span>
-              <div><div style={css("font-family:var(--font-heading);font-size:18px;")}>The Long Return &mdash; Trailer</div><div style={css("font-size:13px;opacity:0.6;")}>6 min</div></div>
-            </a>
+            {results.articles.map((a) => (
+              <a key={a.slug} href={`/writing/${a.slug}`} style={css("display:flex;gap:var(--space-4);flex-wrap:wrap;")}>
+                <span className="tag tag-neutral" style={css("flex-shrink:0;")}>{a.category}</span>
+                <div><div style={css("font-family:var(--font-heading);font-size:18px;")}>{a.title}</div><div style={css("font-size:13px;opacity:0.6;")}>{a.date}</div></div>
+              </a>
+            ))}
+            {results.books.map((b) => (
+              <a key={b.slug} href={`/books/${b.slug}`} style={css("display:flex;gap:var(--space-4);flex-wrap:wrap;")}>
+                <span className="tag tag-neutral" style={css("flex-shrink:0;")}>BOOK</span>
+                <div><div style={css("font-family:var(--font-heading);font-size:18px;")}>{b.title}</div><div style={css("font-size:13px;opacity:0.6;")}>{b.kind} &middot; {b.year}</div></div>
+              </a>
+            ))}
           </div>
         </section>
       )}

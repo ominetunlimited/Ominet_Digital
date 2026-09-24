@@ -1,0 +1,42 @@
+"use client";
+
+import { useState } from "react";
+import { css } from "@/lib/css";
+import { subscribeToNewsletter } from "@/lib/newsletter";
+
+export default function NewsletterForm() {
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function submit() {
+    if (!email) return;
+    setBusy(true);
+    const result = await subscribeToNewsletter(email);
+    setBusy(false);
+    setMessage(result.ok ? result.message : result.error);
+    if (result.ok) setEmail("");
+  }
+
+  return (
+    <div style={css("display:flex;gap:var(--space-2);flex-wrap:wrap;flex:1 1 260px;")}>
+      {message ? (
+        <span style={css("font-size:13px;opacity:0.7;align-self:center;")}>{message}</span>
+      ) : (
+        <>
+          <input
+            type="email"
+            className="input"
+            placeholder="you@email.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            style={css("min-width:200px;flex:1;")}
+          />
+          <button type="button" className="btn btn-primary" onClick={submit} disabled={busy || !email}>
+            {busy ? "…" : "Subscribe"}
+          </button>
+        </>
+      )}
+    </div>
+  );
+}

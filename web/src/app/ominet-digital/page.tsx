@@ -2,8 +2,13 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import PlaceholderImage from "@/components/PlaceholderImage";
 import { css } from "@/lib/css";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata = { title: "Ominet Digital — Studio" };
+export const metadata = pageMetadata(
+  "Studio & Services",
+  "Video, photography, graphic design and digital publishing — the studio behind the work.",
+  "/ominet-digital"
+);
 
 const services = [
   { title: "Video Production", body: "Documentary and short-form." },

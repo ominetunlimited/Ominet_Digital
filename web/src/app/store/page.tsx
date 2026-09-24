@@ -2,8 +2,13 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import PlaceholderImage from "@/components/PlaceholderImage";
 import { css } from "@/lib/css";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata = { title: "Store — Ominet Digital" };
+export const metadata = pageMetadata(
+  "Store",
+  "Ebooks, digital publications and resources from Ominet Digital.",
+  "/store"
+);
 
 const BUY_ICON = (
   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 6 }}>

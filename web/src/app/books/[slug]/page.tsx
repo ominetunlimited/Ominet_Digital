@@ -4,16 +4,25 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import PlaceholderImage from "@/components/PlaceholderImage";
 import { css } from "@/lib/css";
-import { books, getBook } from "@/lib/content";
+import { getBook } from "@/lib/data";
+import { SITE_URL } from "@/lib/seo";
 
-export function generateStaticParams() {
-  return books.map((b) => ({ slug: b.slug }));
-}
+export const revalidate = 60;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const book = getBook(slug);
-  return { title: book ? `${book.title} — Ominet Digital` : "Book — Ominet Digital" };
+  const book = await getBook(slug);
+  if (!book) return { title: "Book — Ominet Digital" };
+  const title = `${book.title} — Ominet Digital`;
+  const description = book.excerpt || `${book.title} by Omini Nfawa`;
+  const url = `${SITE_URL}/books/${book.slug}`;
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: { title, description, url, type: "book" },
+    twitter: { card: "summary_large_image", title, description },
+  };
 }
 
 const BUY_ICON = (
@@ -26,11 +35,22 @@ const BUY_ICON = (
 
 export default async function BookDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const book = getBook(slug);
+  const book = await getBook(slug);
   if (!book) notFound();
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Book",
+    name: book.title,
+    author: { "@type": "Person", name: "Omini Nfawa" },
+    datePublished: book.year,
+    bookFormat: book.formats?.[0] ? `https://schema.org/${book.formats[0] === "Ebook" ? "EBook" : book.formats[0]}` : undefined,
+    description: book.excerpt,
+  };
 
   return (
     <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Nav />
       <svg width="380" height="380" viewBox="0 0 380 380" style={css("position:absolute;left:-70px;top:30px;pointer-events:none;")} aria-hidden="true">
         <circle cx="190" cy="190" r="189" fill="none" stroke="var(--om-coral)" strokeWidth="1" opacity="0.2" />
@@ -52,14 +72,16 @@ export default async function BookDetailPage({ params }: { params: Promise<{ slu
               <div style={css("font-size:12px;letter-spacing:0.08em;opacity:0.55;margin-bottom:var(--space-2);")}>WHERE TO BUY</div>
               <div style={css("display:flex;gap:var(--space-3);flex-wrap:wrap;")}>
                 {book.purchaseLinks.map((link, i) => (
-                  <button
+                  <a
                     key={link.platform}
-                    type="button"
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer sponsored"
                     className={i === 0 ? "btn btn-primary" : "btn btn-secondary"}
                     style={i === 0 ? css("background:var(--om-coral);border-color:var(--om-coral);") : undefined}
                   >
                     {link.label}{BUY_ICON}
-                  </button>
+                  </a>
                 ))}
               </div>
               {book.formats.length > 0 && (

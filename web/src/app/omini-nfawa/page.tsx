@@ -3,8 +3,13 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import PlaceholderImage from "@/components/PlaceholderImage";
 import { css } from "@/lib/css";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata = { title: "Omini Nfawa — Ominet Digital" };
+export const metadata = pageMetadata(
+  "Omini Nfawa",
+  "Essays, research and fiction, alongside books, film and photography from Omini Nfawa.",
+  "/omini-nfawa"
+);
 
 export default function OminiNfawaPage() {
   return (
