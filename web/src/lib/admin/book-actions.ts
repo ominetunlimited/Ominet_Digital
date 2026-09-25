@@ -15,6 +15,7 @@ export type BookInput = {
   pages: string;
   excerpt: string;
   description: string;
+  cover_image_url: string;
   formats: string[];
   status: string;
   featured: boolean;
@@ -35,6 +36,7 @@ export async function saveBook(input: BookInput): Promise<ActionResult> {
     pages: input.pages || null,
     excerpt: input.excerpt || null,
     description: input.description || null,
+    cover_image_url: input.cover_image_url || null,
     formats: input.formats,
     status: input.status,
     featured: input.featured,

@@ -7,6 +7,12 @@ import { css } from "@/lib/css";
 import { getBooks } from "@/lib/data";
 import { pageMetadata } from "@/lib/seo";
 
+function BookCover({ url, label }: { url?: string; label: string }) {
+  if (!url) return <PlaceholderImage label={label} />;
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={url} alt="" style={css("width:100%;height:100%;object-fit:cover;")} />;
+}
+
 export const metadata = pageMetadata(
   "Books",
   "Books by Omini Nfawa — novels, essays and poetry, with purchase links to Selar, Amazon, Google Books and more.",
@@ -39,7 +45,7 @@ export default async function BooksPage() {
           <div className="hr" />
           <section style={css("padding:var(--space-8) var(--space-6);display:flex;flex-wrap:wrap;gap:var(--space-8);")}>
             <div style={css("aspect-ratio:2/3;border-radius:var(--radius-md);overflow:hidden;flex:1 1 240px;max-width:320px;")}>
-              <PlaceholderImage label="Book cover" />
+              <BookCover url={featured.coverImageUrl} label="Book cover" />
             </div>
             <div style={css("flex:2 1 380px;display:flex;flex-direction:column;justify-content:center;")}>
               <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>FEATURED</div>
@@ -59,7 +65,7 @@ export default async function BooksPage() {
             <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--space-6);")}>
               {upcomingBooks.map((b) => (
                 <div key={b.slug}>
-                  <div style={css("aspect-ratio:2/3;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-3);")}><PlaceholderImage label="Cover" /></div>
+                  <div style={css("aspect-ratio:2/3;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-3);")}><BookCover url={b.coverImageUrl} label="Cover" /></div>
                   <div style={css("font-family:var(--font-heading);font-size:18px;")}>{b.title}</div>
                   <div style={css("font-size:12px;opacity:0.55;")}>{b.kind} &middot; {b.year}</div>
                 </div>
@@ -79,7 +85,7 @@ export default async function BooksPage() {
         <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:var(--space-4);")}>
           {published.map((b) => (
             <Link key={b.slug} href={`/books/${b.slug}`}>
-              <div style={css("aspect-ratio:2/3;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-3);")}><PlaceholderImage label="Cover" /></div>
+              <div style={css("aspect-ratio:2/3;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-3);")}><BookCover url={b.coverImageUrl} label="Cover" /></div>
               <div style={css("font-family:var(--font-heading);font-size:16px;")}>{b.title}</div>
               <div style={css("font-size:12px;opacity:0.55;")}>{b.year}</div>
             </Link>

@@ -21,6 +21,9 @@ export type Article = {
   seoTitle?: string;
   seoDescription?: string;
   ogImageUrl?: string;
+  featuredImageUrl?: string;
+  videoUrl?: string;
+  videoThumbnailUrl?: string;
 };
 
 export const articles: Article[] = [
@@ -83,6 +86,7 @@ export type Book = {
   year: string;
   pages?: string;
   excerpt: string;
+  coverImageUrl?: string;
   purchaseLinks: { label: string; platform: string; url: string }[];
   formats: string[];
   upcoming?: boolean;

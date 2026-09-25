@@ -21,6 +21,9 @@ export type ContentInput = {
   seo_title: string;
   seo_description: string;
   og_image_url: string;
+  featured_image_url: string;
+  video_url: string;
+  video_thumbnail_url: string;
 };
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
@@ -29,7 +32,7 @@ export async function saveContent(input: ContentInput): Promise<ActionResult> {
   const supabase = await createClient();
   if (!supabase) return { ok: false, error: "Supabase isn't configured yet." };
 
-  const row = {
+  const row: Record<string, unknown> = {
     title: input.title,
     slug: input.slug,
     type: input.type,
@@ -45,17 +48,35 @@ export async function saveContent(input: ContentInput): Promise<ActionResult> {
     seo_title: input.seo_title || null,
     seo_description: input.seo_description || null,
     og_image_url: input.og_image_url || null,
+    featured_image_url: input.featured_image_url || null,
+    video_url: input.video_url || null,
+    video_thumbnail_url: input.video_thumbnail_url || null,
   };
 
-  const { data, error } = input.id
+  let { data, error } = input.id
     ? await supabase.from("content").update(row).eq("id", input.id).select("id,slug").single()
     : await supabase.from("content").insert(row).select("id,slug").single();
 
-  if (error) return { ok: false, error: error.message };
+  // PGRST204 = PostgREST couldn't find that column in its schema cache
+  // (its own pre-flight check on a write payload, distinct from 42703 —
+  // the raw Postgres "undefined column" error a select() gets). Either way
+  // it means video_url/video_thumbnail_url (0003_video_fields.sql) may not
+  // be applied to this project yet. Retry without them so the rest of the
+  // save still goes through; the video fields just won't persist until
+  // that migration runs.
+  if (error?.code === "42703" || error?.code === "PGRST204") {
+    delete row.video_url;
+    delete row.video_thumbnail_url;
+    ({ data, error } = input.id
+      ? await supabase.from("content").update(row).eq("id", input.id).select("id,slug").single()
+      : await supabase.from("content").insert(row).select("id,slug").single());
+  }
+
+  if (error || !data) return { ok: false, error: error?.message ?? "Save failed unexpectedly." };
 
   revalidatePath("/admin/content");
   revalidatePath("/writing");
-  if (data?.slug) revalidatePath(`/writing/${data.slug}`);
+  revalidatePath(`/writing/${data.slug}`);
   redirect(`/admin/content/${data.id}`);
 }
 

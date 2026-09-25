@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { css } from "@/lib/css";
 import { saveBook, deleteBook, type BookInput } from "@/lib/admin/book-actions";
+import ImageUploadField from "@/components/admin/ImageUploadField";
 
 const STATUSES = ["draft", "scheduled", "published", "archived"];
 
@@ -20,6 +21,7 @@ export default function BookForm({ initial }: { initial?: Partial<BookInput> & {
     pages: initial?.pages ?? "",
     excerpt: initial?.excerpt ?? "",
     description: initial?.description ?? "",
+    cover_image_url: initial?.cover_image_url ?? "",
     formats: initial?.formats ?? [],
     status: initial?.status ?? "draft",
     featured: initial?.featured ?? false,
@@ -63,6 +65,7 @@ export default function BookForm({ initial }: { initial?: Partial<BookInput> & {
         <label>Slug</label>
         <input className="input" value={values.slug} onChange={(e) => { setSlugTouched(true); set("slug", e.target.value); }} />
       </div>
+      <ImageUploadField label="Cover image" value={values.cover_image_url} onChange={(url) => set("cover_image_url", url)} />
       <div style={css("display:flex;gap:var(--space-4);margin-bottom:var(--space-4);")}>
         <div className="field" style={css("flex:1;")}>
           <label>Kind</label>

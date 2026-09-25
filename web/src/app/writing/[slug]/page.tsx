@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import PlaceholderImage from "@/components/PlaceholderImage";
+import VideoThumbnail from "@/components/VideoThumbnail";
 import PaywallGate from "@/components/PaywallGate";
 import ShareBar from "@/components/ShareBar";
 import AdSlot from "@/components/AdSlot";
@@ -29,13 +30,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       description,
       url,
       type: "article",
-      images: article.ogImageUrl ? [article.ogImageUrl] : undefined,
+      images: article.ogImageUrl || article.featuredImageUrl ? [article.ogImageUrl || article.featuredImageUrl!] : undefined,
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: article.ogImageUrl ? [article.ogImageUrl] : undefined,
+      images: article.ogImageUrl || article.featuredImageUrl ? [article.ogImageUrl || article.featuredImageUrl!] : undefined,
     },
   };
 }
@@ -89,8 +90,19 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
         <div style={css("font-size:13px;opacity:0.6;margin-bottom:var(--space-6);")}>By {article.author}</div>
 
         <div style={css("aspect-ratio:16/9;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-6);")}>
-          <PlaceholderImage label="Hero image" />
+          {article.featuredImageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={article.featuredImageUrl} alt="" style={css("width:100%;height:100%;object-fit:cover;")} />
+          ) : (
+            <PlaceholderImage label="Hero image" />
+          )}
         </div>
+
+        {article.videoUrl && (
+          <div style={css("margin-bottom:var(--space-6);")}>
+            <VideoThumbnail url={article.videoUrl} thumbnailUrl={article.videoThumbnailUrl} />
+          </div>
+        )}
 
         <div style={css("font-size:18px;line-height:1.8;")}>
           {visibleParagraphs.map((p, i) => (

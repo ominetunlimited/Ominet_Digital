@@ -70,6 +70,12 @@ insert into ad_placements (slot_key, label, provider, active) values
 on conflict (slot_key) do nothing;
 
 -- Public media bucket for the admin media library and content featured images.
+-- NOTE: inserting into storage.buckets via the SQL Editor was observed not
+-- to reliably persist (unclear why — possibly a Supabase-side quirk of that
+-- editor with the storage schema). If uploads fail with "Bucket not found",
+-- create it via supabase.storage.createBucket('media', { public: true })
+-- with the service_role key, or via Storage -> New bucket in the dashboard,
+-- instead of relying on this statement.
 insert into storage.buckets (id, name, public)
 values ('media', 'media', true)
 on conflict (id) do nothing;

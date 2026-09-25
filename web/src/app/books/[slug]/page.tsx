@@ -60,7 +60,12 @@ export default async function BookDetailPage({ params }: { params: Promise<{ slu
 
       <section style={css("padding:var(--space-8) var(--space-6);display:flex;flex-wrap:wrap;gap:var(--space-8);")}>
         <div style={css("aspect-ratio:2/3;border-radius:var(--radius-md);overflow:hidden;flex:1 1 240px;max-width:340px;")}>
-          <PlaceholderImage label="Book cover" />
+          {book.coverImageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={book.coverImageUrl} alt="" style={css("width:100%;height:100%;object-fit:cover;")} />
+          ) : (
+            <PlaceholderImage label="Book cover" />
+          )}
         </div>
         <div style={css("flex:2 1 380px;")}>
           <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>{book.kind.toUpperCase()}</div>

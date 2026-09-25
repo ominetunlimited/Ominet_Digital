@@ -41,6 +41,9 @@ type ContentRow = {
   seo_title?: string | null;
   seo_description?: string | null;
   og_image_url?: string | null;
+  featured_image_url?: string | null;
+  video_url?: string | null;
+  video_thumbnail_url?: string | null;
 };
 
 function mapArticle(row: ContentRow): Article {
@@ -60,6 +63,9 @@ function mapArticle(row: ContentRow): Article {
     seoTitle: row.seo_title ?? undefined,
     seoDescription: row.seo_description ?? undefined,
     ogImageUrl: row.og_image_url ?? undefined,
+    featuredImageUrl: row.featured_image_url ?? undefined,
+    videoUrl: row.video_url ?? undefined,
+    videoThumbnailUrl: row.video_thumbnail_url ?? undefined,
   };
 }
 
@@ -78,12 +84,23 @@ export async function getArticles(): Promise<Article[]> {
 export async function getArticle(slug: string): Promise<Article | undefined> {
   if (!supabaseConfigured) return mockArticles.find((a) => a.slug === slug);
   const supabase = await createClient();
-  const { data, error } = await supabase!
+  let { data, error } = await supabase!
     .from("content")
-    .select("id,slug,title,dek,excerpt,type,access,price_cents,currency,published_at,read_minutes,body,seo_title,seo_description,og_image_url")
+    .select("id,slug,title,dek,excerpt,type,access,price_cents,currency,published_at,read_minutes,body,seo_title,seo_description,og_image_url,featured_image_url,video_url,video_thumbnail_url")
     .eq("slug", slug)
     .eq("status", "published")
     .maybeSingle();
+  // 42703 = undefined column — the video_url/video_thumbnail_url migration
+  // (0003_video_fields.sql) may not be applied to this project yet. Retry
+  // without those columns so the rest of the article still loads.
+  if (error?.code === "42703") {
+    ({ data, error } = await supabase!
+      .from("content")
+      .select("id,slug,title,dek,excerpt,type,access,price_cents,currency,published_at,read_minutes,body,seo_title,seo_description,og_image_url,featured_image_url")
+      .eq("slug", slug)
+      .eq("status", "published")
+      .maybeSingle());
+  }
   if (error || !data) return undefined;
   return mapArticle(data);
 }
@@ -95,6 +112,7 @@ type BookRow = {
   year: string | null;
   pages: string | null;
   excerpt: string | null;
+  cover_image_url?: string | null;
   formats: string[] | null;
   status: string;
   book_purchase_links: { label: string; platform: string; url: string }[];
@@ -108,6 +126,7 @@ function mapBook(row: BookRow): Book {
     year: row.year ?? "",
     pages: row.pages ?? undefined,
     excerpt: row.excerpt ?? "",
+    coverImageUrl: row.cover_image_url ?? undefined,
     purchaseLinks: (row.book_purchase_links ?? []).map((l) => ({ label: l.label, platform: l.platform, url: l.url })),
     formats: row.formats ?? [],
     upcoming: row.status !== "published",
@@ -119,7 +138,7 @@ export async function getBooks(): Promise<{ published: Book[]; upcoming: Book[] 
   const supabase = await createClient();
   const { data, error } = await supabase!
     .from("books")
-    .select("slug,title,kind,year,pages,excerpt,formats,status,book_purchase_links(label,platform,url)")
+    .select("slug,title,kind,year,pages,excerpt,cover_image_url,formats,status,book_purchase_links(label,platform,url)")
     .order("year", { ascending: false });
   if (error || !data) return { published: mockBooks, upcoming: mockUpcomingBooks };
   const mapped = (data as unknown as BookRow[]).map(mapBook);
@@ -134,7 +153,7 @@ export async function getBook(slug: string): Promise<Book | undefined> {
   const supabase = await createClient();
   const { data, error } = await supabase!
     .from("books")
-    .select("slug,title,kind,year,pages,excerpt,formats,status,book_purchase_links(label,platform,url)")
+    .select("slug,title,kind,year,pages,excerpt,cover_image_url,formats,status,book_purchase_links(label,platform,url)")
     .eq("slug", slug)
     .maybeSingle();
   if (error || !data) return undefined;

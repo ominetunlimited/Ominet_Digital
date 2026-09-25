@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { css } from "@/lib/css";
 import { saveContent, deleteContent, type ContentInput } from "@/lib/admin/content-actions";
+import ImageUploadField from "@/components/admin/ImageUploadField";
+import VideoField from "@/components/admin/VideoField";
 
 const TYPES = ["article", "essay", "research", "poem", "fiction", "review", "interview", "note"];
 const ACCESS = ["free", "paid", "members", "preview"];
@@ -30,6 +32,9 @@ export default function ContentForm({ initial }: { initial?: Partial<ContentInpu
     seo_title: initial?.seo_title ?? "",
     seo_description: initial?.seo_description ?? "",
     og_image_url: initial?.og_image_url ?? "",
+    featured_image_url: initial?.featured_image_url ?? "",
+    video_url: initial?.video_url ?? "",
+    video_thumbnail_url: initial?.video_thumbnail_url ?? "",
   });
   const [slugTouched, setSlugTouched] = useState(Boolean(initial?.slug));
   const [error, setError] = useState<string | null>(null);
@@ -87,6 +92,8 @@ export default function ContentForm({ initial }: { initial?: Partial<ContentInpu
         </div>
       </div>
 
+      <ImageUploadField label="Cover image" value={values.featured_image_url} onChange={(url) => set("featured_image_url", url)} />
+
       <div className="field" style={css("margin-bottom:var(--space-4);")}>
         <label>Dek (subtitle)</label>
         <input className="input" value={values.dek} onChange={(e) => set("dek", e.target.value)} />
@@ -103,6 +110,13 @@ export default function ContentForm({ initial }: { initial?: Partial<ContentInpu
         <label>Read time (minutes)</label>
         <input className="input" type="number" value={values.read_minutes ?? ""} onChange={(e) => set("read_minutes", e.target.value ? Number(e.target.value) : null)} />
       </div>
+
+      <VideoField
+        videoUrl={values.video_url}
+        thumbnailUrl={values.video_thumbnail_url}
+        onVideoUrlChange={(url) => set("video_url", url)}
+        onThumbnailUrlChange={(url) => set("video_thumbnail_url", url)}
+      />
 
       <div style={css("display:flex;gap:var(--space-4);margin-bottom:var(--space-4);")}>
         <div className="field" style={css("flex:1;")}>
@@ -137,10 +151,7 @@ export default function ContentForm({ initial }: { initial?: Partial<ContentInpu
         <label>SEO description (optional — falls back to Excerpt)</label>
         <textarea className="input" rows={2} value={values.seo_description} onChange={(e) => set("seo_description", e.target.value)} />
       </div>
-      <div className="field" style={css("margin-bottom:var(--space-6);")}>
-        <label>Social image URL</label>
-        <input className="input" value={values.og_image_url} onChange={(e) => set("og_image_url", e.target.value)} placeholder="https://… (upload via Media Library, then paste the URL)" />
-      </div>
+      <ImageUploadField label="Social share image" value={values.og_image_url} onChange={(url) => set("og_image_url", url)} />
 
       {error && <p style={css("font-size:13px;color:var(--om-coral);margin-bottom:var(--space-3);")}>{error}</p>}
 
