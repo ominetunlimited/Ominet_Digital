@@ -2,6 +2,7 @@ import Link from "next/link";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import PlaceholderImage from "@/components/PlaceholderImage";
+import EcosystemItem from "@/components/EcosystemItem";
 import AdSlot from "@/components/AdSlot";
 import NewsletterForm from "@/components/NewsletterForm";
 import { css } from "@/lib/css";
@@ -55,28 +56,35 @@ export default function Home() {
 
       <section style={css("padding:var(--space-8) var(--space-6);")}>
         <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-4);")}>THE ECOSYSTEM</div>
-        <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--space-6);")}>
-          <Link href="/omini-nfawa" style={css("grid-column:span 2;border:2px solid var(--color-divider);border-radius:var(--radius-md);padding:var(--space-6);display:block;background:var(--color-surface);box-shadow:var(--shadow-sm);")}>
-            <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-2);")}>WRITER &middot; RESEARCHER &middot; CREATIVE</div>
-            <div style={css("font-family:var(--font-heading);font-size:30px;margin-bottom:var(--space-2);")}>Omini Nfawa</div>
-            <p style={css("font-size:15px;opacity:0.7;max-width:52ch;margin:0 0 var(--space-3);")}>Books, essays, fiction, research, film and photography from the ecosystem&apos;s founder.</p>
-            <span style={css("text-decoration:underline;")}>Explore Omini Nfawa &rarr;</span>
-          </Link>
-          <Link href="/profile" style={css("border:2px solid var(--om-navy);border-radius:var(--radius-md);padding:var(--space-6);display:block;background:var(--color-surface);box-shadow:var(--shadow-sm);")}>
-            <div style={css("font-family:var(--font-heading);font-size:22px;margin-bottom:var(--space-2);color:var(--om-navy);")}>PROFILE</div>
-            <p style={css("font-size:14px;opacity:0.8;margin:0 0 var(--space-3);")}>A professional identity built from verified activity.</p>
-            <span style={css("text-decoration:underline;")}>Explore Profile &rarr;</span>
-          </Link>
-          <Link href="/cortexa-office" style={css("border:2px solid var(--color-divider);border-radius:var(--radius-md);padding:var(--space-6);display:block;background:var(--color-surface);box-shadow:var(--shadow-sm);")}>
-            <div style={css("font-family:var(--font-heading);font-size:22px;margin-bottom:var(--space-2);")}>Cortexa Office</div>
-            <p style={css("font-size:14px;opacity:0.7;margin:0 0 var(--space-3);")}>An emerging Ominet Digital product and office.</p>
-            <span style={css("text-decoration:underline;")}>Learn more &rarr;</span>
-          </Link>
-          <Link href="/media" style={css("border:2px solid var(--color-divider);border-radius:var(--radius-md);padding:var(--space-6);display:block;background:var(--color-surface);box-shadow:var(--shadow-sm);")}>
-            <div style={css("font-family:var(--font-heading);font-size:22px;margin-bottom:var(--space-2);")}>Media</div>
-            <p style={css("font-size:14px;opacity:0.7;margin:0 0 var(--space-3);")}>Video, photography and documentary work.</p>
-            <span style={css("text-decoration:underline;")}>Watch &amp; view &rarr;</span>
-          </Link>
+        <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--space-6);")}>
+          <EcosystemItem
+            kicker="WRITER · RESEARCHER · CREATIVE"
+            title="Omini Nfawa"
+            description="Books, essays, fiction, research, film and photography from the ecosystem's founder."
+            href="/omini-nfawa"
+            cta="Explore Omini Nfawa"
+          />
+          <EcosystemItem
+            kicker="PROFESSIONAL IDENTITY"
+            title="PROFILE"
+            description="A professional identity built from verified activity."
+            href="/profile"
+            cta="Explore Profile"
+          />
+          <EcosystemItem
+            kicker="VIDEO · PHOTOGRAPHY"
+            title="Media"
+            description="Video, photography and documentary work."
+            href="/media"
+            cta="Watch & view"
+          />
+          <EcosystemItem
+            kicker="EMERGING PRODUCT"
+            title="Cortexa Office"
+            description="An emerging Ominet Digital product and office."
+            href="/cortexa-office"
+            cta="Learn more"
+          />
         </div>
       </section>
 

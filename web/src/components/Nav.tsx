@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const LINKS: { href: string; label: string; match: string }[] = [
   { href: "/omini-nfawa", label: "OMINI NFAWA", match: "/omini-nfawa" },
@@ -18,6 +18,8 @@ export default function Nav() {
   const pathname = usePathname();
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const openButtonRef = useRef<HTMLButtonElement>(null);
   // Not rendered anywhere — only drives toggleTheme's direction — so lazily
   // reading it (rather than syncing via an effect) can't cause a hydration
   // mismatch. The layout's blocking script already set data-theme on <html>
@@ -36,6 +38,20 @@ export default function Nav() {
     return () => window.removeEventListener("keydown", onKey);
   }, [menuOpen]);
 
+  // Lock background scroll while the mobile overlay is open, and move
+  // focus in/out of it so keyboard users land somewhere sensible.
+  useEffect(() => {
+    if (!menuOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    const openButton = openButtonRef.current;
+    document.body.style.overflow = "hidden";
+    closeButtonRef.current?.focus();
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      openButton?.focus();
+    };
+  }, [menuOpen]);
+
   const isActive = (match: string) => pathname === match || pathname.startsWith(match + "/");
 
   const toggleTheme = () => {
@@ -51,11 +67,21 @@ export default function Nav() {
         .omd-links{display:flex;gap:var(--space-4);align-items:center;white-space:nowrap;}
         .omd-links a{white-space:nowrap;color:#eafaf0;text-decoration:none;}
         .omd-links a:hover{color:var(--om-orange);}
-        .omd-toggle{display:none;background:none;border:none;cursor:pointer;color:#eafaf0;padding:var(--space-2);}
+        .omd-toggle{display:none;background:none;border:none;cursor:pointer;color:#eafaf0;padding:var(--space-2);min-width:44px;min-height:44px;align-items:center;justify-content:center;}
         @media (max-width: 980px){
           .omd-links{display:none;}
           .omd-toggle{display:flex;}
         }
+        /* The mobile overlay is always navy chrome (independent of light/dark
+           theme, like the desktop bar) — its links/buttons need color set
+           explicitly rather than inherited, since the global a{} and .btn{}
+           rules key off --color-text, which flips with the theme and would
+           otherwise render dark-on-dark here. */
+        .omd-mobile-menu a{color:#eafaf0;text-decoration:none;}
+        .omd-mobile-menu a:hover,.omd-mobile-menu a:focus-visible{color:var(--om-orange);}
+        .omd-mobile-menu .btn-secondary{color:#eafaf0;border-color:rgba(255,255,255,0.35);}
+        .omd-mobile-menu .btn-secondary:hover{background:rgba(255,255,255,0.08);}
+        .omd-mobile-menu .hr{background:rgba(255,255,255,0.15);}
       `}</style>
       <nav className="nav" style={{ padding: "0 var(--space-6)", borderBottom: "none", position: "relative", background: "var(--om-navy)", color: "#eafaf0" }}>
         <Link href="/" className="nav-brand" style={{ textDecoration: "none", color: "#fff", fontWeight: 700, letterSpacing: "0.02em" }}>
@@ -76,6 +102,7 @@ export default function Nav() {
           <button type="button" className="btn btn-primary">SUBSCRIBE</button>
         </div>
         <button
+          ref={openButtonRef}
           type="button"
           className="omd-toggle"
           aria-label="Open menu"
@@ -87,10 +114,16 @@ export default function Nav() {
         </button>
       </nav>
       {menuOpen && (
-        <div style={{ position: "fixed", inset: 0, background: "var(--om-navy)", color: "#eafaf0", zIndex: 1000, padding: "var(--space-6)", overflowY: "auto" }}>
+        <div
+          className="omd-mobile-menu"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Site menu"
+          style={{ position: "fixed", inset: 0, background: "var(--om-navy)", color: "#eafaf0", zIndex: 1000, padding: "var(--space-6)", paddingTop: "max(var(--space-6), env(safe-area-inset-top))", paddingBottom: "max(var(--space-6), env(safe-area-inset-bottom))", overflowY: "auto" }}
+        >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-8)" }}>
             <span style={{ fontWeight: 700, letterSpacing: "0.02em", color: "#fff" }}>OMINET DIGITAL</span>
-            <button type="button" className="btn btn-ghost btn-icon" aria-label="Close menu" onClick={() => setMenuOpen(false)} style={{ color: "#eafaf0" }}>
+            <button ref={closeButtonRef} type="button" className="btn btn-ghost btn-icon" aria-label="Close menu" onClick={() => setMenuOpen(false)} style={{ color: "#eafaf0" }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
             </button>
           </div>
