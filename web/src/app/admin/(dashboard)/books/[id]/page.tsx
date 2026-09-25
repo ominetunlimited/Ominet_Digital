@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import BookForm from "@/components/admin/BookForm";
 
 export const metadata = { title: "Edit book — Admin", robots: { index: false, follow: false } };
+export const maxDuration = 60;
 
 export default async function EditBookPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { slugify } from "@/lib/slug";
 
 export type PurchaseLinkInput = { label: string; platform: string; url: string };
 
@@ -28,9 +29,18 @@ export async function saveBook(input: BookInput): Promise<ActionResult> {
   const supabase = await createClient();
   if (!supabase) return { ok: false, error: "Supabase isn't configured yet." };
 
+  const slug = slugify(input.slug || input.title);
+  if (!slug) return { ok: false, error: "Slug can't be empty once normalized — add some letters or numbers." };
+
+  let previousSlug: string | null = null;
+  if (input.id) {
+    const { data: existing } = await supabase.from("books").select("slug").eq("id", input.id).maybeSingle();
+    previousSlug = existing?.slug ?? null;
+  }
+
   const row = {
     title: input.title,
-    slug: input.slug,
+    slug,
     kind: input.kind,
     year: input.year || null,
     pages: input.pages || null,
@@ -43,9 +53,9 @@ export async function saveBook(input: BookInput): Promise<ActionResult> {
   };
 
   const { data, error } = input.id
-    ? await supabase.from("books").update(row).eq("id", input.id).select("id").single()
-    : await supabase.from("books").insert(row).select("id").single();
-  if (error) return { ok: false, error: error.message };
+    ? await supabase.from("books").update(row).eq("id", input.id).select("id,slug").single()
+    : await supabase.from("books").insert(row).select("id,slug").single();
+  if (error || !data) return { ok: false, error: error?.message ?? "Save failed unexpectedly." };
 
   const bookId = data.id as string;
 
@@ -65,6 +75,8 @@ export async function saveBook(input: BookInput): Promise<ActionResult> {
 
   revalidatePath("/admin/books");
   revalidatePath("/books");
+  revalidatePath(`/books/${data.slug}`);
+  if (previousSlug && previousSlug !== data.slug) revalidatePath(`/books/${previousSlug}`);
   redirect(`/admin/books/${bookId}`);
 }
 

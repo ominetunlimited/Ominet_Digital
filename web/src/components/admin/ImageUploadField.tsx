@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { css } from "@/lib/css";
 import { uploadMedia } from "@/lib/admin/media-actions";
+import { compressImage } from "@/lib/compressImage";
 
 /**
  * Optional cover-image field for admin forms (content, books). Upload a
@@ -27,8 +28,9 @@ export default function ImageUploadField({
     if (!file) return;
     setBusy(true);
     setError(null);
+    const compressed = await compressImage(file);
     const formData = new FormData();
-    formData.set("file", file);
+    formData.set("file", compressed);
     const result = await uploadMedia(formData);
     setBusy(false);
     if (!result.ok) {
@@ -62,7 +64,7 @@ export default function ImageUploadField({
           style={css("flex:1;min-width:180px;")}
         />
       </div>
-      {busy && <p style={css("font-size:12px;opacity:0.6;margin-top:var(--space-1);")}>Uploading…</p>}
+      {busy && <p style={css("font-size:12px;opacity:0.6;margin-top:var(--space-1);")}>Compressing &amp; uploading…</p>}
       {error && <p style={css("font-size:12px;color:var(--om-coral);margin-top:var(--space-1);")}>{error}</p>}
     </div>
   );

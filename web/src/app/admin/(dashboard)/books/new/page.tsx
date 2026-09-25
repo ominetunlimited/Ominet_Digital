@@ -2,6 +2,7 @@ import { css } from "@/lib/css";
 import BookForm from "@/components/admin/BookForm";
 
 export const metadata = { title: "New book — Admin", robots: { index: false, follow: false } };
+export const maxDuration = 60;
 
 export default function NewBookPage() {
   return (

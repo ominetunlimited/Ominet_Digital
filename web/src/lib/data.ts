@@ -106,6 +106,7 @@ export async function getArticle(slug: string): Promise<Article | undefined> {
 }
 
 type BookRow = {
+  id: string;
   slug: string;
   title: string;
   kind: string;
@@ -120,6 +121,7 @@ type BookRow = {
 
 function mapBook(row: BookRow): Book {
   return {
+    id: row.id,
     slug: row.slug,
     title: row.title,
     kind: row.kind,
@@ -138,7 +140,7 @@ export async function getBooks(): Promise<{ published: Book[]; upcoming: Book[] 
   const supabase = await createClient();
   const { data, error } = await supabase!
     .from("books")
-    .select("slug,title,kind,year,pages,excerpt,cover_image_url,formats,status,book_purchase_links(label,platform,url)")
+    .select("id,slug,title,kind,year,pages,excerpt,cover_image_url,formats,status,book_purchase_links(label,platform,url)")
     .order("year", { ascending: false });
   if (error || !data) return { published: mockBooks, upcoming: mockUpcomingBooks };
   const mapped = (data as unknown as BookRow[]).map(mapBook);
@@ -153,7 +155,7 @@ export async function getBook(slug: string): Promise<Book | undefined> {
   const supabase = await createClient();
   const { data, error } = await supabase!
     .from("books")
-    .select("slug,title,kind,year,pages,excerpt,cover_image_url,formats,status,book_purchase_links(label,platform,url)")
+    .select("id,slug,title,kind,year,pages,excerpt,cover_image_url,formats,status,book_purchase_links(label,platform,url)")
     .eq("slug", slug)
     .maybeSingle();
   if (error || !data) return undefined;
@@ -176,6 +178,62 @@ export async function getAllSlugs() {
     articles: (articleRows ?? []).map((r) => r.slug as string),
     books: (bookRows ?? []).map((r) => r.slug as string),
   };
+}
+
+export type Product = {
+  id: string;
+  slug: string;
+  title: string;
+  description?: string;
+  imageUrl?: string;
+  priceCents: number | null;
+  currency: string;
+  access: string;
+  externalUrl?: string;
+  externalLabel?: string;
+  affiliateDisclosure?: string;
+};
+
+type ProductRow = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  image_url: string | null;
+  price_cents: number | null;
+  currency: string | null;
+  access: string;
+  external_url: string | null;
+  external_label: string | null;
+  affiliate_disclosure: string | null;
+};
+
+function mapProduct(row: ProductRow): Product {
+  return {
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    description: row.description ?? undefined,
+    imageUrl: row.image_url ?? undefined,
+    priceCents: row.price_cents,
+    currency: row.currency ?? "NGN",
+    access: row.access,
+    externalUrl: row.external_url ?? undefined,
+    externalLabel: row.external_label ?? undefined,
+    affiliateDisclosure: row.affiliate_disclosure ?? undefined,
+  };
+}
+
+export async function getProducts(): Promise<Product[]> {
+  if (!supabaseConfigured) return [];
+  const supabase = await createClient();
+  const { data, error } = await supabase!
+    .from("products")
+    .select("id,slug,title,description,image_url,price_cents,currency,access,external_url,external_label,affiliate_disclosure")
+    .eq("status", "published")
+    .order("created_at", { ascending: false });
+  if (error || !data) return [];
+  return (data as ProductRow[]).map(mapProduct);
 }
 
 export type AdPlacement = {

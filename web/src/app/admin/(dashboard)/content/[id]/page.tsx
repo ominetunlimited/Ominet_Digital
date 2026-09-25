@@ -4,6 +4,10 @@ import { createClient } from "@/lib/supabase/server";
 import ContentForm from "@/components/admin/ContentForm";
 
 export const metadata = { title: "Edit content — Admin", robots: { index: false, follow: false } };
+// Safety net for the cover/thumbnail upload actions this form calls —
+// client-side compression makes this rarely necessary, but a slow network
+// on a large original shouldn't get killed by the platform's default limit.
+export const maxDuration = 60;
 
 export default async function EditContentPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

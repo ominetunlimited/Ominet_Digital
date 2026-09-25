@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { css } from "@/lib/css";
 import { createClient } from "@/lib/supabase/server";
 
@@ -12,11 +13,10 @@ export default async function AdminStorePage() {
 
   return (
     <div>
-      <h1 style={css("font-family:var(--font-heading);font-size:28px;margin:0 0 var(--space-2);")}>Store</h1>
-      <p style={css("font-size:13px;opacity:0.6;margin:0 0 var(--space-6);")}>
-        The <code>products</code> table is live, but the public Store page still renders its placeholder mock
-        items — wiring it to this table (plus a create/edit form here) is the next pass on the Store.
-      </p>
+      <div style={css("display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-6);")}>
+        <h1 style={css("font-family:var(--font-heading);font-size:28px;margin:0;")}>Store</h1>
+        <Link href="/admin/store/new" className="btn btn-primary">New product</Link>
+      </div>
       {products.length === 0 ? (
         <p style={css("font-size:14px;opacity:0.6;")}>No products yet.</p>
       ) : (
@@ -25,7 +25,7 @@ export default async function AdminStorePage() {
           <tbody>
             {products.map((p) => (
               <tr key={p.id}>
-                <td>{p.title}</td>
+                <td><Link href={`/admin/store/${p.id}`}>{p.title}</Link></td>
                 <td>{p.access}</td>
                 <td>{p.price_cents != null ? `${p.currency} ${(p.price_cents / 100).toFixed(2)}` : "—"}</td>
                 <td>{p.status}</td>

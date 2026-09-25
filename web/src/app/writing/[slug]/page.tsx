@@ -11,6 +11,9 @@ import { css } from "@/lib/css";
 import { getArticle } from "@/lib/data";
 import { SITE_URL } from "@/lib/seo";
 import { hasEntitlement, getCurrentUser } from "@/lib/entitlements";
+import { getEngagement } from "@/lib/engagement";
+import LikeButton from "@/components/LikeButton";
+import CommentSection from "@/components/CommentSection";
 
 export const revalidate = 60;
 
@@ -46,10 +49,12 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
   const article = await getArticle(slug);
   if (!article) notFound();
 
-  const [unlocked, user] = await Promise.all([
+  const [unlocked, user, engagement] = await Promise.all([
     article.access !== "paid" ? Promise.resolve(true) : hasEntitlement(article.id),
     getCurrentUser(),
+    article.id ? getEngagement({ contentId: article.id }) : Promise.resolve({ likeCount: 0, likedByMe: false, comments: [] }),
   ]);
+  const currentPath = `/writing/${article.slug}`;
 
   const bodyParagraphs = article.body
     ? article.body.split(/\n{2,}/)
@@ -130,6 +135,20 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
             <p className="card-body">Field notes on erosion and memory along the delta.</p>
           </div>
         </div>
+
+        {article.id && (
+          <>
+            <LikeButton
+              target={{ contentId: article.id }}
+              initialCount={engagement.likeCount}
+              initialLiked={engagement.likedByMe}
+              signedIn={Boolean(user)}
+              currentPath={currentPath}
+            />
+            <div className="hr" style={css("margin:var(--space-6) 0;")} />
+            <CommentSection target={{ contentId: article.id }} comments={engagement.comments} signedIn={Boolean(user)} currentPath={currentPath} />
+          </>
+        )}
       </article>
 
       <div className="hr" />

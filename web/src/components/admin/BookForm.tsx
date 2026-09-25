@@ -4,12 +4,9 @@ import { useState } from "react";
 import { css } from "@/lib/css";
 import { saveBook, deleteBook, type BookInput } from "@/lib/admin/book-actions";
 import ImageUploadField from "@/components/admin/ImageUploadField";
+import { slugify } from "@/lib/slug";
 
 const STATUSES = ["draft", "scheduled", "published", "archived"];
-
-function slugify(s: string) {
-  return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-}
 
 export default function BookForm({ initial }: { initial?: Partial<BookInput> & { id?: string } }) {
   const [values, setValues] = useState<BookInput>({
@@ -62,8 +59,13 @@ export default function BookForm({ initial }: { initial?: Partial<BookInput> & {
         <input className="input" value={values.title} onChange={(e) => { set("title", e.target.value); if (!slugTouched) set("slug", slugify(e.target.value)); }} />
       </div>
       <div className="field" style={css("margin-bottom:var(--space-4);")}>
-        <label>Slug</label>
-        <input className="input" value={values.slug} onChange={(e) => { setSlugTouched(true); set("slug", e.target.value); }} />
+        <label>Slug (this is the URL — /books/your-slug)</label>
+        <input
+          className="input"
+          value={values.slug}
+          onChange={(e) => { setSlugTouched(true); set("slug", e.target.value); }}
+          onBlur={(e) => set("slug", slugify(e.target.value))}
+        />
       </div>
       <ImageUploadField label="Cover image" value={values.cover_image_url} onChange={(url) => set("cover_image_url", url)} />
       <div style={css("display:flex;gap:var(--space-4);margin-bottom:var(--space-4);")}>

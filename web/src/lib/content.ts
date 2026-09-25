@@ -80,6 +80,7 @@ export function getArticle(slug: string): Article | undefined {
 }
 
 export type Book = {
+  id?: string;
   slug: string;
   title: string;
   kind: string;

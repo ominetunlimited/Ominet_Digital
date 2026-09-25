@@ -3,6 +3,9 @@ import Footer from "@/components/Footer";
 import PlaceholderImage from "@/components/PlaceholderImage";
 import { css } from "@/lib/css";
 import { pageMetadata } from "@/lib/seo";
+import { getProducts } from "@/lib/data";
+
+export const revalidate = 60;
 
 export const metadata = pageMetadata(
   "Store",
@@ -18,14 +21,22 @@ const BUY_ICON = (
   </svg>
 );
 
-const products = [
+const fallbackProducts = [
   { title: "The Long Return — Ebook", price: "$9.00", cta: "Buy now", variant: "primary" as const },
   { title: "Field Notes — PDF Collection", price: "$6.00", cta: "Buy now", variant: "primary" as const },
   { title: "Coastline Prints (set of 6)", price: "$40.00", cta: "Buy on Selar", variant: "secondary" as const, external: true },
   { title: "Essay Template Pack", price: "Free", cta: "Download", variant: "secondary" as const },
 ];
 
-export default function StorePage() {
+function formatPrice(cents: number | null, currency: string): string {
+  if (cents == null) return "Free";
+  const symbol = currency === "NGN" ? "₦" : currency === "USD" ? "$" : `${currency} `;
+  return `${symbol}${(cents / 100).toFixed(2)}`;
+}
+
+export default async function StorePage() {
+  const products = await getProducts();
+
   return (
     <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>
       <Nav />
@@ -47,14 +58,43 @@ export default function StorePage() {
 
       <section style={css("padding:var(--space-8) var(--space-6);")}>
         <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--space-6);")}>
-          {products.map((p) => (
-            <div key={p.title}>
-              <div style={css("aspect-ratio:1;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-3);")}><PlaceholderImage label="Product" /></div>
-              <div style={css("font-family:var(--font-heading);font-size:17px;margin-bottom:var(--space-1);")}>{p.title}</div>
-              <div style={css("font-size:13px;opacity:0.55;margin-bottom:var(--space-3);")}>{p.price}</div>
-              <button type="button" className={`btn btn-${p.variant} btn-block`}>{p.cta}{p.external && BUY_ICON}</button>
-            </div>
-          ))}
+          {products.length > 0
+            ? products.map((p) => {
+                const isExternal = p.access === "external" || p.access === "affiliate";
+                const cta = p.externalLabel || (p.access === "affiliate" ? "Get it" : p.access === "external" ? "Buy now" : p.priceCents == null ? "Download" : "Buy now");
+                const variant = isExternal ? "secondary" : "primary";
+                const body = (
+                  <>
+                    <div style={css("aspect-ratio:1;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-3);")}>
+                      {p.imageUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={p.imageUrl} alt="" style={css("width:100%;height:100%;object-fit:cover;")} />
+                      ) : (
+                        <PlaceholderImage label="Product" />
+                      )}
+                    </div>
+                    <div style={css("font-family:var(--font-heading);font-size:17px;margin-bottom:var(--space-1);")}>{p.title}</div>
+                    <div style={css("font-size:13px;opacity:0.55;margin-bottom:var(--space-2);")}>{formatPrice(p.priceCents, p.currency)}</div>
+                    {p.access === "affiliate" && p.affiliateDisclosure && (
+                      <div style={css("font-size:11px;opacity:0.5;margin-bottom:var(--space-2);")}>{p.affiliateDisclosure}</div>
+                    )}
+                    {isExternal && p.externalUrl ? (
+                      <a href={p.externalUrl} target="_blank" rel="noopener noreferrer sponsored" className={`btn btn-${variant} btn-block`}>{cta}{BUY_ICON}</a>
+                    ) : (
+                      <button type="button" className={`btn btn-${variant} btn-block`}>{cta}</button>
+                    )}
+                  </>
+                );
+                return <div key={p.id}>{body}</div>;
+              })
+            : fallbackProducts.map((p) => (
+                <div key={p.title}>
+                  <div style={css("aspect-ratio:1;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-3);")}><PlaceholderImage label="Product" /></div>
+                  <div style={css("font-family:var(--font-heading);font-size:17px;margin-bottom:var(--space-1);")}>{p.title}</div>
+                  <div style={css("font-size:13px;opacity:0.55;margin-bottom:var(--space-3);")}>{p.price}</div>
+                  <button type="button" className={`btn btn-${p.variant} btn-block`}>{p.cta}{p.external && BUY_ICON}</button>
+                </div>
+              ))}
         </div>
       </section>
 

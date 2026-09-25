@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { slugify } from "@/lib/slug";
 
 export type ContentInput = {
   id?: string;
@@ -32,9 +33,21 @@ export async function saveContent(input: ContentInput): Promise<ActionResult> {
   const supabase = await createClient();
   if (!supabase) return { ok: false, error: "Supabase isn't configured yet." };
 
+  const slug = slugify(input.slug || input.title);
+  if (!slug) return { ok: false, error: "Slug can't be empty once normalized — add some letters or numbers." };
+
+  // Fetch the slug this row currently has (before we overwrite it) so we
+  // can revalidate that old public URL too — otherwise it keeps serving a
+  // stale cached page (or a stale draft) after a rename.
+  let previousSlug: string | null = null;
+  if (input.id) {
+    const { data: existing } = await supabase.from("content").select("slug").eq("id", input.id).maybeSingle();
+    previousSlug = existing?.slug ?? null;
+  }
+
   const row: Record<string, unknown> = {
     title: input.title,
-    slug: input.slug,
+    slug,
     type: input.type,
     dek: input.dek || null,
     excerpt: input.excerpt || null,
@@ -77,6 +90,7 @@ export async function saveContent(input: ContentInput): Promise<ActionResult> {
   revalidatePath("/admin/content");
   revalidatePath("/writing");
   revalidatePath(`/writing/${data.slug}`);
+  if (previousSlug && previousSlug !== data.slug) revalidatePath(`/writing/${previousSlug}`);
   redirect(`/admin/content/${data.id}`);
 }
 

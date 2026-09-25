@@ -5,14 +5,11 @@ import { css } from "@/lib/css";
 import { saveContent, deleteContent, type ContentInput } from "@/lib/admin/content-actions";
 import ImageUploadField from "@/components/admin/ImageUploadField";
 import VideoField from "@/components/admin/VideoField";
+import { slugify } from "@/lib/slug";
 
 const TYPES = ["article", "essay", "research", "poem", "fiction", "review", "interview", "note"];
 const ACCESS = ["free", "paid", "members", "preview"];
 const STATUSES = ["draft", "scheduled", "published", "archived"];
-
-function slugify(s: string) {
-  return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-}
 
 export default function ContentForm({ initial }: { initial?: Partial<ContentInput> & { id?: string } }) {
   const [values, setValues] = useState<ContentInput>({
@@ -74,8 +71,13 @@ export default function ContentForm({ initial }: { initial?: Partial<ContentInpu
         />
       </div>
       <div className="field" style={css("margin-bottom:var(--space-4);")}>
-        <label>Slug</label>
-        <input className="input" value={values.slug} onChange={(e) => { setSlugTouched(true); set("slug", e.target.value); }} />
+        <label>Slug (this is the URL — /writing/your-slug)</label>
+        <input
+          className="input"
+          value={values.slug}
+          onChange={(e) => { setSlugTouched(true); set("slug", e.target.value); }}
+          onBlur={(e) => set("slug", slugify(e.target.value))}
+        />
       </div>
       <div style={css("display:flex;gap:var(--space-4);margin-bottom:var(--space-4);")}>
         <div className="field" style={css("flex:1;")}>

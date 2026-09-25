@@ -2,6 +2,7 @@ import { css } from "@/lib/css";
 import ContentForm from "@/components/admin/ContentForm";
 
 export const metadata = { title: "New content — Admin", robots: { index: false, follow: false } };
+export const maxDuration = 60;
 
 export default function NewContentPage() {
   return (

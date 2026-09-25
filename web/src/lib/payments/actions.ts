@@ -9,18 +9,6 @@ import { SITE_URL } from "@/lib/seo";
 
 export type ActionResult = { ok: true; message?: string } | { ok: false; error: string };
 
-/** Sends a Supabase magic-link/OTP email so a reader can sign in without a password. */
-export async function sendLoginLink(email: string, next: string): Promise<ActionResult> {
-  if (!supabaseConfigured) return { ok: false, error: "Sign-in isn't configured yet." };
-  const supabase = await createClient();
-  const { error } = await supabase!.auth.signInWithOtp({
-    email,
-    options: { emailRedirectTo: `${SITE_URL}/auth/callback?next=${encodeURIComponent(next)}` },
-  });
-  if (error) return { ok: false, error: error.message };
-  return { ok: true, message: "Check your email for a sign-in link." };
-}
-
 /**
  * Starts a Paystack checkout for a paid content item. Requires the reader to
  * already be signed in (see sendLoginLink) — the order is tied to their

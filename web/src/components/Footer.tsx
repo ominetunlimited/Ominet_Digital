@@ -39,6 +39,7 @@ export default function Footer() {
             <Link href="/search">Search</Link>
             <a href="#">Newsletter</a>
             <a href="#">Contact</a>
+            <a href="https://selar.com/showlove/ominet" target="_blank" rel="noopener noreferrer">Support on Selar</a>
           </div>
         </div>
       </div>

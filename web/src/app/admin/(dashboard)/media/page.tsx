@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import MediaLibrary from "@/components/admin/MediaLibrary";
 
 export const metadata = { title: "Media Library — Admin", robots: { index: false, follow: false } };
+export const maxDuration = 60;
 
 export default async function AdminMediaPage() {
   const supabase = await createClient();

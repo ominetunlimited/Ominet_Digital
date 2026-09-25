@@ -9,6 +9,8 @@ export const metadata = pageMetadata(
   "/cortexa-office"
 );
 
+const CORTEXA_URL = "https://cortexa-office.vercel.app/";
+
 export default function CortexaOfficePage() {
   return (
     <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>
@@ -21,7 +23,10 @@ export default function CortexaOfficePage() {
       <section style={css("padding:var(--space-8) var(--space-6);")}>
         <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>ECOSYSTEM &middot; OMINET DIGITAL</div>
         <h1 style={css("font-family:var(--font-heading);font-size:clamp(36px,5vw,52px);margin:0 0 var(--space-4);")}>Cortexa Office</h1>
-        <p style={css("font-size:18px;line-height:1.6;opacity:0.75;max-width:56ch;margin:0;")}>An emerging product and office within the Ominet Digital ecosystem. Details are still taking shape.</p>
+        <p style={css("font-size:18px;line-height:1.6;opacity:0.75;max-width:56ch;margin:0 0 var(--space-6);")}>An emerging product and office within the Ominet Digital ecosystem. Details are still taking shape.</p>
+        <a href={CORTEXA_URL} target="_blank" rel="noopener noreferrer">
+          <button type="button" className="btn btn-primary">Visit Cortexa Office &#8599;</button>
+        </a>
       </section>
 
       <div className="hr" />

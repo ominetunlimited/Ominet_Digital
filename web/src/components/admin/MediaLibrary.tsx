@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { css } from "@/lib/css";
 import { uploadMedia, deleteMedia } from "@/lib/admin/media-actions";
+import { compressImage } from "@/lib/compressImage";
 
 type Asset = { id: string; url: string; title: string | null; kind: string; storage_path: string };
 
@@ -17,8 +18,9 @@ export default function MediaLibrary({ initialAssets }: { initialAssets: Asset[]
     if (!file) return;
     setBusy(true);
     setError(null);
+    const compressed = await compressImage(file);
     const formData = new FormData();
-    formData.set("file", file);
+    formData.set("file", compressed);
     const result = await uploadMedia(formData);
     setBusy(false);
     if (!result.ok) {

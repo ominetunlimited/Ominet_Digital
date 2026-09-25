@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { css } from "@/lib/css";
-import { sendLoginLink, startContentCheckout } from "@/lib/payments/actions";
+import { sendLoginLink } from "@/lib/auth-actions";
+import { startContentCheckout } from "@/lib/payments/actions";
 
 export default function PaywallGate({
   contentId,

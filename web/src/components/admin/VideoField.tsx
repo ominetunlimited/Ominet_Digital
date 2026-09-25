@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { css } from "@/lib/css";
 import { fetchVideoThumbnail } from "@/lib/video";
 import { uploadMedia } from "@/lib/admin/media-actions";
+import { compressImage } from "@/lib/compressImage";
 
 export default function VideoField({
   videoUrl,
@@ -38,8 +39,9 @@ export default function VideoField({
     const file = inputRef.current?.files?.[0];
     if (!file) return;
     setBusy(true);
+    const compressed = await compressImage(file);
     const formData = new FormData();
-    formData.set("file", file);
+    formData.set("file", compressed);
     const result = await uploadMedia(formData);
     setBusy(false);
     if (result.ok && result.url) onThumbnailUrlChange(result.url);

@@ -7,6 +7,10 @@ import ShareBar from "@/components/ShareBar";
 import { css } from "@/lib/css";
 import { getBook } from "@/lib/data";
 import { SITE_URL } from "@/lib/seo";
+import { getCurrentUser } from "@/lib/entitlements";
+import { getEngagement } from "@/lib/engagement";
+import LikeButton from "@/components/LikeButton";
+import CommentSection from "@/components/CommentSection";
 
 export const revalidate = 60;
 
@@ -38,6 +42,12 @@ export default async function BookDetailPage({ params }: { params: Promise<{ slu
   const { slug } = await params;
   const book = await getBook(slug);
   if (!book) notFound();
+
+  const currentPath = `/books/${book.slug}`;
+  const [user, engagement] = await Promise.all([
+    getCurrentUser(),
+    book.id ? getEngagement({ bookId: book.id }) : Promise.resolve({ likeCount: 0, likedByMe: false, comments: [] }),
+  ]);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -121,6 +131,21 @@ export default async function BookDetailPage({ params }: { params: Promise<{ slu
 
         <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>RELATED WRITING</div>
         <Link href="/writing/on-writing-as-a-second-country">On Writing as a Second Country &rarr;</Link>
+
+        {book.id && (
+          <>
+            <div className="hr" style={css("margin:var(--space-8) 0 var(--space-6);")} />
+            <LikeButton
+              target={{ bookId: book.id }}
+              initialCount={engagement.likeCount}
+              initialLiked={engagement.likedByMe}
+              signedIn={Boolean(user)}
+              currentPath={currentPath}
+            />
+            <div className="hr" style={css("margin:var(--space-6) 0;")} />
+            <CommentSection target={{ bookId: book.id }} comments={engagement.comments} signedIn={Boolean(user)} currentPath={currentPath} />
+          </>
+        )}
       </section>
 
       <div className="hr" />
