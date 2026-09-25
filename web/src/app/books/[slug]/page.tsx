@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import PlaceholderImage from "@/components/PlaceholderImage";
+import ShareBar from "@/components/ShareBar";
 import { css } from "@/lib/css";
 import { getBook } from "@/lib/data";
 import { SITE_URL } from "@/lib/seo";
@@ -89,6 +90,8 @@ export default async function BookDetailPage({ params }: { params: Promise<{ slu
               )}
             </div>
           )}
+
+          <ShareBar url={`${SITE_URL}/books/${book.slug}`} title={book.title} />
         </div>
       </section>
 

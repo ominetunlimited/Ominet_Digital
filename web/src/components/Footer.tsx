@@ -1,4 +1,5 @@
 import Link from "next/link";
+import SocialLinks from "@/components/SocialLinks";
 
 export default function Footer() {
   return (
@@ -10,7 +11,8 @@ export default function Footer() {
       <div className="omd-footer" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: "var(--space-6)", maxWidth: 1200, margin: "0 auto" }}>
         <div>
           <div style={{ fontFamily: "var(--font-heading)", fontSize: 20, fontWeight: 700, marginBottom: "var(--space-2)", color: "#fff" }}>OMINET DIGITAL</div>
-          <p style={{ fontSize: 13, opacity: 0.75, maxWidth: "36ch", margin: 0 }}>A digital ecosystem for publishing, creativity, professional identity and technology, founded by Omini Nfawa.</p>
+          <p style={{ fontSize: 13, opacity: 0.75, maxWidth: "36ch", margin: "0 0 var(--space-4)" }}>A digital ecosystem for publishing, creativity, professional identity and technology, founded by Omini Nfawa.</p>
+          <SocialLinks />
         </div>
         <div>
           <div style={{ fontSize: 11, letterSpacing: "0.1em", opacity: 0.6, marginBottom: "var(--space-3)" }}>OMINI NFAWA</div>

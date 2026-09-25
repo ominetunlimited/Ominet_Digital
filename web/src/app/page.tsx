@@ -1,10 +1,12 @@
 import Link from "next/link";
+import Image from "next/image";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import PlaceholderImage from "@/components/PlaceholderImage";
 import EcosystemItem from "@/components/EcosystemItem";
 import AdSlot from "@/components/AdSlot";
 import NewsletterForm from "@/components/NewsletterForm";
+import SocialLinks from "@/components/SocialLinks";
 import { css } from "@/lib/css";
 import { pageMetadata, SITE_URL, SITE_NAME } from "@/lib/seo";
 
@@ -40,12 +42,19 @@ export default function Home() {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
               </button>
             </div>
-            <div style={css("display:flex;gap:var(--space-3);margin-top:var(--space-2);opacity:0.8;")}>
-              <span>Facebook</span><span>X</span><span>Instagram</span>
+            <div style={css("margin-top:var(--space-2);opacity:0.85;")}>
+              <SocialLinks />
             </div>
           </div>
-          <div style={css("flex:1 1 380px;position:relative;")}>
-            <PlaceholderImage label="Hero photograph (color)" />
+          <div style={css("flex:1 1 380px;position:relative;min-height:320px;")}>
+            <Image
+              src="/images/hero-home.jpg"
+              alt="A student working at a laptop, taking notes by hand"
+              fill
+              sizes="(max-width: 900px) 100vw, 640px"
+              style={{ objectFit: "cover" }}
+              priority
+            />
           </div>
         </div>
       </section>

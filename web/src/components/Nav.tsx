@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import SocialLinks from "@/components/SocialLinks";
 
 const LINKS: { href: string; label: string; match: string }[] = [
   { href: "/omini-nfawa", label: "OMINI NFAWA", match: "/omini-nfawa" },
@@ -160,8 +161,8 @@ export default function Nav() {
               <button type="button" className="btn btn-primary">Subscribe</button>
               <button type="button" className="btn btn-secondary" onClick={toggleTheme}>Toggle dark mode</button>
             </div>
-            <div style={{ display: "flex", gap: "var(--space-4)", fontSize: 13, fontFamily: "var(--font-body)", opacity: 0.6 }}>
-              <span>Facebook</span><span>X</span><span>LinkedIn</span>
+            <div style={{ opacity: 0.8 }}>
+              <SocialLinks size={18} />
             </div>
           </div>
         </div>

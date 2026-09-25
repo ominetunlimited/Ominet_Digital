@@ -4,10 +4,16 @@ import { useMemo, useState } from "react";
 import { css } from "@/lib/css";
 import { recordSocialShare } from "@/lib/admin/social-actions";
 import { SITE_URL } from "@/lib/seo";
+import { FacebookIcon, XIcon, LinkedInIcon } from "@/components/icons/SocialIcons";
 
 type ContentItem = { id: string; title: string; slug: string; excerpt: string | null };
 
 const PLATFORMS = ["facebook", "x", "linkedin", "whatsapp", "telegram"] as const;
+const PLATFORM_ICONS: Partial<Record<(typeof PLATFORMS)[number], typeof FacebookIcon>> = {
+  facebook: FacebookIcon,
+  x: XIcon,
+  linkedin: LinkedInIcon,
+};
 
 function shareUrlFor(platform: string, url: string, caption: string) {
   const u = encodeURIComponent(url);
@@ -59,9 +65,14 @@ export default function SocialComposer({ items }: { items: ContentItem[] }) {
 
       <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>SHARE (opens a pre-filled post on each platform — no account is directly connected yet)</div>
       <div style={css("display:grid;gap:var(--space-2);")}>
-        {PLATFORMS.map((platform) => (
+        {PLATFORMS.map((platform) => {
+          const Icon = PLATFORM_ICONS[platform];
+          return (
           <div key={platform} style={css("display:flex;gap:var(--space-2);align-items:center;")}>
-            <span style={css("width:90px;text-transform:capitalize;font-size:13px;")}>{platform}</span>
+            <span style={css("width:90px;display:flex;align-items:center;gap:var(--space-2);text-transform:capitalize;font-size:13px;")}>
+              {Icon && <Icon size={14} />}
+              {platform}
+            </span>
             <a
               href={shareUrlFor(platform, url, caption)}
               target="_blank"
@@ -76,7 +87,8 @@ export default function SocialComposer({ items }: { items: ContentItem[] }) {
             </a>
             {savedPlatform === platform && <span style={css("font-size:12px;opacity:0.6;")}>Logged</span>}
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
