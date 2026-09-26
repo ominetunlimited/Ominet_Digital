@@ -36,6 +36,13 @@ export async function fulfillPaystackReference(reference: string) {
 
   await admin.from("orders").update({ status: newStatus, updated_at: new Date().toISOString() }).eq("id", order.id);
 
+  await admin.from("analytics_events").insert({
+    event_type: newStatus === "paid" ? "purchase" : "payment_failed",
+    content_id: order.content_id,
+    product_id: order.product_id,
+    metadata: { amount_cents: order.amount_cents, reference },
+  });
+
   if (newStatus === "paid" && order.user_id) {
     await admin
       .from("entitlements")

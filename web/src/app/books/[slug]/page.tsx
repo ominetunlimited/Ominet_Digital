@@ -5,6 +5,7 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import PlaceholderImage from "@/components/PlaceholderImage";
 import ShareBar from "@/components/ShareBar";
+import TrackedLink from "@/components/TrackedLink";
 import { css } from "@/lib/css";
 import { getBook } from "@/lib/data";
 import { SITE_URL } from "@/lib/seo";
@@ -89,16 +90,17 @@ export default async function BookDetailPage({ params }: { params: Promise<{ slu
               <div style={css("font-size:12px;letter-spacing:0.08em;opacity:0.55;margin-bottom:var(--space-2);")}>WHERE TO BUY</div>
               <div style={css("display:flex;gap:var(--space-3);flex-wrap:wrap;")}>
                 {book.purchaseLinks.map((link, i) => (
-                  <a
+                  <TrackedLink
                     key={link.platform}
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer sponsored"
                     className={i === 0 ? "btn btn-primary" : "btn btn-secondary"}
                     style={i === 0 ? css("background:var(--om-coral);border-color:var(--om-coral);") : undefined}
+                    eventMetadata={{ kind: "purchase_link", platform: link.platform, book_slug: book.slug, book_title: book.title }}
                   >
                     {link.label}{BUY_ICON}
-                  </a>
+                  </TrackedLink>
                 ))}
               </div>
               {book.formats.length > 0 && (

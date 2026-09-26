@@ -15,5 +15,6 @@ export async function subscribeToNewsletter(email: string): Promise<ActionResult
     if (error.code === "23505") return { ok: true, message: "You're already subscribed." };
     return { ok: false, error: error.message };
   }
+  await supabase!.from("analytics_events").insert({ event_type: "signup", metadata: { kind: "newsletter" } });
   return { ok: true, message: "Subscribed — thanks!" };
 }

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { css } from "@/lib/css";
 import { FacebookIcon, XIcon, LinkedInIcon } from "@/components/icons/SocialIcons";
+import { track } from "@/lib/analytics/track-client";
 
 function popup(url: string) {
   window.open(url, "_blank", "noopener,noreferrer,width=600,height=500");
@@ -15,6 +16,7 @@ export default function ShareBar({ url, title }: { url: string; title: string })
   async function nativeShare() {
     try {
       await navigator.share({ title, url });
+      track("share", { platform: "native" });
     } catch {
       // user cancelled — nothing to fall back to
     }
@@ -24,6 +26,7 @@ export default function ShareBar({ url, title }: { url: string; title: string })
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
+      track("share", { platform: "copy_link" });
       setTimeout(() => setCopied(false), 2000);
     } catch {
       // clipboard unavailable — nothing to fall back to
@@ -37,7 +40,7 @@ export default function ShareBar({ url, title }: { url: string; title: string })
         type="button"
         className="btn btn-ghost btn-icon"
         aria-label="Share on Facebook"
-        onClick={() => popup(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`)}
+        onClick={() => { track("share", { platform: "facebook" }); popup(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`); }}
       >
         <FacebookIcon size={14} />
       </button>
@@ -45,7 +48,7 @@ export default function ShareBar({ url, title }: { url: string; title: string })
         type="button"
         className="btn btn-ghost btn-icon"
         aria-label="Share on X"
-        onClick={() => popup(`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`)}
+        onClick={() => { track("share", { platform: "x" }); popup(`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`); }}
       >
         <XIcon size={14} />
       </button>
@@ -53,7 +56,7 @@ export default function ShareBar({ url, title }: { url: string; title: string })
         type="button"
         className="btn btn-ghost btn-icon"
         aria-label="Share on LinkedIn"
-        onClick={() => popup(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`)}
+        onClick={() => { track("share", { platform: "linkedin" }); popup(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`); }}
       >
         <LinkedInIcon size={14} />
       </button>
