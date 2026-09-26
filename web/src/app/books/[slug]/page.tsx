@@ -142,7 +142,6 @@ export default async function BookDetailPage({ params }: { params: Promise<{ slu
               target={{ bookId: book.id }}
               initialCount={engagement.likeCount}
               initialLiked={engagement.likedByMe}
-              signedIn={Boolean(user)}
               currentPath={currentPath}
             />
             <div className="hr" style={css("margin:var(--space-6) 0;")} />

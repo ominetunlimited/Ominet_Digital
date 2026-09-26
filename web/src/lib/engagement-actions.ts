@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { getOrCreateAnonKey } from "@/lib/anon-key";
 
 export type Target = { contentId?: string; bookId?: string };
 export type ActionResult = { ok: true } | { ok: false; error: string };
@@ -16,13 +17,17 @@ export async function toggleLike(target: Target, path: string): Promise<ActionRe
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { ok: false, error: "Sign in first to like this." };
+
+  // Liking never requires an account (or even email verification) — a
+  // signed-in reader's like is still tied to their profile, but a guest
+  // likes anonymously via a cookie-derived key instead.
+  const identity = user ? { column: "user_id", value: user.id } : { column: "anon_key", value: await getOrCreateAnonKey() };
 
   const col = targetColumn(target);
   const { data: existing } = await supabase
     .from("likes")
     .select("id")
-    .eq("user_id", user.id)
+    .eq(identity.column, identity.value)
     .match(col)
     .maybeSingle();
 
@@ -33,7 +38,7 @@ export async function toggleLike(target: Target, path: string): Promise<ActionRe
     return { ok: true, liked: false };
   }
 
-  const { error } = await supabase.from("likes").insert({ user_id: user.id, ...col });
+  const { error } = await supabase.from("likes").insert({ [identity.column]: identity.value, ...col });
   if (error) return { ok: false, error: error.message };
   revalidatePath(path);
   return { ok: true, liked: true };

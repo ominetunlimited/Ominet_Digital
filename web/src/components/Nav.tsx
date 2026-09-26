@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import SocialLinks from "@/components/SocialLinks";
@@ -85,8 +86,9 @@ export default function Nav() {
         .omd-mobile-menu .hr{background:rgba(255,255,255,0.15);}
       `}</style>
       <nav className="nav" style={{ padding: "0 var(--space-6)", borderBottom: "none", position: "relative", background: "var(--om-navy)", color: "#eafaf0" }}>
-        <Link href="/" className="nav-brand" style={{ textDecoration: "none", color: "#fff", fontWeight: 700, letterSpacing: "0.02em" }}>
-          OMINET DIGITAL
+        <Link href="/" className="nav-brand" style={{ textDecoration: "none", color: "#fff", fontWeight: 700, letterSpacing: "0.02em", display: "flex", alignItems: "center", gap: 10 }}>
+          <Image src="/images/ominet-digital-logo.svg" alt="Ominet Digital" width={30} height={23} priority style={{ display: "block" }} />
+          <span>OMINET DIGITAL</span>
         </Link>
         <div className="omd-links">
           {LINKS.map((l) => (
@@ -123,7 +125,10 @@ export default function Nav() {
           style={{ position: "fixed", inset: 0, background: "var(--om-navy)", color: "#eafaf0", zIndex: 1000, padding: "var(--space-6)", paddingTop: "max(var(--space-6), env(safe-area-inset-top))", paddingBottom: "max(var(--space-6), env(safe-area-inset-bottom))", overflowY: "auto" }}
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-8)" }}>
-            <span style={{ fontWeight: 700, letterSpacing: "0.02em", color: "#fff" }}>OMINET DIGITAL</span>
+            <span style={{ display: "flex", alignItems: "center", gap: 10, fontWeight: 700, letterSpacing: "0.02em", color: "#fff" }}>
+              <Image src="/images/ominet-digital-logo.svg" alt="Ominet Digital" width={30} height={23} style={{ display: "block" }} />
+              OMINET DIGITAL
+            </span>
             <button ref={closeButtonRef} type="button" className="btn btn-ghost btn-icon" aria-label="Close menu" onClick={() => setMenuOpen(false)} style={{ color: "#eafaf0" }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
             </button>

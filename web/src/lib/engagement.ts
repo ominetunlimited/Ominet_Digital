@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { supabaseConfigured } from "@/lib/supabase/env";
+import { readAnonKey } from "@/lib/anon-key";
 import type { Target } from "@/lib/engagement-actions";
 
 export type Comment = {
@@ -40,10 +41,15 @@ export async function getEngagement(target: Target): Promise<Engagement> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  const anonKey = user ? undefined : await readAnonKey();
 
   const [likeCountRes, likedRes, commentsRes] = await Promise.all([
     supabase.from("likes").select("id", { count: "exact", head: true }).eq(col, val),
-    user ? supabase.from("likes").select("id").eq(col, val).eq("user_id", user.id).maybeSingle() : Promise.resolve({ data: null }),
+    user
+      ? supabase.from("likes").select("id").eq(col, val).eq("user_id", user.id).maybeSingle()
+      : anonKey
+        ? supabase.from("likes").select("id").eq(col, val).eq("anon_key", anonKey).maybeSingle()
+        : Promise.resolve({ data: null }),
     supabase
       .from("comments")
       .select("id,body,created_at,user_id,profiles(display_name),comment_reactions(user_id)")
