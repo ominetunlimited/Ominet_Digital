@@ -44,7 +44,7 @@ export async function toggleLike(target: Target, path: string): Promise<ActionRe
   return { ok: true, liked: true };
 }
 
-export async function postComment(target: Target, body: string, path: string): Promise<ActionResult> {
+export async function postComment(target: Target, body: string, path: string): Promise<ActionResult & { message?: string }> {
   const supabase = await createClient();
   if (!supabase) return { ok: false, error: "Sign-in isn't configured yet." };
   const trimmed = body.trim();
@@ -56,10 +56,12 @@ export async function postComment(target: Target, body: string, path: string): P
   } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: "Sign in first to comment." };
 
+  // status defaults to 'pending' — every comment is moderated before it's
+  // visible to anyone but its own author (see 0006_comment_moderation.sql).
   const { error } = await supabase.from("comments").insert({ user_id: user.id, body: trimmed, ...targetColumn(target) });
   if (error) return { ok: false, error: error.message };
   revalidatePath(path);
-  return { ok: true };
+  return { ok: true, message: "Posted — awaiting moderation before it's visible to others." };
 }
 
 export async function deleteComment(commentId: string, path: string): Promise<ActionResult> {

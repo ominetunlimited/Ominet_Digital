@@ -3,6 +3,8 @@ import { supabaseConfigured } from "@/lib/supabase/env";
 import { readAnonKey } from "@/lib/anon-key";
 import type { Target } from "@/lib/engagement-actions";
 
+export type CommentStatus = "pending" | "approved" | "rejected" | "hidden" | "deleted";
+
 export type Comment = {
   id: string;
   body: string;
@@ -11,6 +13,7 @@ export type Comment = {
   isOwn: boolean;
   reactionCount: number;
   reactedByMe: boolean;
+  status: CommentStatus;
 };
 
 export type Engagement = {
@@ -52,8 +55,13 @@ export async function getEngagement(target: Target): Promise<Engagement> {
         : Promise.resolve({ data: null }),
     supabase
       .from("comments")
-      .select("id,body,created_at,user_id,profiles(display_name),comment_reactions(user_id)")
+      .select("id,body,created_at,user_id,status,profiles(display_name),comment_reactions(user_id)")
       .eq(col, val)
+      // RLS already restricts rows to approved + the viewer's own +
+      // staff, but 'deleted' is a soft-moderation state that should never
+      // render even to its own author (unlike pending/rejected/hidden,
+      // which give the author feedback on their submission).
+      .neq("status", "deleted")
       .order("created_at", { ascending: false }),
   ]);
 
@@ -62,6 +70,7 @@ export async function getEngagement(target: Target): Promise<Engagement> {
     body: string;
     created_at: string;
     user_id: string;
+    status: CommentStatus;
     profiles: { display_name: string | null } | { display_name: string | null }[] | null;
     comment_reactions: { user_id: string }[] | null;
   };
@@ -77,6 +86,7 @@ export async function getEngagement(target: Target): Promise<Engagement> {
       isOwn: user?.id === c.user_id,
       reactionCount: reactions.length,
       reactedByMe: user ? reactions.some((r) => r.user_id === user.id) : false,
+      status: c.status,
     };
   });
 

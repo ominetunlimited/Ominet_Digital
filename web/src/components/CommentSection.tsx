@@ -44,12 +44,23 @@ function CommentRow({ comment, currentPath }: { comment: Comment; currentPath: s
 
   if (removed) return null;
 
+  const statusLabel =
+    comment.status === "pending" ? "Awaiting moderation — only visible to you" :
+    comment.status === "rejected" ? "Not approved — only visible to you" :
+    comment.status === "hidden" ? "Hidden by moderator — only visible to you" :
+    null;
+
   return (
     <div style={css("padding:var(--space-3) 0;border-bottom:1px solid var(--color-divider);")}>
       <div style={css("display:flex;justify-content:space-between;gap:var(--space-2);font-size:12px;opacity:0.6;margin-bottom:var(--space-1);")}>
         <span style={css("font-weight:700;")}>{comment.authorName}</span>
         <span>{timeAgo(comment.createdAt)}</span>
       </div>
+      {statusLabel && (
+        <div style={css("display:inline-block;font-size:11px;letter-spacing:0.04em;color:var(--om-coral);background:rgba(255,111,97,0.1);border-radius:var(--radius-sm);padding:2px 8px;margin-bottom:var(--space-2);")}>
+          {statusLabel}
+        </div>
+      )}
       <p style={css("font-size:14px;line-height:1.6;margin:0 0 var(--space-2);white-space:pre-wrap;")}>{comment.body}</p>
       <div style={css("display:flex;gap:var(--space-3);align-items:center;")}>
         <button
@@ -86,11 +97,15 @@ export default function CommentSection({
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+
+  const visibleCount = list.filter((c) => c.status === "approved").length;
 
   async function submit() {
     if (!body.trim()) return;
     setBusy(true);
     setError(null);
+    setNotice(null);
     const result = await postComment(target, body, currentPath);
     setBusy(false);
     if (!result.ok) {
@@ -100,16 +115,17 @@ export default function CommentSection({
     // Optimistic local append — the server has the real row; a full refresh
     // (next navigation) will pick up the authoritative list via revalidatePath.
     setList((l) => [
-      { id: `local-${Date.now()}`, body: body.trim(), createdAt: new Date().toISOString(), authorName: "You", isOwn: true, reactionCount: 0, reactedByMe: false },
+      { id: `local-${Date.now()}`, body: body.trim(), createdAt: new Date().toISOString(), authorName: "You", isOwn: true, reactionCount: 0, reactedByMe: false, status: "pending" },
       ...l,
     ]);
+    setNotice(result.message ?? "Posted.");
     setBody("");
   }
 
   return (
     <div>
       <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>
-        {list.length} COMMENT{list.length === 1 ? "" : "S"}
+        {visibleCount} COMMENT{visibleCount === 1 ? "" : "S"}
       </div>
 
       {signedIn ? (
@@ -126,6 +142,7 @@ export default function CommentSection({
             {busy ? "Posting…" : "Post comment"}
           </button>
           {error && <p style={css("font-size:12px;color:var(--om-coral);margin-top:var(--space-2);")}>{error}</p>}
+          {notice && !error && <p style={css("font-size:12px;opacity:0.6;margin-top:var(--space-2);")}>{notice}</p>}
         </div>
       ) : (
         <div style={css("margin-bottom:var(--space-4);")}>
