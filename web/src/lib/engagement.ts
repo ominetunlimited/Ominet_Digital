@@ -55,7 +55,7 @@ export async function getEngagement(target: Target): Promise<Engagement> {
         : Promise.resolve({ data: null }),
     supabase
       .from("comments")
-      .select("id,body,created_at,user_id,status,profiles(display_name),comment_reactions(user_id)")
+      .select("id,body,created_at,user_id,status,profiles!comments_user_id_fkey(display_name),comment_reactions(user_id)")
       .eq(col, val)
       // RLS already restricts rows to approved + the viewer's own +
       // staff, but 'deleted' is a soft-moderation state that should never

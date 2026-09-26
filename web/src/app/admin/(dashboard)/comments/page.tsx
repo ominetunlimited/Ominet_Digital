@@ -46,14 +46,14 @@ export default async function AdminCommentsPage({
   const supabase = await createClient();
   let query = supabase
     ?.from("comments")
-    .select("id,body,created_at,status,profiles(display_name),content(slug,title),books(slug,title)")
+    .select("id,body,created_at,status,profiles!comments_user_id_fkey(display_name),content(slug,title),books(slug,title)")
     .order("created_at", { ascending: false })
     .limit(200);
 
   if (status !== "all") query = query?.eq("status", status);
   if (q) query = query?.ilike("body", `%${q}%`);
 
-  const { data } = query ? await query : { data: [] };
+  const { data, error: loadError } = query ? await query : { data: [], error: null };
   const rows = (data ?? []) as unknown as Row[];
 
   const moderationRows: ModerationRow[] = rows.map((r) => {
@@ -102,7 +102,9 @@ export default async function AdminCommentsPage({
         <button type="submit" className="btn btn-secondary">Search</button>
       </form>
 
-      {moderationRows.length === 0 ? (
+      {loadError ? (
+        <p style={css("font-size:14px;color:var(--om-coral);")}>Couldn&apos;t load comments: {loadError.message}</p>
+      ) : moderationRows.length === 0 ? (
         <p style={css("font-size:14px;opacity:0.6;")}>No comments in this view.</p>
       ) : (
         <table className="table" style={css("width:100%;")}>
