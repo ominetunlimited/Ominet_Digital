@@ -1,5 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { paystackVerifyTransaction } from "./paystack";
+import { queueAlert, adminLink } from "@/lib/notify/telegram";
+import { formatMoney } from "@/lib/money";
 
 /**
  * Source of truth for turning a Paystack reference into a paid order +
@@ -42,6 +44,22 @@ export async function fulfillPaystackReference(reference: string) {
     product_id: order.product_id,
     metadata: { amount_cents: order.amount_cents, reference },
   });
+
+  // Amount + short reference only — never an email, card detail or the raw
+  // Paystack payload. Deduped per reference+outcome, so the webhook and the
+  // callback page both running can't send it twice. "Abandoned" isn't worth
+  // an alert; only an actual failure is.
+  if (newStatus === "paid") {
+    queueAlert("purchase", "New purchase", [`Amount: ${formatMoney(order.amount_cents, verified.currency)}`, `Ref: ${reference.slice(-8)}`], {
+      dedupeKey: `payment:${reference}:paid`,
+      link: adminLink("/admin/analytics"),
+    });
+  } else if (verified.status === "failed") {
+    queueAlert("payment_failed", "Payment failed", [`Amount: ${formatMoney(order.amount_cents, verified.currency)}`, `Ref: ${reference.slice(-8)}`], {
+      dedupeKey: `payment:${reference}:failed`,
+      link: adminLink("/admin/analytics"),
+    });
+  }
 
   if (newStatus === "paid") {
     // Check-then-insert rather than upsert+onConflict: the unique indexes

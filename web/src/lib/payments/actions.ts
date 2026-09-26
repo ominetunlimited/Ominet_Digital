@@ -7,6 +7,7 @@ import { supabaseConfigured } from "@/lib/supabase/env";
 import { paystackInitCheckout, paystackConfigured } from "./paystack";
 import { SITE_URL } from "@/lib/seo";
 import { getOrCreateAnonKey } from "@/lib/anon-key";
+import { queueAlert } from "@/lib/notify/telegram";
 
 export type ActionResult = { ok: true; message?: string } | { ok: false; error: string };
 
@@ -80,6 +81,11 @@ async function startCheckout(
     }
     await supabase!.from("orders").update({ status: "failed", updated_at: new Date().toISOString() }).eq("id", order.id);
     const message = err instanceof Error ? err.message : "Could not reach Paystack. Try again.";
+    // A visitor just failed to even reach checkout (e.g. a currency the live
+    // account can't take) — that's worth knowing about straight away.
+    queueAlert("payment_failed", "Checkout could not start", [`Item: ${item.title}`, `Reason: ${message}`.slice(0, 200)], {
+      dedupeKey: `init:${reference}`,
+    });
     return { ok: false, error: message };
   }
 }

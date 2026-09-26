@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getOrCreateAnonKey } from "@/lib/anon-key";
+import { queueAlert, adminLink } from "@/lib/notify/telegram";
 
 export type Target = { contentId?: string; bookId?: string };
 export type ActionResult = { ok: true } | { ok: false; error: string };
@@ -61,6 +62,7 @@ export async function postComment(target: Target, body: string, path: string): P
   const { error } = await supabase.from("comments").insert({ user_id: user.id, body: trimmed, ...targetColumn(target) });
   if (error) return { ok: false, error: error.message };
   revalidatePath(path);
+  queueAlert("comment", "New comment awaiting moderation", [`On: ${path}`], { link: adminLink("/admin/comments") });
   return { ok: true, message: "Posted — awaiting moderation before it's visible to others." };
 }
 

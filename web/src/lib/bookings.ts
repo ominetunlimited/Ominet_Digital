@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getOrCreateAnonKey } from "@/lib/anon-key";
+import { queueAlert, adminLink } from "@/lib/notify/telegram";
 
 export type BookingInput = {
   serviceId: string;
@@ -100,5 +101,14 @@ export async function submitBooking(input: BookingInput): Promise<BookingResult>
   await admin.from("analytics_events").insert({ event_type: "booking", metadata: { service_id: service.id } }).then(() => {}, () => {});
 
   revalidatePath("/admin/bookings");
+
+  // Never part of the booking's success: a Telegram problem must not fail this.
+  queueAlert(
+    "booking",
+    "New service booking",
+    [`Service: ${service.title}`, `From: ${name}`, preferredDate ? `Preferred date: ${preferredDate}` : "No date given"],
+    { dedupeKey: `booking:${data.id}`, link: adminLink("/admin/bookings") }
+  );
+
   return { ok: true, reference: (data.id as string).slice(0, 8).toUpperCase() };
 }

@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { supabaseConfigured } from "@/lib/supabase/env";
+import { queueAlert, adminLink } from "@/lib/notify/telegram";
 
 export type ActionResult = { ok: true; message: string } | { ok: false; error: string };
 
@@ -16,5 +17,6 @@ export async function subscribeToNewsletter(email: string): Promise<ActionResult
     return { ok: false, error: error.message };
   }
   await supabase!.from("analytics_events").insert({ event_type: "signup", metadata: { kind: "newsletter" } });
+  queueAlert("newsletter", "New newsletter subscriber", [], { link: adminLink("/admin/newsletter") });
   return { ok: true, message: "Subscribed — thanks!" };
 }
