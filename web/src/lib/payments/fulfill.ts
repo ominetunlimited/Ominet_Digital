@@ -17,7 +17,7 @@ export async function fulfillPaystackReference(reference: string) {
 
   const { data: order } = await admin
     .from("orders")
-    .select("id,status,content_id,product_id,user_id,guest_key,email,amount_cents")
+    .select("*")
     .eq("provider_reference", reference)
     .maybeSingle();
   if (!order) throw new Error(`No order found for reference ${reference}`);
@@ -42,7 +42,7 @@ export async function fulfillPaystackReference(reference: string) {
     event_type: newStatus === "paid" ? "purchase" : "payment_failed",
     content_id: order.content_id,
     product_id: order.product_id,
-    metadata: { amount_cents: order.amount_cents, reference },
+    metadata: { amount_cents: order.amount_cents, reference, ...(order.book_id ? { book_id: order.book_id } : {}) },
   });
 
   // Amount + short reference only — never an email, card detail or the raw
@@ -70,8 +70,8 @@ export async function fulfillPaystackReference(reference: string) {
     const identity = order.user_id
       ? { column: "user_id" as const, value: order.user_id }
       : { column: "guest_key" as const, value: order.guest_key };
-    const targetColumn = order.content_id ? ("content_id" as const) : ("product_id" as const);
-    const targetValue = order.content_id ?? order.product_id;
+    const targetColumn = order.book_id ? ("book_id" as const) : order.content_id ? ("content_id" as const) : ("product_id" as const);
+    const targetValue = order.book_id ?? order.content_id ?? order.product_id;
 
     if (identity.value && targetValue) {
       const { data: existing } = await admin

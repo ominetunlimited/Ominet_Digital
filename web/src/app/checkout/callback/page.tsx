@@ -3,6 +3,9 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import { css } from "@/lib/css";
 import { fulfillPaystackReference } from "@/lib/payments/fulfill";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { getBookDelivery, type BookDelivery } from "@/lib/books/delivery";
+import BookAccess from "@/components/BookAccess";
 
 export default async function CheckoutCallbackPage({
   searchParams,
@@ -15,12 +18,26 @@ export default async function CheckoutCallbackPage({
   let success = false;
   let message = "We couldn't find that transaction.";
   let contentSlug: string | undefined;
+  let book: { id: string; slug: string; title: string } | undefined;
+  let delivery: BookDelivery | null = null;
 
   if (reference) {
     try {
       const result = await fulfillPaystackReference(reference);
       success = result.status === "paid" || result.alreadyFulfilled === true;
       contentSlug = undefined;
+      // A paid order for a book: show its downloads right here. The reference
+      // in the URL is the buyer's receipt — verified as paid above, and
+      // unguessable — so this page also works from another device.
+      const bookId = (result.order as { book_id?: string | null }).book_id;
+      if (success && bookId) {
+        const admin = createAdminClient();
+        const { data } = admin ? await admin.from("books").select("id,slug,title").eq("id", bookId).maybeSingle() : { data: null };
+        if (data) {
+          book = data;
+          delivery = await getBookDelivery(data.id);
+        }
+      }
       message = success
         ? "Payment confirmed — you now have full access."
         : "The payment could not be completed. No charge was made.";
@@ -40,9 +57,23 @@ export default async function CheckoutCallbackPage({
           {success ? "You're all set." : "Something went wrong."}
         </h1>
         <p style={css("font-size:15px;opacity:0.65;margin:0 0 var(--space-4);")}>{message}</p>
-        <Link href={contentSlug ? `/writing/${contentSlug}` : "/writing"}>
-          <button type="button" className="btn btn-primary">Back to Writing</button>
-        </Link>
+        {book && delivery && (
+          <div style={css("max-width:520px;margin:0 auto var(--space-6);text-align:left;")}>
+            <BookAccess bookId={book.id} delivery={{ ...delivery, salesMode: "direct_sale" }} owned signedIn={false} receiptRef={reference} />
+            <p style={css("font-size:12px;opacity:0.6;")}>
+              Bookmark this page — it is your receipt, and you can come back to it to download &ldquo;{book.title}&rdquo; again.
+            </p>
+          </div>
+        )}
+        {book ? (
+          <Link href={`/books/${book.slug}`}>
+            <button type="button" className="btn btn-secondary">Back to the book</button>
+          </Link>
+        ) : (
+          <Link href={contentSlug ? `/writing/${contentSlug}` : "/writing"}>
+            <button type="button" className="btn btn-primary">Back to Writing</button>
+          </Link>
+        )}
       </section>
       <div className="hr" />
       <Footer />

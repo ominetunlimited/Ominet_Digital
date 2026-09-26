@@ -2,16 +2,18 @@
 
 import { useState } from "react";
 import { css } from "@/lib/css";
-import { startProductCheckout } from "@/lib/payments/actions";
+import { startProductCheckout, startBookCheckout } from "@/lib/payments/actions";
 import { useAsyncAction } from "@/lib/useAsyncAction";
 
 export default function ProductBuyButton({
   productId,
+  bookId,
   label,
   variant,
   signedIn,
 }: {
-  productId: string;
+  productId?: string;
+  bookId?: string;
   label: string;
   variant: "primary" | "secondary";
   signedIn: boolean;
@@ -28,7 +30,7 @@ export default function ProductBuyButton({
       return;
     }
     if (!signedIn && !email) return;
-    await run(() => startProductCheckout(productId, email || undefined));
+    await run(() => (bookId ? startBookCheckout(bookId, email || undefined) : startProductCheckout(productId!, email || undefined)));
   }
 
   return (

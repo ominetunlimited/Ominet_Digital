@@ -9,7 +9,9 @@ import TrackedLink from "@/components/TrackedLink";
 import { css } from "@/lib/css";
 import { getBook } from "@/lib/data";
 import { SITE_URL } from "@/lib/seo";
-import { getCurrentUser } from "@/lib/entitlements";
+import { getCurrentUser, hasBookEntitlement } from "@/lib/entitlements";
+import { getBookDelivery } from "@/lib/books/delivery";
+import BookAccess from "@/components/BookAccess";
 import { truncate } from "@/lib/text";
 import { getEngagement } from "@/lib/engagement";
 import LikeButton from "@/components/LikeButton";
@@ -48,9 +50,11 @@ export default async function BookDetailPage({ params }: { params: Promise<{ slu
   if (!book) notFound();
 
   const currentPath = `/books/${book.slug}`;
-  const [user, engagement] = await Promise.all([
+  const [user, engagement, delivery, owned] = await Promise.all([
     getCurrentUser(),
     book.id ? getEngagement({ bookId: book.id }) : Promise.resolve({ likeCount: 0, likedByMe: false, comments: [] }),
+    book.id ? getBookDelivery(book.id) : Promise.resolve(null),
+    hasBookEntitlement(book.id),
   ]);
 
   const jsonLd = {
@@ -86,9 +90,11 @@ export default async function BookDetailPage({ params }: { params: Promise<{ slu
           <div style={css("font-size:15px;opacity:0.65;margin-bottom:var(--space-4);")}>Omini Nfawa &middot; {book.year}{book.pages ? ` · ${book.pages}` : ""}</div>
           <p style={css("font-size:17px;line-height:1.7;opacity:0.8;max-width:56ch;margin:0 0 var(--space-4);")}>{truncate(book.excerpt, 320)}</p>
 
+          {book.id && delivery && <BookAccess bookId={book.id} delivery={delivery} owned={owned} signedIn={Boolean(user)} />}
+
           {book.purchaseLinks.length > 0 && (
             <div style={css("margin-bottom:var(--space-6);")}>
-              <div style={css("font-size:12px;letter-spacing:0.08em;opacity:0.55;margin-bottom:var(--space-2);")}>WHERE TO BUY</div>
+              <div style={css("font-size:12px;letter-spacing:0.08em;opacity:0.55;margin-bottom:var(--space-2);")}>{delivery ? "ALSO AVAILABLE FROM" : "WHERE TO BUY"}</div>
               <div style={css("display:flex;gap:var(--space-3);flex-wrap:wrap;")}>
                 {book.purchaseLinks.map((link, i) => (
                   <TrackedLink

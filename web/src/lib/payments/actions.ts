@@ -3,6 +3,7 @@
 import { randomUUID } from "node:crypto";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { supabaseConfigured } from "@/lib/supabase/env";
 import { paystackInitCheckout, paystackConfigured } from "./paystack";
 import { SITE_URL } from "@/lib/seo";
@@ -26,15 +27,19 @@ type LineItem = { id: string; title: string; slug: string; price_cents: number |
  * 'failed' instead of leaving it stuck at 'pending' forever.
  */
 async function startCheckout(
-  target: { contentId?: string; productId?: string },
+  target: { contentId?: string; productId?: string; bookId?: string },
   item: LineItem,
   guestEmail: string | undefined,
   callbackPath: string
 ): Promise<ActionResult> {
-  const supabase = await createClient();
+  const authClient = await createClient();
   const {
     data: { user },
-  } = await supabase!.auth.getUser();
+  } = await authClient!.auth.getUser();
+  // Orders hold buyer emails, so guests can't write or read them through the
+  // public API at all — the server writes them here, with values it chose.
+  const supabase = createAdminClient();
+  if (!supabase) return { ok: false, error: "Payments aren't configured yet." };
 
   const email = user?.email || guestEmail?.trim();
   if (!email) return { ok: false, error: "Enter your email to continue." };
@@ -45,7 +50,7 @@ async function startCheckout(
   const guestKey = user ? null : await getOrCreateAnonKey();
   const currency = item.currency || "NGN";
 
-  const { data: order, error: orderError } = await supabase!
+  const { data: order, error: orderError } = await supabase
     .from("orders")
     .insert({
       user_id: user?.id ?? null,
@@ -53,6 +58,7 @@ async function startCheckout(
       email,
       content_id: target.contentId ?? null,
       product_id: target.productId ?? null,
+      ...(target.bookId ? { book_id: target.bookId } : {}),
       amount_cents: item.price_cents,
       currency,
       provider: "paystack",
@@ -70,7 +76,7 @@ async function startCheckout(
       currency,
       reference,
       callbackUrl: `${SITE_URL}${callbackPath}`,
-      metadata: { content_id: target.contentId, product_id: target.productId, slug: item.slug, title: item.title },
+      metadata: { content_id: target.contentId, product_id: target.productId, book_id: target.bookId, slug: item.slug, title: item.title },
     });
     redirect(checkout.authorizationUrl);
   } catch (err) {
@@ -79,7 +85,7 @@ async function startCheckout(
     if (typeof err === "object" && err !== null && "digest" in err && typeof (err as { digest?: unknown }).digest === "string" && (err as { digest: string }).digest.startsWith("NEXT_REDIRECT")) {
       throw err;
     }
-    await supabase!.from("orders").update({ status: "failed", updated_at: new Date().toISOString() }).eq("id", order.id);
+    await supabase.from("orders").update({ status: "failed", updated_at: new Date().toISOString() }).eq("id", order.id);
     const message = err instanceof Error ? err.message : "Could not reach Paystack. Try again.";
     // A visitor just failed to even reach checkout (e.g. a currency the live
     // account can't take) — that's worth knowing about straight away.
@@ -112,6 +118,31 @@ export async function startContentCheckout(contentId: string, guestEmail?: strin
   if (!content) return { ok: false, error: "This item isn't priced yet." };
 
   return startCheckout({ contentId: content.id }, content, guestEmail, "/checkout/callback");
+}
+
+/**
+ * Buy a book sold directly from this site. Everything that matters — that the
+ * book is published, sold here, priced, and actually has a file to deliver —
+ * is decided from the database, never from what the browser sends.
+ */
+export async function startBookCheckout(bookId: string, guestEmail?: string): Promise<ActionResult> {
+  if (!supabaseConfigured) return { ok: false, error: "Payments aren't configured yet." };
+  if (!paystackConfigured) return { ok: false, error: "Paystack isn't configured yet — set PAYSTACK_SECRET_KEY." };
+
+  const admin = createAdminClient();
+  if (!admin) return { ok: false, error: "Payments aren't configured yet." };
+  const { data: book } = await admin
+    .from("books")
+    .select("id,title,slug,price_cents,currency,sales_mode,status")
+    .eq("id", bookId)
+    .maybeSingle();
+  if (!book || book.status !== "published" || book.sales_mode !== "direct_sale" || !book.price_cents || book.price_cents <= 0) {
+    return { ok: false, error: "This book isn't available to buy here." };
+  }
+  const { count } = await admin.from("book_files").select("id", { count: "exact", head: true }).eq("book_id", book.id);
+  if (!count) return { ok: false, error: "This book has no file to deliver yet, so it can't be bought." };
+
+  return startCheckout({ bookId: book.id }, book, guestEmail, "/checkout/callback");
 }
 
 /** Same as startContentCheckout, for Store products (books/downloads/etc). */

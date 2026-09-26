@@ -103,8 +103,9 @@ export default function BookFilesPanel({
     <div style={css("margin-bottom:var(--space-6);")}>
       <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>BOOK FILES</div>
       <p style={css("font-size:13px;opacity:0.7;margin:0 0 var(--space-3);")}>
-        PDF, EPUB, MOBI or DOCX, up to 70 MB each. One file per format; uploading again replaces it. Files are stored privately.
-        Delivering them to readers (free download or after payment) is not switched on yet — for now you can upload, check and test-download them here.
+        PDF, EPUB, MOBI or DOCX, up to 70 MB each. One file per format; uploading again replaces it. Files are stored privately and are never
+        reachable by a public link. Readers get them from the book page — free if the book is set to Free download, or after a verified
+        Paystack payment if it is sold here — through links that expire after 60 seconds. Nothing is offered while the book is a draft.
       </p>
 
       <div style={css("display:grid;gap:var(--space-3);margin-bottom:var(--space-3);")}>
