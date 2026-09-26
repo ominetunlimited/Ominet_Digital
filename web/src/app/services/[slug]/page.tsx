@@ -5,14 +5,13 @@ import Footer from "@/components/Footer";
 import PlaceholderImage from "@/components/PlaceholderImage";
 import ShareBar from "@/components/ShareBar";
 import TrackedLink from "@/components/TrackedLink";
+import BookingForm from "@/components/BookingForm";
 import { css } from "@/lib/css";
 import { getService } from "@/lib/data";
 import { SITE_URL } from "@/lib/seo";
 import { formatMoney } from "@/lib/money";
 
 export const revalidate = 60;
-
-const SUPPORT_EMAIL = "ominetmedia@gmail.com";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -43,7 +42,6 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
   if (!service) notFound();
 
   const ctaLabel = service.ctaLabel || (service.pricingMode === "quote" ? "Request a quote" : "Book this service");
-  const mailtoHref = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(`Enquiry: ${service.title}`)}&body=${encodeURIComponent(`Hi Ominet Digital,\n\nI'd like to enquire about "${service.title}".\n\n`)}`;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -91,9 +89,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
                 {ctaLabel}
               </TrackedLink>
             ) : (
-              <TrackedLink href={mailtoHref} className="btn btn-primary" eventMetadata={{ kind: "service_enquiry_email", service_slug: service.slug }}>
-                {ctaLabel}
-              </TrackedLink>
+              <BookingForm serviceId={service.id} serviceTitle={service.title} ctaLabel={ctaLabel} />
             )
           ) : (
             <p style={css("font-size:13px;opacity:0.5;")}>Not currently bookable.</p>
