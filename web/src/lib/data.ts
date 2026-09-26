@@ -120,13 +120,19 @@ type BookRow = {
   excerpt: string | null;
   cover_image_url?: string | null;
   author_note?: string | null;
+  author?: string | null;
+  og_image_url?: string | null;
+  seo_title?: string | null;
+  seo_description?: string | null;
   formats: string[] | null;
   status: string;
   featured?: boolean | null;
   book_purchase_links: { label: string; platform: string; url: string }[];
 };
 
-const BOOK_SELECT = "id,slug,title,kind,year,pages,excerpt,cover_image_url,author_note,formats,status,featured,book_purchase_links(label,platform,url)";
+const BOOK_SELECT_MID = "id,slug,title,kind,year,pages,excerpt,cover_image_url,author_note,formats,status,featured,book_purchase_links(label,platform,url)";
+// 0012_book_files.sql adds author + og_image_url; seo_* already existed.
+const BOOK_SELECT = "id,slug,title,kind,year,pages,excerpt,cover_image_url,author_note,author,og_image_url,seo_title,seo_description,formats,status,featured,book_purchase_links(label,platform,url)";
 // Fallback for before 0009_author_note.sql has been run — same "retry
 // without the missing column" pattern used for video_url/video_thumbnail_url
 // in content-actions.ts, so a pending migration can't take the whole Books
@@ -144,6 +150,10 @@ function mapBook(row: BookRow): Book {
     excerpt: row.excerpt ?? "",
     coverImageUrl: row.cover_image_url ?? undefined,
     authorNote: row.author_note ?? undefined,
+    author: row.author ?? undefined,
+    ogImageUrl: row.og_image_url ?? undefined,
+    seoTitle: row.seo_title ?? undefined,
+    seoDescription: row.seo_description ?? undefined,
     purchaseLinks: (row.book_purchase_links ?? []).map((l) => ({ label: l.label, platform: l.platform, url: l.url })),
     formats: row.formats ?? [],
     upcoming: row.status !== "published",
@@ -157,8 +167,9 @@ export async function getBooks(): Promise<{ published: Book[]; upcoming: Book[] 
   let data: unknown;
   let error: { code?: string } | null;
   ({ data, error } = await supabase!.from("books").select(BOOK_SELECT).order("year", { ascending: false }));
-  if (error?.code === "42703" || error?.code === "PGRST204") {
-    ({ data, error } = await supabase!.from("books").select(BOOK_SELECT_SAFE).order("year", { ascending: false }));
+  for (const sel of [BOOK_SELECT_MID, BOOK_SELECT_SAFE]) {
+    if (error?.code !== "42703" && error?.code !== "PGRST204") break;
+    ({ data, error } = await supabase!.from("books").select(sel).order("year", { ascending: false }));
   }
   if (error || !data) return { published: mockBooks, upcoming: mockUpcomingBooks };
   const mapped = (data as unknown as BookRow[]).map(mapBook);
@@ -180,8 +191,9 @@ export async function getBook(slug: string): Promise<Book | undefined> {
   let data: unknown;
   let error: { code?: string } | null;
   ({ data, error } = await supabase!.from("books").select(BOOK_SELECT).eq("slug", slug).maybeSingle());
-  if (error?.code === "42703" || error?.code === "PGRST204") {
-    ({ data, error } = await supabase!.from("books").select(BOOK_SELECT_SAFE).eq("slug", slug).maybeSingle());
+  for (const sel of [BOOK_SELECT_MID, BOOK_SELECT_SAFE]) {
+    if (error?.code !== "42703" && error?.code !== "PGRST204") break;
+    ({ data, error } = await supabase!.from("books").select(sel).eq("slug", slug).maybeSingle());
   }
   if (error || !data) return undefined;
   return mapBook(data as unknown as BookRow);

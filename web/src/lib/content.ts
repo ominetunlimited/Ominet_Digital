@@ -89,6 +89,10 @@ export type Book = {
   excerpt: string;
   coverImageUrl?: string;
   authorNote?: string;
+  author?: string;
+  ogImageUrl?: string;
+  seoTitle?: string;
+  seoDescription?: string;
   purchaseLinks: { label: string; platform: string; url: string }[];
   formats: string[];
   upcoming?: boolean;

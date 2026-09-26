@@ -8,21 +8,42 @@ import { slugify } from "@/lib/slug";
 import { useAdminAction } from "@/lib/admin/useAdminAction";
 import SaveButton from "@/components/admin/SaveButton";
 import { useRouter } from "next/navigation";
+import MoneyInput from "@/components/admin/MoneyInput";
+import BookFilesPanel from "@/components/admin/BookFilesPanel";
+import type { BookFileRecord } from "@/lib/admin/book-file-actions";
 
 const STATUSES = ["draft", "scheduled", "published", "archived"];
 
-export default function BookForm({ initial }: { initial?: Partial<BookInput> & { id?: string } }) {
+export default function BookForm({
+  initial,
+  files = [],
+}: {
+  initial?: Partial<BookInput> & { id?: string };
+  files?: BookFileRecord[];
+}) {
   const [values, setValues] = useState<BookInput>({
     id: initial?.id,
     title: initial?.title ?? "",
     slug: initial?.slug ?? "",
     kind: initial?.kind ?? "Novel",
     year: initial?.year ?? "",
-    pages: initial?.pages ?? "",
+    author: initial?.author ?? "",
+    publisher: initial?.publisher ?? "",
+    isbn: initial?.isbn ?? "",
+    category: initial?.category ?? "",
+    tags: initial?.tags ?? [],
+    publication_date: initial?.publication_date ?? "",
+    page_count: initial?.page_count ?? null,
+    page_count_source: initial?.page_count_source ?? "",
     excerpt: initial?.excerpt ?? "",
     description: initial?.description ?? "",
     author_note: initial?.author_note ?? "",
     cover_image_url: initial?.cover_image_url ?? "",
+    og_image_url: initial?.og_image_url ?? "",
+    seo_title: initial?.seo_title ?? "",
+    seo_description: initial?.seo_description ?? "",
+    sales_mode: initial?.sales_mode ?? "external_only",
+    price_cents: initial?.price_cents ?? null,
     formats: initial?.formats ?? [],
     status: initial?.status ?? "draft",
     featured: initial?.featured ?? false,
@@ -86,6 +107,74 @@ export default function BookForm({ initial }: { initial?: Partial<BookInput> & {
           </select>
         </div>
       </div>
+      <div style={css("display:flex;gap:var(--space-4);margin-bottom:var(--space-4);flex-wrap:wrap;")}>
+        <div className="field" style={css("flex:1;min-width:160px;")}>
+          <label>Author</label>
+          <input className="input" value={values.author} onChange={(e) => set("author", e.target.value)} />
+        </div>
+        <div className="field" style={css("flex:1;min-width:160px;")}>
+          <label>Publisher</label>
+          <input className="input" value={values.publisher} onChange={(e) => set("publisher", e.target.value)} />
+        </div>
+      </div>
+      <div style={css("display:flex;gap:var(--space-4);margin-bottom:var(--space-4);flex-wrap:wrap;")}>
+        <div className="field" style={css("flex:1;min-width:160px;")}>
+          <label>ISBN</label>
+          <input className="input" value={values.isbn} onChange={(e) => set("isbn", e.target.value)} />
+        </div>
+        <div className="field" style={css("flex:1;min-width:160px;")}>
+          <label>Publication date</label>
+          <input className="input" type="date" value={values.publication_date} onChange={(e) => set("publication_date", e.target.value)} />
+        </div>
+      </div>
+      <div style={css("display:flex;gap:var(--space-4);margin-bottom:var(--space-4);flex-wrap:wrap;")}>
+        <div className="field" style={css("flex:1;min-width:160px;")}>
+          <label>Category</label>
+          <input className="input" value={values.category} onChange={(e) => set("category", e.target.value)} />
+        </div>
+        <div className="field" style={css("flex:1;min-width:160px;")}>
+          <label>Tags (comma-separated)</label>
+          <input
+            className="input"
+            value={values.tags.join(", ")}
+            onChange={(e) => set("tags", e.target.value.split(",").map((s) => s.trim()).filter(Boolean))}
+          />
+        </div>
+      </div>
+      <div className="field" style={css("margin-bottom:var(--space-4);max-width:240px;")}>
+        <label>
+          Page count{values.page_count_source && values.page_count_source !== "manual" ? ` (read from the ${values.page_count_source.toUpperCase()} file)` : values.page_count ? " (entered by hand)" : " (leave blank if unknown)"}
+        </label>
+        <input
+          className="input"
+          inputMode="numeric"
+          value={values.page_count ?? ""}
+          onChange={(e) => {
+            const n = parseInt(e.target.value.replace(/\D/g, ""), 10);
+            setValues((v) => ({ ...v, page_count: Number.isFinite(n) && n > 0 ? n : null, page_count_source: "manual" }));
+          }}
+        />
+      </div>
+
+      <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>PRICE &amp; SALE</div>
+      <div className="field" style={css("margin-bottom:var(--space-3);")}>
+        <label>How is this book made available?</label>
+        <select className="input" value={values.sales_mode} onChange={(e) => set("sales_mode", e.target.value)}>
+          <option value="external_only">External links only (sold elsewhere)</option>
+          <option value="free_download">Free download from this site (price 0)</option>
+          <option value="direct_sale">Sold here through Paystack</option>
+        </select>
+      </div>
+      {values.sales_mode === "direct_sale" && (
+        <div className="field" style={css("margin-bottom:var(--space-3);max-width:240px;")}>
+          <label>Price (Naira)</label>
+          <MoneyInput valueMinor={values.price_cents} currency="NGN" onChange={(m) => set("price_cents", m)} />
+        </div>
+      )}
+      <p style={css("font-size:12px;opacity:0.6;margin:0 0 var(--space-6);")}>
+        External retailer links below work in every mode and are independent of this choice. A click on one is never counted as a sale here.
+      </p>
+
       <div className="field" style={css("margin-bottom:var(--space-4);")}>
         <label>Excerpt (shown as a short teaser everywhere; the full text also shows on the book page if it&apos;s more than a sentence or two)</label>
         <textarea className="input" rows={3} value={values.excerpt} onChange={(e) => set("excerpt", e.target.value)} />
@@ -136,6 +225,27 @@ export default function BookForm({ initial }: { initial?: Partial<BookInput> & {
       >
         Add purchase link
       </button>
+
+      <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>SEARCH &amp; SOCIAL PREVIEW</div>
+      <div className="field" style={css("margin-bottom:var(--space-4);")}>
+        <label>SEO title (blank = the book title)</label>
+        <input className="input" value={values.seo_title} onChange={(e) => set("seo_title", e.target.value)} />
+      </div>
+      <div className="field" style={css("margin-bottom:var(--space-4);")}>
+        <label>SEO description</label>
+        <textarea className="input" rows={2} value={values.seo_description} onChange={(e) => set("seo_description", e.target.value)} />
+      </div>
+      <ImageUploadField label="Social preview image (blank = the cover)" value={values.og_image_url} onChange={(url) => set("og_image_url", url)} />
+
+      {values.id ? (
+        <BookFilesPanel
+          bookId={values.id}
+          initialFiles={files}
+          onUsePageCount={(n, src) => setValues((v) => ({ ...v, page_count: n, page_count_source: src }))}
+        />
+      ) : (
+        <p style={css("font-size:13px;opacity:0.6;margin-bottom:var(--space-6);")}>Create the book first, then you can attach PDF / EPUB / MOBI / DOCX files to it.</p>
+      )}
 
       {error && <p style={css("font-size:13px;color:var(--om-coral);margin-bottom:var(--space-3);")}>{error}</p>}
 

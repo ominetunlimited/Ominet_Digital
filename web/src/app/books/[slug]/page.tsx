@@ -21,15 +21,16 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const book = await getBook(slug);
   if (!book) return { title: "Book — Ominet Digital" };
-  const title = `${book.title} — Ominet Digital`;
-  const description = book.excerpt ? truncate(book.excerpt, 200) : `${book.title} by Omini Nfawa`;
+  const title = book.seoTitle || `${book.title} — Ominet Digital`;
+  const description = book.seoDescription || (book.excerpt ? truncate(book.excerpt, 200) : `${book.title} by ${book.author || "Omini Nfawa"}`);
   const url = `${SITE_URL}/books/${book.slug}`;
+  const image = book.ogImageUrl || book.coverImageUrl;
   return {
     title,
     description,
     alternates: { canonical: url },
-    openGraph: { title, description, url, type: "book" },
-    twitter: { card: "summary_large_image", title, description },
+    openGraph: { title, description, url, type: "book", ...(image ? { images: [image] } : {}) },
+    twitter: { card: "summary_large_image", title, description, ...(image ? { images: [image] } : {}) },
   };
 }
 
