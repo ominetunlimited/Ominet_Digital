@@ -242,6 +242,7 @@ export default function BookForm({
           bookId={values.id}
           initialFiles={files}
           onUsePageCount={(n, src) => setValues((v) => ({ ...v, page_count: n, page_count_source: src }))}
+          onUseCover={(url) => set("cover_image_url", url)}
         />
       ) : (
         <p style={css("font-size:13px;opacity:0.6;margin-bottom:var(--space-6);")}>Create the book first, then you can attach PDF / EPUB / MOBI / DOCX files to it.</p>

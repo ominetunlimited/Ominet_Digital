@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { analyzeBookFile, ALLOWED_EXTENSIONS, MAX_BOOK_BYTES, type BookFormat } from "@/lib/books/analyze";
+import { extractCover } from "@/lib/books/cover";
 
 const BUCKET = "book-files"; // PRIVATE — no public URLs; only staff-issued, expiring links
 const PATH_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(pdf|epub|mobi|docx)$/;
@@ -151,6 +152,37 @@ export async function removeBookFile(fileId: string): Promise<PlainResult> {
   if (error) return { ok: false, error: error.message };
   revalidatePath(`/admin/books/${file.book_id}`);
   return { ok: true };
+}
+
+/**
+ * Pulls a cover out of an attached file and stores it as a public image. The
+ * result is only a suggestion — the admin still presses Save on the book, and
+ * can replace it with their own upload at any time.
+ */
+export async function extractBookFileCover(fileId: string): Promise<UrlResult> {
+  const staff = await staffCheck();
+  if (!staff.ok) return staff;
+  const admin = createAdminClient();
+  if (!admin) return { ok: false, error: "Storage isn't configured." };
+
+  const { data: file } = await admin.from("book_files").select("format,storage_path").eq("id", fileId).maybeSingle();
+  if (!file) return { ok: false, error: "That file no longer exists." };
+
+  const { data: blob, error: dlError } = await admin.storage.from(BUCKET).download(file.storage_path);
+  if (dlError || !blob) return { ok: false, error: "Couldn't read the file from storage." };
+
+  const cover = await extractCover(new Uint8Array(await blob.arrayBuffer()), file.format as BookFormat);
+  if (!cover.ok) return { ok: false, error: cover.reason };
+
+  const ext = cover.mime === "image/jpeg" ? "jpg" : cover.mime.split("/")[1];
+  const path = `${randomUUID()}.${ext}`;
+  const { error: upErr } = await admin.storage.from("media").upload(path, cover.bytes, { contentType: cover.mime });
+  if (upErr) return { ok: false, error: "Couldn't store the extracted cover." };
+  const { data: urlData } = admin.storage.from("media").getPublicUrl(path);
+
+  await admin.from("media_assets").insert({ storage_path: path, url: urlData.publicUrl, kind: "image", title: `Cover — ${cover.source}` });
+  revalidatePath("/admin/media");
+  return { ok: true, url: urlData.publicUrl };
 }
 
 /** Staff-only "download to test": a link that dies after 60 seconds. */

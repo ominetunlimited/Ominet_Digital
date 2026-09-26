@@ -8,6 +8,7 @@ import {
   confirmBookFile,
   removeBookFile,
   getBookFileTestUrl,
+  extractBookFileCover,
   type BookFileRecord,
 } from "@/lib/admin/book-file-actions";
 
@@ -21,11 +22,14 @@ export default function BookFilesPanel({
   bookId,
   initialFiles,
   onUsePageCount,
+  onUseCover,
 }: {
   bookId: string;
   initialFiles: BookFileRecord[];
   onUsePageCount: (pages: number, source: string) => void;
+  onUseCover: (url: string) => void;
 }) {
+  const [extracting, setExtracting] = useState<string | null>(null);
   const [files, setFiles] = useState(initialFiles);
   const [stage, setStage] = useState<"" | "preparing" | "uploading" | "checking">("");
   const [error, setError] = useState("");
@@ -65,6 +69,25 @@ export default function BookFilesPanel({
     const res = await removeBookFile(f.id);
     if (!res.ok) return setError(res.error);
     setFiles((list) => list.filter((x) => x.id !== f.id));
+  }
+
+  async function extractCover(f: BookFileRecord) {
+    setError("");
+    setNote("");
+    setExtracting(f.id);
+    try {
+      const res = await Promise.race([
+        extractBookFileCover(f.id),
+        new Promise<{ ok: false; error: string }>((r) => setTimeout(() => r({ ok: false, error: "That took too long. Try again." }), 55000)),
+      ]);
+      if (!res.ok) return setError(`No cover taken: ${res.error}`);
+      onUseCover(res.url);
+      setNote("Cover extracted and placed in the Cover image field above. Press Save to keep it; you can replace it any time.");
+    } catch {
+      setError("The cover couldn't be extracted. Try again.");
+    } finally {
+      setExtracting(null);
+    }
   }
 
   async function testDownload(f: BookFileRecord) {
@@ -111,6 +134,9 @@ export default function BookFilesPanel({
                     Use {d.pageCount} as page count
                   </button>
                 )}
+                <button type="button" className="btn btn-secondary" disabled={extracting !== null} onClick={() => extractCover(f)}>
+                  {extracting === f.id ? "Extracting…" : f.format === "pdf" ? "Use first page as cover" : "Extract cover"}
+                </button>
                 <button type="button" className="btn btn-secondary" onClick={() => testDownload(f)}>Test download</button>
                 <button type="button" className="btn btn-ghost" style={css("color:var(--om-coral);")} onClick={() => remove(f)}>Remove</button>
               </div>
