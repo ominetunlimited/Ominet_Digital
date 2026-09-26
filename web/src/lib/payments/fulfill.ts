@@ -15,7 +15,7 @@ export async function fulfillPaystackReference(reference: string) {
 
   const { data: order } = await admin
     .from("orders")
-    .select("id,status,content_id,product_id,user_id,amount_cents")
+    .select("id,status,content_id,product_id,user_id,guest_key,email,amount_cents")
     .eq("provider_reference", reference)
     .maybeSingle();
   if (!order) throw new Error(`No order found for reference ${reference}`);
@@ -43,18 +43,35 @@ export async function fulfillPaystackReference(reference: string) {
     metadata: { amount_cents: order.amount_cents, reference },
   });
 
-  if (newStatus === "paid" && order.user_id) {
-    await admin
-      .from("entitlements")
-      .upsert(
-        {
-          user_id: order.user_id,
-          content_id: order.content_id,
-          product_id: order.product_id,
+  if (newStatus === "paid") {
+    // Check-then-insert rather than upsert+onConflict: the unique indexes
+    // backing this are partial (guest_key/user_id are mutually optional),
+    // and Postgres can't infer a partial index as an ON CONFLICT target
+    // without a matching WHERE predicate, which PostgREST's upsert has no
+    // way to supply. Same pattern already used for anonymous likes.
+    const identity = order.user_id
+      ? { column: "user_id" as const, value: order.user_id }
+      : { column: "guest_key" as const, value: order.guest_key };
+    const targetColumn = order.content_id ? ("content_id" as const) : ("product_id" as const);
+    const targetValue = order.content_id ?? order.product_id;
+
+    if (identity.value && targetValue) {
+      const { data: existing } = await admin
+        .from("entitlements")
+        .select("id")
+        .eq(identity.column, identity.value)
+        .eq(targetColumn, targetValue)
+        .maybeSingle();
+
+      if (!existing) {
+        await admin.from("entitlements").insert({
+          [identity.column]: identity.value,
+          [targetColumn]: targetValue,
           order_id: order.id,
-        },
-        { onConflict: order.content_id ? "user_id,content_id" : "user_id,product_id" }
-      );
+          email: order.email,
+        });
+      }
+    }
   }
 
   return { alreadyFulfilled: false, order, status: newStatus };
