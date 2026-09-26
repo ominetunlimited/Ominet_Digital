@@ -4,6 +4,7 @@ import { useState } from "react";
 import { css } from "@/lib/css";
 import { sendLoginLink } from "@/lib/auth-actions";
 import { startContentCheckout } from "@/lib/payments/actions";
+import { useAsyncAction } from "@/lib/useAsyncAction";
 
 export default function PaywallGate({
   contentId,
@@ -17,36 +18,23 @@ export default function PaywallGate({
   currentPath: string;
 }) {
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "busy" | "sent" | "error">("idle");
-  const [message, setMessage] = useState<string | null>(null);
   const [showRestore, setShowRestore] = useState(false);
+  const [restoreSent, setRestoreSent] = useState<string | null>(null);
+  const buy = useAsyncAction();
+  const restore = useAsyncAction();
 
   async function handleBuy() {
-    setStatus("busy");
-    setMessage(null);
     // No account required — a signed-in reader's order is tied to their
     // session automatically; anyone else checks out as a guest with just
-    // the email typed below.
-    const result = await startContentCheckout(contentId, email);
-    // On success startContentCheckout redirects server-side and this line
-    // never runs; on failure it returns an error instead of throwing.
-    if (result && !result.ok) {
-      setStatus("error");
-      setMessage(result.error);
-    }
+    // the email typed below. useAsyncAction guarantees this can never hang
+    // on "Redirecting…" forever, even if Paystack itself fails or stalls.
+    await buy.run(() => startContentCheckout(contentId, email));
   }
 
   async function handleSendLink() {
     if (!email) return;
-    setStatus("busy");
-    const result = await sendLoginLink(email, currentPath);
-    if (result.ok) {
-      setStatus("sent");
-      setMessage(result.message ?? "Check your email for a sign-in link.");
-    } else {
-      setStatus("error");
-      setMessage(result.error);
-    }
+    const result = await restore.run(() => sendLoginLink(email, currentPath));
+    if (result?.ok) setRestoreSent(result.message ?? "Check your email for a sign-in link.");
   }
 
   return (
@@ -55,12 +43,12 @@ export default function PaywallGate({
       {price && <div style={css("font-family:var(--font-heading);font-size:24px;margin-bottom:var(--space-4);")}>{price}</div>}
 
       {userEmail ? (
-        <button type="button" className="btn btn-primary" onClick={handleBuy} disabled={status === "busy"}>
-          {status === "busy" ? "Redirecting…" : "Get full access"}
+        <button type="button" className="btn btn-primary" onClick={handleBuy} disabled={buy.busy}>
+          {buy.busy ? "Redirecting…" : "Get full access"}
         </button>
       ) : showRestore ? (
-        status === "sent" ? (
-          <p style={css("font-size:13px;opacity:0.7;")}>{message}</p>
+        restoreSent ? (
+          <p style={css("font-size:13px;opacity:0.7;")}>{restoreSent}</p>
         ) : (
           <div style={css("display:flex;gap:var(--space-2);justify-content:center;flex-wrap:wrap;max-width:360px;margin:0 auto;")}>
             <input
@@ -71,8 +59,8 @@ export default function PaywallGate({
               onChange={(e) => setEmail(e.target.value)}
               style={css("flex:1;min-width:180px;")}
             />
-            <button type="button" className="btn btn-primary" onClick={handleSendLink} disabled={status === "busy" || !email}>
-              Send link
+            <button type="button" className="btn btn-primary" onClick={handleSendLink} disabled={restore.busy || !email}>
+              {restore.busy ? "Sending…" : "Send link"}
             </button>
           </div>
         )
@@ -86,18 +74,20 @@ export default function PaywallGate({
             onChange={(e) => setEmail(e.target.value)}
             style={css("flex:1;min-width:180px;")}
           />
-          <button type="button" className="btn btn-primary" onClick={handleBuy} disabled={status === "busy" || !email}>
-            {status === "busy" ? "Redirecting…" : "Buy now"}
+          <button type="button" className="btn btn-primary" onClick={handleBuy} disabled={buy.busy || !email}>
+            {buy.busy ? "Redirecting…" : "Buy now"}
           </button>
         </div>
       )}
 
-      {status === "error" && <div style={css("font-size:12px;color:var(--om-coral);margin-top:var(--space-3);")}>{message}</div>}
+      {(buy.error || restore.error) && (
+        <div style={css("font-size:12px;color:var(--om-coral);margin-top:var(--space-3);")}>{buy.error || restore.error}</div>
+      )}
 
       {!userEmail && (
         <div style={css("font-size:12px;opacity:0.5;margin-top:var(--space-3);")}>
           {showRestore ? (
-            <button type="button" className="btn btn-ghost" style={css("font-size:12px;padding:0;")} onClick={() => { setShowRestore(false); setStatus("idle"); setMessage(null); }}>
+            <button type="button" className="btn btn-ghost" style={css("font-size:12px;padding:0;")} onClick={() => { setShowRestore(false); setRestoreSent(null); }}>
               Back to buy
             </button>
           ) : (

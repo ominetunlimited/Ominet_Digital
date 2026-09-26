@@ -25,6 +25,10 @@ export type InitCheckoutResult = {
 
 export async function paystackInitCheckout(input: InitCheckoutInput): Promise<InitCheckoutResult> {
   if (!PAYSTACK_SECRET_KEY) throw new Error("PAYSTACK_SECRET_KEY is not configured");
+  // No timeout here previously meant a stalled or rejected call (e.g. a
+  // currency Paystack's live account isn't enabled for) could leave the
+  // caller waiting indefinitely with nothing to catch it — the "Redirecting…
+  // forever" report. This still throws on failure; callers must catch it.
   const res = await fetch(`${API_BASE}/transaction/initialize`, {
     method: "POST",
     headers: {
@@ -39,10 +43,12 @@ export async function paystackInitCheckout(input: InitCheckoutInput): Promise<In
       callback_url: input.callbackUrl,
       metadata: input.metadata,
     }),
+    signal: AbortSignal.timeout(15_000),
   });
-  const json = await res.json();
+  const json = await res.json().catch(() => ({}));
   if (!res.ok || !json.status) {
-    throw new Error(json.message || `Paystack initialize failed (${res.status})`);
+    const reason = json.message || (res.status === 403 ? "Paystack rejected this transaction (often a currency your live account isn't enabled for)." : `Paystack initialize failed (${res.status}).`);
+    throw new Error(reason);
   }
   return {
     authorizationUrl: json.data.authorization_url,
@@ -64,8 +70,9 @@ export async function paystackVerifyTransaction(reference: string): Promise<Veri
   const res = await fetch(`${API_BASE}/transaction/verify/${encodeURIComponent(reference)}`, {
     headers: { Authorization: `Bearer ${PAYSTACK_SECRET_KEY}` },
     cache: "no-store",
+    signal: AbortSignal.timeout(15_000),
   });
-  const json = await res.json();
+  const json = await res.json().catch(() => ({}));
   if (!res.ok || !json.status) {
     throw new Error(json.message || `Paystack verify failed (${res.status})`);
   }

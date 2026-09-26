@@ -1,9 +1,11 @@
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import PlaceholderImage from "@/components/PlaceholderImage";
+import ProductBuyButton from "@/components/ProductBuyButton";
 import { css } from "@/lib/css";
 import { pageMetadata } from "@/lib/seo";
 import { getProducts } from "@/lib/data";
+import { getCurrentUser } from "@/lib/entitlements";
 
 export const revalidate = 60;
 
@@ -35,7 +37,7 @@ function formatPrice(cents: number | null, currency: string): string {
 }
 
 export default async function StorePage() {
-  const products = await getProducts();
+  const [products, user] = await Promise.all([getProducts(), getCurrentUser()]);
 
   return (
     <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>
@@ -80,8 +82,12 @@ export default async function StorePage() {
                     )}
                     {isExternal && p.externalUrl ? (
                       <a href={p.externalUrl} target="_blank" rel="noopener noreferrer sponsored" className={`btn btn-${variant} btn-block`}>{cta}{BUY_ICON}</a>
+                    ) : p.priceCents != null ? (
+                      <ProductBuyButton productId={p.id} label={cta} variant={variant} signedIn={Boolean(user)} />
                     ) : (
-                      <button type="button" className={`btn btn-${variant} btn-block`}>{cta}</button>
+                      <button type="button" className={`btn btn-${variant} btn-block`} disabled title="Free downloads aren't wired up yet">
+                        {cta} (coming soon)
+                      </button>
                     )}
                   </>
                 );
