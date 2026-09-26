@@ -8,8 +8,9 @@ import PaywallGate from "@/components/PaywallGate";
 import ShareBar from "@/components/ShareBar";
 import AdSlot from "@/components/AdSlot";
 import NewsletterForm from "@/components/NewsletterForm";
+import Link from "next/link";
 import { css } from "@/lib/css";
-import { getArticle } from "@/lib/data";
+import { getArticle, getArticles, getFeaturedBook } from "@/lib/data";
 import { SITE_URL } from "@/lib/seo";
 import { hasEntitlement, getCurrentUser } from "@/lib/entitlements";
 import { getEngagement } from "@/lib/engagement";
@@ -50,19 +51,17 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
   const article = await getArticle(slug);
   if (!article) notFound();
 
-  const [unlocked, user, engagement] = await Promise.all([
+  const [unlocked, user, engagement, featuredBook, otherArticles] = await Promise.all([
     article.access !== "paid" ? Promise.resolve(true) : hasEntitlement(article.id),
     getCurrentUser(),
     article.id ? getEngagement({ contentId: article.id }) : Promise.resolve({ likeCount: 0, likedByMe: false, comments: [] }),
+    getFeaturedBook(),
+    getArticles(),
   ]);
   const currentPath = `/writing/${article.slug}`;
+  const moreFromOmini = otherArticles.find((a) => a.slug !== article.slug);
 
-  const bodyParagraphs = article.body
-    ? article.body.split(/\n{2,}/)
-    : [
-        "There is a particular silence that arrives with a new language — not the absence of words, but the absence of the right ones. For years I mistook this silence for a failure of vocabulary. It was something else: a second country, arriving slowly, with its own weather.",
-        "Every migrant writer knows this territory. The first language holds the childhood; the second language holds the adult who has to explain the childhood to people who were never there. Between them is a border that no passport describes.",
-      ];
+  const bodyParagraphs = article.body ? article.body.split(/\n{2,}/) : [];
   const visibleParagraphs = unlocked ? bodyParagraphs : bodyParagraphs.slice(0, 1);
 
   const jsonLd = {
@@ -123,18 +122,28 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
 
         <ShareBar url={`${SITE_URL}/writing/${article.slug}`} title={article.title} />
 
-        <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--space-4);margin-bottom:var(--space-8);")}>
-          <div className="card">
-            <div className="card-kicker">RELATED BOOK</div>
-            <div className="card-title">The Long Return</div>
-            <p className="card-body">A novel on the same themes of border and return.</p>
+        {(featuredBook || moreFromOmini) && (
+          <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--space-4);margin-bottom:var(--space-8);")}>
+            {featuredBook && (
+              <Link href={`/books/${featuredBook.slug}`} style={css("display:block;")}>
+                <div className="card">
+                  <div className="card-kicker">FEATURED BOOK</div>
+                  <div className="card-title">{featuredBook.title}</div>
+                  <p className="card-body">{featuredBook.excerpt}</p>
+                </div>
+              </Link>
+            )}
+            {moreFromOmini && (
+              <Link href={`/writing/${moreFromOmini.slug}`} style={css("display:block;")}>
+                <div className="card">
+                  <div className="card-kicker">MORE FROM OMINI</div>
+                  <div className="card-title">{moreFromOmini.title}</div>
+                  <p className="card-body">{moreFromOmini.excerpt}</p>
+                </div>
+              </Link>
+            )}
           </div>
-          <div className="card">
-            <div className="card-kicker">MORE FROM OMINI</div>
-            <div className="card-title">Notes on the Coastline</div>
-            <p className="card-body">Field notes on erosion and memory along the delta.</p>
-          </div>
-        </div>
+        )}
 
         {article.id && (
           <>

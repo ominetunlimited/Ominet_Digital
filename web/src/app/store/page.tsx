@@ -2,10 +2,12 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import PlaceholderImage from "@/components/PlaceholderImage";
 import ProductBuyButton from "@/components/ProductBuyButton";
+import EmptyState from "@/components/EmptyState";
 import { css } from "@/lib/css";
 import { pageMetadata } from "@/lib/seo";
 import { getProducts } from "@/lib/data";
 import { getCurrentUser } from "@/lib/entitlements";
+import { formatMoney } from "@/lib/money";
 
 export const revalidate = 60;
 
@@ -23,17 +25,8 @@ const BUY_ICON = (
   </svg>
 );
 
-const fallbackProducts = [
-  { title: "The Long Return — Ebook", price: "$9.00", cta: "Buy now", variant: "primary" as const },
-  { title: "Field Notes — PDF Collection", price: "$6.00", cta: "Buy now", variant: "primary" as const },
-  { title: "Coastline Prints (set of 6)", price: "$40.00", cta: "Buy on Selar", variant: "secondary" as const, external: true },
-  { title: "Essay Template Pack", price: "Free", cta: "Download", variant: "secondary" as const },
-];
-
 function formatPrice(cents: number | null, currency: string): string {
-  if (cents == null) return "Free";
-  const symbol = currency === "NGN" ? "₦" : currency === "USD" ? "$" : `${currency} `;
-  return `${symbol}${(cents / 100).toFixed(2)}`;
+  return cents == null ? "Free" : formatMoney(cents, currency);
 }
 
 export default async function StorePage() {
@@ -59,9 +52,11 @@ export default async function StorePage() {
       <div className="hr" />
 
       <section style={css("padding:var(--space-8) var(--space-6);")}>
+        {products.length === 0 ? (
+          <EmptyState title="No products yet." body="Nothing here yet. Please check back soon." />
+        ) : (
         <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--space-6);")}>
-          {products.length > 0
-            ? products.map((p) => {
+          {products.map((p) => {
                 const isExternal = p.access === "external" || p.access === "affiliate";
                 const cta = p.externalLabel || (p.access === "affiliate" ? "Get it" : p.access === "external" ? "Buy now" : p.priceCents == null ? "Download" : "Buy now");
                 const variant = isExternal ? "secondary" : "primary";
@@ -92,16 +87,9 @@ export default async function StorePage() {
                   </>
                 );
                 return <div key={p.id}>{body}</div>;
-              })
-            : fallbackProducts.map((p) => (
-                <div key={p.title}>
-                  <div style={css("aspect-ratio:1;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-3);")}><PlaceholderImage label="Product" /></div>
-                  <div style={css("font-family:var(--font-heading);font-size:17px;margin-bottom:var(--space-1);")}>{p.title}</div>
-                  <div style={css("font-size:13px;opacity:0.55;margin-bottom:var(--space-3);")}>{p.price}</div>
-                  <button type="button" className={`btn btn-${p.variant} btn-block`}>{p.cta}{p.external && BUY_ICON}</button>
-                </div>
-              ))}
+          })}
         </div>
+        )}
       </section>
 
       <div className="hr" />

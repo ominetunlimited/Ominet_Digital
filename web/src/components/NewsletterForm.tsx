@@ -3,17 +3,17 @@
 import { useState } from "react";
 import { css } from "@/lib/css";
 import { subscribeToNewsletter } from "@/lib/newsletter";
+import { useAsyncAction } from "@/lib/useAsyncAction";
 
 export default function NewsletterForm() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+  const { busy, run } = useAsyncAction();
 
   async function submit() {
     if (!email) return;
-    setBusy(true);
-    const result = await subscribeToNewsletter(email);
-    setBusy(false);
+    const result = await run(() => subscribeToNewsletter(email));
+    if (!result) return;
     setMessage(result.ok ? result.message : result.error);
     if (result.ok) setEmail("");
   }

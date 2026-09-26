@@ -6,6 +6,8 @@ import { saveBook, deleteBook, type BookInput } from "@/lib/admin/book-actions";
 import ImageUploadField from "@/components/admin/ImageUploadField";
 import { slugify } from "@/lib/slug";
 import { useAdminAction } from "@/lib/admin/useAdminAction";
+import SaveButton from "@/components/admin/SaveButton";
+import { useRouter } from "next/navigation";
 
 const STATUSES = ["draft", "scheduled", "published", "archived"];
 
@@ -19,6 +21,7 @@ export default function BookForm({ initial }: { initial?: Partial<BookInput> & {
     pages: initial?.pages ?? "",
     excerpt: initial?.excerpt ?? "",
     description: initial?.description ?? "",
+    author_note: initial?.author_note ?? "",
     cover_image_url: initial?.cover_image_url ?? "",
     formats: initial?.formats ?? [],
     status: initial?.status ?? "draft",
@@ -26,7 +29,8 @@ export default function BookForm({ initial }: { initial?: Partial<BookInput> & {
     purchaseLinks: initial?.purchaseLinks ?? [],
   });
   const [slugTouched, setSlugTouched] = useState(Boolean(initial?.slug));
-  const { busy, error, run } = useAdminAction();
+  const { busy, saved, error, run } = useAdminAction();
+  const router = useRouter();
 
   function set<K extends keyof BookInput>(key: K, value: BookInput[K]) {
     setValues((v) => ({ ...v, [key]: value }));
@@ -37,7 +41,12 @@ export default function BookForm({ initial }: { initial?: Partial<BookInput> & {
   }
 
   async function submit() {
-    await run(() => saveBook(values));
+    const result = await run(() => saveBook(values));
+    if (!result?.ok) return;
+    if (result.id && !values.id) {
+      set("id", result.id);
+      setTimeout(() => router.push(`/admin/books/${result.id}`), 900);
+    } else router.refresh();
   }
 
   async function remove() {
@@ -78,8 +87,12 @@ export default function BookForm({ initial }: { initial?: Partial<BookInput> & {
         </div>
       </div>
       <div className="field" style={css("margin-bottom:var(--space-4);")}>
-        <label>Excerpt</label>
+        <label>Excerpt (shown as a short teaser everywhere; the full text also shows on the book page if it&apos;s more than a sentence or two)</label>
         <textarea className="input" rows={3} value={values.excerpt} onChange={(e) => set("excerpt", e.target.value)} />
+      </div>
+      <div className="field" style={css("margin-bottom:var(--space-4);")}>
+        <label>Author&apos;s Note (optional — your own words about the book, shown on its page)</label>
+        <textarea className="input" rows={4} value={values.author_note} onChange={(e) => set("author_note", e.target.value)} />
       </div>
       <div className="field" style={css("margin-bottom:var(--space-4);")}>
         <label>Formats (comma-separated)</label>
@@ -127,9 +140,7 @@ export default function BookForm({ initial }: { initial?: Partial<BookInput> & {
       {error && <p style={css("font-size:13px;color:var(--om-coral);margin-bottom:var(--space-3);")}>{error}</p>}
 
       <div style={css("display:flex;gap:var(--space-3);")}>
-        <button type="button" className="btn btn-primary" onClick={submit} disabled={busy || !values.title || !values.slug}>
-          {busy ? "Saving…" : values.id ? "Save changes" : "Create"}
-        </button>
+        <SaveButton busy={busy} saved={saved} disabled={!values.title || !values.slug} idleLabel={values.id ? "Save changes" : "Create"} onClick={submit} />
         {values.id && (
           <button type="button" className="btn btn-secondary" onClick={remove} disabled={busy} style={css("color:var(--om-coral);border-color:var(--om-coral);")}>
             Delete

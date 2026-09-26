@@ -8,6 +8,7 @@ import TrackedLink from "@/components/TrackedLink";
 import { css } from "@/lib/css";
 import { getService } from "@/lib/data";
 import { SITE_URL } from "@/lib/seo";
+import { formatMoney } from "@/lib/money";
 
 export const revalidate = 60;
 
@@ -32,8 +33,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 function priceLabel(service: { pricingMode: string; priceCents: number | null; currency: string }) {
   if (service.pricingMode === "quote" || service.priceCents == null) return "Quote on request";
-  const symbol = service.currency === "NGN" ? "₦" : service.currency === "USD" ? "$" : `${service.currency} `;
-  const amount = `${symbol}${(service.priceCents / 100).toLocaleString()}`;
+  const amount = formatMoney(service.priceCents, service.currency);
   return service.pricingMode === "hourly" ? `${amount} / hour` : service.pricingMode === "package" ? `${amount} / package` : amount;
 }
 

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { css } from "@/lib/css";
 import { setServiceFields } from "@/lib/admin/service-actions";
+import { formatMoney } from "@/lib/money";
 import { useAdminAction } from "@/lib/admin/useAdminAction";
 
 export type ServiceListItem = {
@@ -41,7 +42,7 @@ export default function ServiceListRow({ item }: { item: ServiceListItem }) {
   return (
     <tr>
       <td><Link href={`/admin/services/${item.id}`}>{item.title}</Link></td>
-      <td>{item.pricing_mode === "quote" ? "Quote" : item.price_cents != null ? `${item.currency} ${(item.price_cents / 100).toFixed(2)}` : "—"}</td>
+      <td>{item.pricing_mode === "quote" ? "Quote" : formatMoney(item.price_cents, item.currency)}</td>
       <td>
         <select className="input" style={css("font-size:12px;padding:2px 6px;")} value={status} onChange={(e) => updateStatus(e.target.value)} disabled={busy}>
           <option value="draft">draft</option>

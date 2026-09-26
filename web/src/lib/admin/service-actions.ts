@@ -35,7 +35,7 @@ export type ServiceInput = {
   og_image_url: string;
 };
 
-export type ActionResult = { ok: true } | { ok: false; error: string };
+export type ActionResult = { ok: true; id?: string } | { ok: false; error: string };
 
 export async function saveService(input: ServiceInput): Promise<ActionResult> {
   const supabase = await createClient();
@@ -86,7 +86,7 @@ export async function saveService(input: ServiceInput): Promise<ActionResult> {
   revalidatePath("/services");
   revalidatePath(`/services/${data.slug}`);
   if (previousSlug && previousSlug !== data.slug) revalidatePath(`/services/${previousSlug}`);
-  redirect(`/admin/services/${data.id}`);
+  return { ok: true, id: data.id as string };
 }
 
 export async function deleteService(id: string): Promise<ActionResult> {

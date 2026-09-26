@@ -88,6 +88,7 @@ export type Book = {
   pages?: string;
   excerpt: string;
   coverImageUrl?: string;
+  authorNote?: string;
   purchaseLinks: { label: string; platform: string; url: string }[];
   formats: string[];
   upcoming?: boolean;

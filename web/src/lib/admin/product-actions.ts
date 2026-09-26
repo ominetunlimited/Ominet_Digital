@@ -20,7 +20,7 @@ export type ProductInput = {
   status: string;
 };
 
-export type ActionResult = { ok: true } | { ok: false; error: string };
+export type ActionResult = { ok: true; id?: string } | { ok: false; error: string };
 
 export async function saveProduct(input: ProductInput): Promise<ActionResult> {
   const supabase = await createClient();
@@ -28,12 +28,6 @@ export async function saveProduct(input: ProductInput): Promise<ActionResult> {
 
   const slug = slugify(input.slug || input.title);
   if (!slug) return { ok: false, error: "Slug can't be empty once normalized — add some letters or numbers." };
-
-  let previousSlug: string | null = null;
-  if (input.id) {
-    const { data: existing } = await supabase.from("products").select("slug").eq("id", input.id).maybeSingle();
-    previousSlug = existing?.slug ?? null;
-  }
 
   const row = {
     title: input.title,
@@ -56,8 +50,7 @@ export async function saveProduct(input: ProductInput): Promise<ActionResult> {
 
   revalidatePath("/admin/store");
   revalidatePath("/store");
-  if (previousSlug && previousSlug !== data.slug) revalidatePath("/store");
-  redirect(`/admin/store/${data.id}`);
+  return { ok: true, id: data.id as string };
 }
 
 export async function deleteProduct(id: string): Promise<ActionResult> {

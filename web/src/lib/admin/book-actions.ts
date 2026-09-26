@@ -16,6 +16,7 @@ export type BookInput = {
   pages: string;
   excerpt: string;
   description: string;
+  author_note: string;
   cover_image_url: string;
   formats: string[];
   status: string;
@@ -23,7 +24,7 @@ export type BookInput = {
   purchaseLinks: PurchaseLinkInput[];
 };
 
-export type ActionResult = { ok: true } | { ok: false; error: string };
+export type ActionResult = { ok: true; id?: string } | { ok: false; error: string };
 
 export async function saveBook(input: BookInput): Promise<ActionResult> {
   const supabase = await createClient();
@@ -38,7 +39,7 @@ export async function saveBook(input: BookInput): Promise<ActionResult> {
     previousSlug = existing?.slug ?? null;
   }
 
-  const row = {
+  const row: Record<string, unknown> = {
     title: input.title,
     slug,
     kind: input.kind,
@@ -46,15 +47,25 @@ export async function saveBook(input: BookInput): Promise<ActionResult> {
     pages: input.pages || null,
     excerpt: input.excerpt || null,
     description: input.description || null,
+    author_note: input.author_note || null,
     cover_image_url: input.cover_image_url || null,
     formats: input.formats,
     status: input.status,
     featured: input.featured,
   };
 
-  const { data, error } = input.id
+  let { data, error } = input.id
     ? await supabase.from("books").update(row).eq("id", input.id).select("id,slug").single()
     : await supabase.from("books").insert(row).select("id,slug").single();
+
+  // 0009_author_note.sql may not be applied yet — retry without it so the
+  // rest of the save still goes through (same pattern as content-actions.ts).
+  if (error?.code === "42703" || error?.code === "PGRST204") {
+    delete row.author_note;
+    ({ data, error } = input.id
+      ? await supabase.from("books").update(row).eq("id", input.id).select("id,slug").single()
+      : await supabase.from("books").insert(row).select("id,slug").single());
+  }
   if (error || !data) return { ok: false, error: error?.message ?? "Save failed unexpectedly." };
 
   const bookId = data.id as string;
@@ -77,7 +88,8 @@ export async function saveBook(input: BookInput): Promise<ActionResult> {
   revalidatePath("/books");
   revalidatePath(`/books/${data.slug}`);
   if (previousSlug && previousSlug !== data.slug) revalidatePath(`/books/${previousSlug}`);
-  redirect(`/admin/books/${bookId}`);
+  revalidatePath("/");
+  return { ok: true, id: bookId };
 }
 
 export async function deleteBook(id: string): Promise<ActionResult> {

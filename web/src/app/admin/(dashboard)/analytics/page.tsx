@@ -1,13 +1,11 @@
 import Link from "next/link";
 import { css } from "@/lib/css";
 import { resolveRange, getAnalyticsSummary, RANGE_OPTIONS, type RangeKey } from "@/lib/admin/analytics";
+import { formatMoney } from "@/lib/money";
 
 export const metadata = { title: "Analytics — Admin", robots: { index: false, follow: false } };
 
-function fmtMoney(cents: number, currency: string) {
-  const symbol = currency === "NGN" ? "₦" : currency === "USD" ? "$" : `${currency} `;
-  return `${symbol}${(cents / 100).toLocaleString()}`;
-}
+const fmtMoney = formatMoney;
 
 function Stat({ label, value }: { label: string; value: string | number }) {
   return (

@@ -3,9 +3,10 @@ import Image from "next/image";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import PlaceholderImage from "@/components/PlaceholderImage";
+import NewsletterForm from "@/components/NewsletterForm";
 import { css } from "@/lib/css";
 import { pageMetadata } from "@/lib/seo";
-import { getFeaturedBook } from "@/lib/data";
+import { getFeaturedBook, getArticles } from "@/lib/data";
 import { truncate } from "@/lib/text";
 
 export const metadata = pageMetadata(
@@ -16,7 +17,9 @@ export const metadata = pageMetadata(
 export const revalidate = 60;
 
 export default async function OminiNfawaPage() {
-  const featuredBook = await getFeaturedBook();
+  const [featuredBook, articles] = await Promise.all([getFeaturedBook(), getArticles()]);
+  const featuredArticle = articles[0];
+  const secondArticle = articles[1];
   return (
     <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;")}>
       <Nav />
@@ -46,23 +49,29 @@ export default async function OminiNfawaPage() {
 
       <div className="hr" />
 
-      <section style={css("padding:var(--space-8) var(--space-6);display:flex;flex-wrap:wrap;gap:var(--space-8);align-items:center;")}>
-        <div style={css("flex:2 1 380px;")}>
-          <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>FEATURED WRITING</div>
-          <h2 style={css("font-family:var(--font-heading);font-size:36px;line-height:1.15;margin:0 0 var(--space-3);")}>On Writing as a Second Country</h2>
-          <p style={css("font-size:16px;line-height:1.7;opacity:0.75;margin:0 0 var(--space-4);")}>A long essay on migration, memory and the languages we write in when the first one is no longer enough.</p>
-          <div style={css("display:flex;gap:var(--space-3);align-items:center;font-size:12px;opacity:0.6;margin-bottom:var(--space-4);")}>
-            <span className="tag tag-neutral">ESSAY</span>
-            <span>Sept 2026</span>
-            <span>&middot;</span>
-            <span>12 min read</span>
+      {featuredArticle && (
+        <section style={css("padding:var(--space-8) var(--space-6);display:flex;flex-wrap:wrap;gap:var(--space-8);align-items:center;")}>
+          <div style={css("flex:2 1 380px;")}>
+            <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>FEATURED WRITING</div>
+            <h2 style={css("font-family:var(--font-heading);font-size:36px;line-height:1.15;margin:0 0 var(--space-3);")}>{featuredArticle.title}</h2>
+            <p style={css("font-size:16px;line-height:1.7;opacity:0.75;margin:0 0 var(--space-4);")}>{featuredArticle.excerpt}</p>
+            <div style={css("display:flex;gap:var(--space-3);align-items:center;font-size:12px;opacity:0.6;margin-bottom:var(--space-4);")}>
+              <span className="tag tag-neutral">{featuredArticle.category}</span>
+              <span>{featuredArticle.date}</span>
+              <span>&middot;</span>
+              <span>{featuredArticle.readTime} read</span>
+            </div>
+            <Link href={`/writing/${featuredArticle.slug}`}>Read the essay &rarr;</Link>
           </div>
-          <Link href="/writing/on-writing-as-a-second-country">Read the essay &rarr;</Link>
-        </div>
-        <div style={css("aspect-ratio:4/3;border-radius:var(--radius-md);overflow:hidden;flex:1 1 320px;")}>
-          <PlaceholderImage label="Essay image" />
-        </div>
-      </section>
+          <div style={css("aspect-ratio:4/3;position:relative;border-radius:var(--radius-md);overflow:hidden;flex:1 1 320px;")}>
+            {featuredArticle.featuredImageUrl ? (
+              <Image src={featuredArticle.featuredImageUrl} alt="" fill sizes="(max-width: 700px) 90vw, 400px" style={{ objectFit: "cover" }} />
+            ) : (
+              <PlaceholderImage label="Essay image" />
+            )}
+          </div>
+        </section>
+      )}
 
       <div className="hr" />
 
@@ -95,22 +104,22 @@ export default async function OminiNfawaPage() {
 
       <div className="hr" />
 
-      <section style={css("padding:var(--space-8) var(--space-6);display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--space-6);")}>
-        <div className="card">
-          <div className="card-kicker">LATEST ESSAY</div>
-          <div className="card-title">Notes on the Coastline</div>
-          <p className="card-body">Field notes from three weeks along the delta, on erosion, memory and the fishing towns that are disappearing with it.</p>
-          <div className="card-meta"><span>Aug 2026</span></div>
-        </div>
-        <div className="card">
-          <div className="card-kicker">LATEST VIDEO</div>
-          <div className="card-title">The Long Return &mdash; Trailer</div>
-          <p className="card-body">A short film introducing the novel, shot on location over four days.</p>
-          <div className="card-meta"><span>6 min</span></div>
-        </div>
-      </section>
+      {secondArticle && (
+        <>
+          <section style={css("padding:var(--space-8) var(--space-6);display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--space-6);")}>
+            <Link href={`/writing/${secondArticle.slug}`} style={css("display:block;")}>
+              <div className="card">
+                <div className="card-kicker">LATEST ESSAY</div>
+                <div className="card-title">{secondArticle.title}</div>
+                <p className="card-body">{secondArticle.excerpt}</p>
+                <div className="card-meta"><span>{secondArticle.date}</span></div>
+              </div>
+            </Link>
+          </section>
 
-      <div className="hr" />
+          <div className="hr" />
+        </>
+      )}
 
       <section style={css("padding:var(--space-8) var(--space-6);background:var(--color-text);color:var(--color-bg);")}>
         <div style={css("max-width:640px;")}>
@@ -143,10 +152,7 @@ export default async function OminiNfawaPage() {
           <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-2);")}>NEWSLETTER</div>
           <div style={css("font-family:var(--font-heading);font-size:24px;")}>New writing and book news, occasionally.</div>
         </div>
-        <div style={css("display:flex;gap:var(--space-2);flex-wrap:wrap;flex:1 1 260px;")}>
-          <input type="email" className="input" placeholder="you@email.com" style={css("min-width:200px;flex:1;")} />
-          <button type="button" className="btn btn-primary">Subscribe</button>
-        </div>
+        <NewsletterForm />
       </section>
 
       <Footer />

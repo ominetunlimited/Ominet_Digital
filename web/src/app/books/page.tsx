@@ -81,7 +81,7 @@ export default async function BooksPage() {
       <section style={css("padding:var(--space-6);")}>
         <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-4);")}>PUBLISHED</div>
         {published.length === 0 ? (
-          <EmptyState title="No books published yet." body="Published books will appear here." />
+          <EmptyState title="No books published yet." body="Nothing here yet. Please check back soon." />
         ) : (
         <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:var(--space-4);")}>
           {published.map((b) => (

@@ -115,27 +115,25 @@ export default async function BookDetailPage({ params }: { params: Promise<{ slu
 
       <div className="hr" />
 
-      <section style={css("max-width:720px;margin:0 auto;padding:var(--space-8) var(--space-6);")}>
-        <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>EXCERPT</div>
-        <div style={css("font-size:18px;line-height:1.8;margin-bottom:var(--space-8);")}>
-          {book.excerpt
-            ? book.excerpt.split(/\n{2,}/).map((p, i) => <p key={i}>{p}</p>)
-            : <p>The house had three doors and only one of them still opened. Nkechi kept the other two locked not out of caution but out of a private arithmetic: some rooms should only be entered by the people who left through them.</p>}
-        </div>
-
-        <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>AUTHOR&apos;S NOTE</div>
-        <p style={css("font-size:16px;line-height:1.75;opacity:0.8;margin-bottom:var(--space-8);")}>I wrote the first draft of this book over five years, in three cities, none of which appear in it by name. It began as a letter I never sent.</p>
-
-        <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>REVIEWS</div>
-        <div style={css("display:grid;gap:var(--space-4);margin-bottom:var(--space-8);")}>
-          <div style={css("border-left:2px solid var(--color-divider);padding-left:var(--space-4);")}>
-            <p style={css("font-size:16px;font-style:italic;margin:0 0 var(--space-1);")}>&quot;A quiet, exacting novel about the weight of return.&quot;</p>
-            <div style={css("font-size:13px;opacity:0.6;")}>&mdash; Continental Review</div>
+      {book.excerpt && (
+        <section style={css("max-width:720px;margin:0 auto;padding:var(--space-8) var(--space-6) 0;")}>
+          <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>EXCERPT</div>
+          <div style={css("font-size:18px;line-height:1.8;margin-bottom:var(--space-8);")}>
+            {book.excerpt.split(/\n{2,}/).map((p, i) => <p key={i}>{p}</p>)}
           </div>
-        </div>
+        </section>
+      )}
 
-        <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>RELATED WRITING</div>
-        <Link href="/writing/on-writing-as-a-second-country">On Writing as a Second Country &rarr;</Link>
+      <section style={css("max-width:720px;margin:0 auto;padding:var(--space-8) var(--space-6);")}>
+        {book.authorNote && (
+          <>
+            <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>AUTHOR&apos;S NOTE</div>
+            <p style={css("font-size:16px;line-height:1.75;opacity:0.8;margin-bottom:var(--space-8);")}>{book.authorNote}</p>
+          </>
+        )}
+
+        <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>MORE WRITING</div>
+        <Link href="/writing">Browse all writing &rarr;</Link>
 
         {book.id && (
           <>

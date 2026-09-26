@@ -5,6 +5,9 @@ import { css } from "@/lib/css";
 import { saveContent, deleteContent, type ContentInput } from "@/lib/admin/content-actions";
 import ImageUploadField from "@/components/admin/ImageUploadField";
 import VideoField from "@/components/admin/VideoField";
+import MoneyInput from "@/components/admin/MoneyInput";
+import SaveButton from "@/components/admin/SaveButton";
+import { useRouter } from "next/navigation";
 import { slugify } from "@/lib/slug";
 import { useAdminAction } from "@/lib/admin/useAdminAction";
 
@@ -35,14 +38,22 @@ export default function ContentForm({ initial }: { initial?: Partial<ContentInpu
     video_thumbnail_url: initial?.video_thumbnail_url ?? "",
   });
   const [slugTouched, setSlugTouched] = useState(Boolean(initial?.slug));
-  const { busy, error, run } = useAdminAction();
+  const { busy, saved, error, run } = useAdminAction();
+  const router = useRouter();
 
   function set<K extends keyof ContentInput>(key: K, value: ContentInput[K]) {
     setValues((v) => ({ ...v, [key]: value }));
   }
 
   async function submit() {
-    await run(() => saveContent(values));
+    const result = await run(() => saveContent(values));
+    if (!result?.ok) return;
+    // A brand-new item moves to its own edit page (after "Saved" has shown);
+    // an existing one just stays put with its values intact.
+    if (result.id && !values.id) {
+      set("id", result.id); // a second click before navigation updates, not duplicates
+      setTimeout(() => router.push(`/admin/content/${result.id}`), 900);
+    } else router.refresh();
   }
 
   async function remove() {
@@ -123,8 +134,8 @@ export default function ContentForm({ initial }: { initial?: Partial<ContentInpu
         {values.access === "paid" && (
           <>
             <div className="field" style={css("flex:1;")}>
-              <label>Price (cents)</label>
-              <input className="input" type="number" value={values.price_cents ?? ""} onChange={(e) => set("price_cents", e.target.value ? Number(e.target.value) : null)} />
+              <label>Price</label>
+              <MoneyInput valueMinor={values.price_cents} currency={values.currency} onChange={(v) => set("price_cents", v)} />
             </div>
             <div className="field" style={css("flex:1;")}>
               <label>Currency</label>
@@ -151,9 +162,7 @@ export default function ContentForm({ initial }: { initial?: Partial<ContentInpu
       {error && <p style={css("font-size:13px;color:var(--om-coral);margin-bottom:var(--space-3);")}>{error}</p>}
 
       <div style={css("display:flex;gap:var(--space-3);")}>
-        <button type="button" className="btn btn-primary" onClick={submit} disabled={busy || !values.title || !values.slug}>
-          {busy ? "Saving…" : values.id ? "Save changes" : "Create"}
-        </button>
+        <SaveButton busy={busy} saved={saved} disabled={!values.title || !values.slug} idleLabel={values.id ? "Save changes" : "Create"} onClick={submit} />
         {values.id && (
           <button type="button" className="btn btn-secondary" onClick={remove} disabled={busy} style={css("color:var(--om-coral);border-color:var(--om-coral);")}>
             Delete

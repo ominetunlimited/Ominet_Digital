@@ -4,8 +4,11 @@ import { useState } from "react";
 import { css } from "@/lib/css";
 import { saveProduct, deleteProduct, type ProductInput } from "@/lib/admin/product-actions";
 import ImageUploadField from "@/components/admin/ImageUploadField";
+import MoneyInput from "@/components/admin/MoneyInput";
 import { slugify } from "@/lib/slug";
 import { useAdminAction } from "@/lib/admin/useAdminAction";
+import SaveButton from "@/components/admin/SaveButton";
+import { useRouter } from "next/navigation";
 
 const ACCESS = [
   { value: "free", label: "Free download" },
@@ -32,14 +35,20 @@ export default function ProductForm({ initial }: { initial?: Partial<ProductInpu
     status: initial?.status ?? "draft",
   });
   const [slugTouched, setSlugTouched] = useState(Boolean(initial?.slug));
-  const { busy, error, run } = useAdminAction();
+  const { busy, saved, error, run } = useAdminAction();
+  const router = useRouter();
 
   function set<K extends keyof ProductInput>(key: K, value: ProductInput[K]) {
     setValues((v) => ({ ...v, [key]: value }));
   }
 
   async function submit() {
-    await run(() => saveProduct(values));
+    const result = await run(() => saveProduct(values));
+    if (!result?.ok) return;
+    if (result.id && !values.id) {
+      set("id", result.id);
+      setTimeout(() => router.push(`/admin/store/${result.id}`), 900);
+    } else router.refresh();
   }
 
   async function remove() {
@@ -87,8 +96,8 @@ export default function ProductForm({ initial }: { initial?: Partial<ProductInpu
       {needsPrice && (
         <div style={css("display:flex;gap:var(--space-4);margin-bottom:var(--space-4);")}>
           <div className="field" style={css("flex:1;")}>
-            <label>Price (cents)</label>
-            <input className="input" type="number" value={values.price_cents ?? ""} onChange={(e) => set("price_cents", e.target.value ? Number(e.target.value) : null)} />
+            <label>Price</label>
+            <MoneyInput valueMinor={values.price_cents} currency={values.currency} onChange={(v) => set("price_cents", v)} />
           </div>
           <div className="field" style={css("flex:1;")}>
             <label>Currency</label>
@@ -130,9 +139,7 @@ export default function ProductForm({ initial }: { initial?: Partial<ProductInpu
       {error && <p style={css("font-size:13px;color:var(--om-coral);margin-bottom:var(--space-3);")}>{error}</p>}
 
       <div style={css("display:flex;gap:var(--space-3);")}>
-        <button type="button" className="btn btn-primary" onClick={submit} disabled={busy || !values.title || !values.slug}>
-          {busy ? "Saving…" : values.id ? "Save changes" : "Create"}
-        </button>
+        <SaveButton busy={busy} saved={saved} disabled={!values.title || !values.slug} idleLabel={values.id ? "Save changes" : "Create"} onClick={submit} />
         {values.id && (
           <button type="button" className="btn btn-secondary" onClick={remove} disabled={busy} style={css("color:var(--om-coral);border-color:var(--om-coral);")}>
             Delete

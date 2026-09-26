@@ -1,8 +1,15 @@
+import Link from "next/link";
+import Image from "next/image";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import PlaceholderImage from "@/components/PlaceholderImage";
+import EmptyState from "@/components/EmptyState";
+import VideoThumbnail from "@/components/VideoThumbnail";
 import { css } from "@/lib/css";
 import { pageMetadata } from "@/lib/seo";
+import { getMediaPhotos, getVideoPosts } from "@/lib/data";
+
+export const revalidate = 60;
 
 export const metadata = pageMetadata(
   "Media",
@@ -10,13 +17,9 @@ export const metadata = pageMetadata(
   "/media"
 );
 
-const videos = [
-  { title: "The Long Return — Trailer", meta: "Short Film · 6 min" },
-  { title: "Delta Towns: A Documentary", meta: "Documentary · 24 min" },
-  { title: "On Independent Publishing", meta: "Interview · 32 min" },
-];
+export default async function MediaPage() {
+  const [videos, photos] = await Promise.all([getVideoPosts(), getMediaPhotos()]);
 
-export default function MediaPage() {
   return (
     <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>
       <Nav />
@@ -33,40 +36,44 @@ export default function MediaPage() {
 
       <div className="hr" />
 
-      <section style={css("padding:var(--space-4) var(--space-6);display:flex;gap:var(--space-2);flex-wrap:wrap;")}>
-        <span className="tag tag-accent">All</span>
-        <span className="tag tag-outline">Videos</span>
-        <span className="tag tag-outline">Photography</span>
-        <span className="tag tag-outline">Documentaries</span>
-        <span className="tag tag-outline">Interviews</span>
-        <span className="tag tag-outline">Short Films</span>
-      </section>
-
-      <div className="hr" />
-
       <section style={css("padding:var(--space-8) var(--space-6);")}>
         <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-4);")}>VIDEOS</div>
-        <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--space-6);")}>
-          {videos.map((v) => (
-            <a href="#" key={v.title}>
-              <div style={css("aspect-ratio:16/9;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-3);")}><PlaceholderImage label="Thumbnail" /></div>
-              <div style={css("font-family:var(--font-heading);font-size:18px;margin-bottom:var(--space-1);")}>{v.title}</div>
-              <div style={css("font-size:12px;opacity:0.55;")}>{v.meta}</div>
-            </a>
-          ))}
-        </div>
+        {videos.length === 0 ? (
+          <EmptyState title="No videos yet." body="Nothing here yet. Please check back soon." />
+        ) : (
+          <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--space-6);")}>
+            {videos.map((v) => (
+              <div key={v.slug}>
+                <VideoThumbnail url={v.videoUrl} thumbnailUrl={v.videoThumbnailUrl} />
+                <Link href={`/writing/${v.slug}`}>
+                  <div style={css("font-family:var(--font-heading);font-size:18px;margin:var(--space-2) 0 var(--space-1);")}>{v.title}</div>
+                </Link>
+                {v.readMinutes && <div style={css("font-size:12px;opacity:0.55;")}>{v.readMinutes} min read</div>}
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       <div className="hr" />
 
       <section style={css("padding:var(--space-8) var(--space-6);")}>
         <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-4);")}>PHOTOGRAPHY</div>
-        <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--space-3);")}>
-          {[1, 2, 3, 4].map((n) => (
-            <div key={n} style={css("aspect-ratio:1;border-radius:var(--radius-md);overflow:hidden;")}><PlaceholderImage label="Photo" /></div>
-          ))}
-        </div>
-        <p style={css("font-size:13px;opacity:0.55;margin-top:var(--space-3);")}>Coastline Series &middot; Niger Delta, 2026</p>
+        {photos.length === 0 ? (
+          <EmptyState title="No photographs yet." body="Nothing here yet. Please check back soon." />
+        ) : (
+          <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--space-3);")}>
+            {photos.map((p) => (
+              <div key={p.id} style={css("aspect-ratio:1;position:relative;border-radius:var(--radius-md);overflow:hidden;")}>
+                {p.url ? (
+                  <Image src={p.url} alt={p.altText ?? ""} fill sizes="220px" style={{ objectFit: "cover" }} />
+                ) : (
+                  <PlaceholderImage label="Photo" />
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       <div className="hr" />

@@ -7,6 +7,7 @@ import EmptyState from "@/components/EmptyState";
 import { css } from "@/lib/css";
 import { getServices } from "@/lib/data";
 import { pageMetadata } from "@/lib/seo";
+import { formatMoney } from "@/lib/money";
 
 export const metadata = pageMetadata(
   "Services",
@@ -17,8 +18,7 @@ export const revalidate = 60;
 
 function priceLabel(service: { pricingMode: string; priceCents: number | null; currency: string }) {
   if (service.pricingMode === "quote" || service.priceCents == null) return "Quote on request";
-  const symbol = service.currency === "NGN" ? "₦" : service.currency === "USD" ? "$" : `${service.currency} `;
-  const amount = `${symbol}${(service.priceCents / 100).toLocaleString()}`;
+  const amount = formatMoney(service.priceCents, service.currency);
   return service.pricingMode === "hourly" ? `${amount} / hour` : amount;
 }
 
@@ -43,7 +43,7 @@ export default async function ServicesPage() {
 
       <section style={css("padding:var(--space-6);")}>
         {services.length === 0 ? (
-          <EmptyState title="No services published yet." body="Services added from the Admin Centre will appear here." />
+          <EmptyState title="No services available right now." body="Nothing here yet. Please check back soon." />
         ) : (
           <>
             {featured.length > 0 && (

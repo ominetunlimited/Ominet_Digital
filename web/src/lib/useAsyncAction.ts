@@ -62,6 +62,11 @@ export function useAsyncAction(timeoutMs: number = DEFAULT_TIMEOUT_MS) {
         return result;
       }
       setState("done");
+      // Let "Saved" show for a moment, then settle back to idle — unless a
+      // newer run has started in the meantime.
+      setTimeout(() => {
+        if (id === runId.current) setState("idle");
+      }, 2500);
       return result;
     } catch (err) {
       if (timer) clearTimeout(timer);
@@ -75,5 +80,5 @@ export function useAsyncAction(timeoutMs: number = DEFAULT_TIMEOUT_MS) {
     }
   }
 
-  return { state, error, run, busy: state === "busy" };
+  return { state, error, run, busy: state === "busy", saved: state === "done" };
 }

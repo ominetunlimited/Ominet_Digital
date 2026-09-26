@@ -11,8 +11,7 @@ export const metadata = pageMetadata(
 );
 
 const work = [
-  { label: "The Long Return, novel", year: "2026" },
-  { label: "Delta Towns, documentary", year: "2026" },
+  { label: "A Child's Cry in the Savannah, novel", year: "2026" },
   { label: "Founder, Ominet Digital", year: "2021–present" },
   { label: "Founder, PROFILE", year: "2024–present" },
 ];
@@ -30,8 +29,7 @@ export default function AboutPage() {
         <div style={css("flex:2 1 380px;")}>
           <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>ABOUT</div>
           <h1 style={css("font-family:var(--font-heading);font-size:44px;margin:0 0 var(--space-4);")}>Omini Nfawa</h1>
-          <p style={css("font-size:17px;line-height:1.7;opacity:0.8;max-width:56ch;margin:0 0 var(--space-3);")}>Writer, researcher and filmmaker working across essays, fiction and documentary. Founder of Ominet Digital and PROFILE.</p>
-          <p style={css("font-size:17px;line-height:1.7;opacity:0.8;max-width:56ch;margin:0;")}>Work has appeared in Continental Review and been shortlisted for the Delta Prize. Currently based between Lagos and Port Harcourt.</p>
+          <p style={css("font-size:17px;line-height:1.7;opacity:0.8;max-width:56ch;margin:0;")}>Writer, researcher and filmmaker working across essays, fiction and documentary. Founder of Ominet Digital and PROFILE.</p>
         </div>
       </section>
 

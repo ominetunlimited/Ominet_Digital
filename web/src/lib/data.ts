@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { supabaseConfigured } from "@/lib/supabase/env";
+import { formatMoney } from "@/lib/money";
 import {
   articles as mockArticles,
   books as mockBooks,
@@ -21,8 +22,7 @@ function formatDate(iso: string | null): string {
 
 function formatPrice(cents: number | null, currency: string | null): string | undefined {
   if (cents == null) return undefined;
-  const symbol = currency === "NGN" ? "₦" : currency === "USD" ? "$" : `${currency ?? ""} `;
-  return `${symbol}${(cents / 100).toFixed(2)}`;
+  return formatMoney(cents, currency);
 }
 
 type ContentRow = {
@@ -119,13 +119,19 @@ type BookRow = {
   pages: string | null;
   excerpt: string | null;
   cover_image_url?: string | null;
+  author_note?: string | null;
   formats: string[] | null;
   status: string;
   featured?: boolean | null;
   book_purchase_links: { label: string; platform: string; url: string }[];
 };
 
-const BOOK_SELECT = "id,slug,title,kind,year,pages,excerpt,cover_image_url,formats,status,featured,book_purchase_links(label,platform,url)";
+const BOOK_SELECT = "id,slug,title,kind,year,pages,excerpt,cover_image_url,author_note,formats,status,featured,book_purchase_links(label,platform,url)";
+// Fallback for before 0009_author_note.sql has been run — same "retry
+// without the missing column" pattern used for video_url/video_thumbnail_url
+// in content-actions.ts, so a pending migration can't take the whole Books
+// section down to fake mock data via the catch-all error fallback below.
+const BOOK_SELECT_SAFE = "id,slug,title,kind,year,pages,excerpt,cover_image_url,formats,status,featured,book_purchase_links(label,platform,url)";
 
 function mapBook(row: BookRow): Book {
   return {
@@ -137,6 +143,7 @@ function mapBook(row: BookRow): Book {
     pages: row.pages ?? undefined,
     excerpt: row.excerpt ?? "",
     coverImageUrl: row.cover_image_url ?? undefined,
+    authorNote: row.author_note ?? undefined,
     purchaseLinks: (row.book_purchase_links ?? []).map((l) => ({ label: l.label, platform: l.platform, url: l.url })),
     formats: row.formats ?? [],
     upcoming: row.status !== "published",
@@ -147,10 +154,12 @@ function mapBook(row: BookRow): Book {
 export async function getBooks(): Promise<{ published: Book[]; upcoming: Book[] }> {
   if (!supabaseConfigured) return { published: mockBooks, upcoming: mockUpcomingBooks };
   const supabase = await createClient();
-  const { data, error } = await supabase!
-    .from("books")
-    .select(BOOK_SELECT)
-    .order("year", { ascending: false });
+  let data: unknown;
+  let error: { code?: string } | null;
+  ({ data, error } = await supabase!.from("books").select(BOOK_SELECT).order("year", { ascending: false }));
+  if (error?.code === "42703" || error?.code === "PGRST204") {
+    ({ data, error } = await supabase!.from("books").select(BOOK_SELECT_SAFE).order("year", { ascending: false }));
+  }
   if (error || !data) return { published: mockBooks, upcoming: mockUpcomingBooks };
   const mapped = (data as unknown as BookRow[]).map(mapBook);
   return {
@@ -168,11 +177,12 @@ export async function getFeaturedBook(): Promise<Book | undefined> {
 export async function getBook(slug: string): Promise<Book | undefined> {
   if (!supabaseConfigured) return mockBooks.find((b) => b.slug === slug);
   const supabase = await createClient();
-  const { data, error } = await supabase!
-    .from("books")
-    .select(BOOK_SELECT)
-    .eq("slug", slug)
-    .maybeSingle();
+  let data: unknown;
+  let error: { code?: string } | null;
+  ({ data, error } = await supabase!.from("books").select(BOOK_SELECT).eq("slug", slug).maybeSingle());
+  if (error?.code === "42703" || error?.code === "PGRST204") {
+    ({ data, error } = await supabase!.from("books").select(BOOK_SELECT_SAFE).eq("slug", slug).maybeSingle());
+  }
   if (error || !data) return undefined;
   return mapBook(data as unknown as BookRow);
 }
@@ -362,6 +372,36 @@ export async function getService(slug: string): Promise<Service | undefined> {
     .maybeSingle();
   if (error || !data) return undefined;
   return mapService(data as unknown as ServiceRow);
+}
+
+export type MediaImage = { id: string; url: string; title: string | null; altText: string | null; caption: string | null };
+export type VideoPost = { slug: string; title: string; videoUrl: string; videoThumbnailUrl?: string; readMinutes: number | null };
+
+export async function getMediaPhotos(limit = 8): Promise<MediaImage[]> {
+  if (!supabaseConfigured) return [];
+  const supabase = await createClient();
+  const { data, error } = await supabase!
+    .from("media_assets")
+    .select("id,url,title,alt_text,caption")
+    .eq("kind", "image")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error || !data) return [];
+  return data.map((r) => ({ id: r.id, url: r.url, title: r.title, altText: r.alt_text, caption: r.caption }));
+}
+
+export async function getVideoPosts(limit = 6): Promise<VideoPost[]> {
+  if (!supabaseConfigured) return [];
+  const supabase = await createClient();
+  const { data, error } = await supabase!
+    .from("content")
+    .select("slug,title,video_url,video_thumbnail_url,read_minutes")
+    .eq("status", "published")
+    .not("video_url", "is", null)
+    .order("published_at", { ascending: false })
+    .limit(limit);
+  if (error || !data) return [];
+  return data.map((r) => ({ slug: r.slug, title: r.title, videoUrl: r.video_url as string, videoThumbnailUrl: r.video_thumbnail_url ?? undefined, readMinutes: r.read_minutes }));
 }
 
 export type AdPlacement = {

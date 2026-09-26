@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { css } from "@/lib/css";
 import { createClient } from "@/lib/supabase/server";
+import { formatMoney } from "@/lib/money";
 
 export const metadata = { title: "Store — Admin", robots: { index: false, follow: false } };
 
@@ -27,7 +28,7 @@ export default async function AdminStorePage() {
               <tr key={p.id}>
                 <td><Link href={`/admin/store/${p.id}`}>{p.title}</Link></td>
                 <td>{p.access}</td>
-                <td>{p.price_cents != null ? `${p.currency} ${(p.price_cents / 100).toFixed(2)}` : "—"}</td>
+                <td>{formatMoney(p.price_cents, p.currency)}</td>
                 <td>{p.status}</td>
               </tr>
             ))}

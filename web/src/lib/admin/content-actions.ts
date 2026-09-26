@@ -27,7 +27,7 @@ export type ContentInput = {
   video_thumbnail_url: string;
 };
 
-export type ActionResult = { ok: true } | { ok: false; error: string };
+export type ActionResult = { ok: true; id?: string } | { ok: false; error: string };
 
 export async function saveContent(input: ContentInput): Promise<ActionResult> {
   const supabase = await createClient();
@@ -91,7 +91,8 @@ export async function saveContent(input: ContentInput): Promise<ActionResult> {
   revalidatePath("/writing");
   revalidatePath(`/writing/${data.slug}`);
   if (previousSlug && previousSlug !== data.slug) revalidatePath(`/writing/${previousSlug}`);
-  redirect(`/admin/content/${data.id}`);
+  revalidatePath("/");
+  return { ok: true, id: data.id as string };
 }
 
 export async function deleteContent(id: string): Promise<ActionResult> {
