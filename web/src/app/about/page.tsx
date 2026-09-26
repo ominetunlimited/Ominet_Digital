@@ -4,6 +4,7 @@ import PlaceholderImage from "@/components/PlaceholderImage";
 import { css } from "@/lib/css";
 import { pageMetadata } from "@/lib/seo";
 import { ResearchProfileSection } from "@/components/ResearchProfileLinks";
+import { getSelectedWork } from "@/lib/selected-work";
 
 export const metadata = pageMetadata(
   "About",
@@ -11,13 +12,8 @@ export const metadata = pageMetadata(
   "/about"
 );
 
-const work = [
-  { label: "A Child's Cry in the Savannah, novel", year: "2026" },
-  { label: "Founder, Ominet Digital", year: "2021–present" },
-  { label: "Founder, PROFILE", year: "2024–present" },
-];
-
-export default function AboutPage() {
+export default async function AboutPage() {
+  const work = await getSelectedWork();
   return (
     <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>
       <Nav />
@@ -36,21 +32,23 @@ export default function AboutPage() {
 
       <div className="hr" />
 
-      <section style={css("padding:var(--space-8) var(--space-6);")}>
-        <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-4);")}>SELECTED WORK</div>
-        <div style={css("display:grid;gap:var(--space-4);")}>
-          {work.map((w, i) => (
-            <div
-              key={w.label}
-              style={css(
-                `display:flex;justify-content:space-between;gap:var(--space-4);flex-wrap:wrap;${i < work.length - 1 ? "border-bottom:2px solid var(--color-divider);" : ""}padding-bottom:var(--space-3);`
-              )}
-            >
-              <span>{w.label}</span><span style={css("opacity:0.55;")}>{w.year}</span>
-            </div>
-          ))}
-        </div>
-      </section>
+      {work.length > 0 && (
+        <section style={css("padding:var(--space-8) var(--space-6);")}>
+          <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-4);")}>SELECTED WORK</div>
+          <div style={css("display:grid;gap:var(--space-4);")}>
+            {work.map((w, i) => (
+              <div
+                key={w.id}
+                style={css(
+                  `display:flex;justify-content:space-between;gap:var(--space-4);flex-wrap:wrap;${i < work.length - 1 ? "border-bottom:2px solid var(--color-divider);" : ""}padding-bottom:var(--space-3);`
+                )}
+              >
+                <span>{w.label}</span><span style={css("opacity:0.55;")}>{w.yearLabel}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <ResearchProfileSection placement="profile" />
 
