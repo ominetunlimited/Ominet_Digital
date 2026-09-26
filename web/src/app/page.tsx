@@ -14,7 +14,7 @@ import { truncate } from "@/lib/text";
 
 export const revalidate = 60;
 
-export const metadata = pageMetadata(
+export const generateMetadata = () => pageMetadata(
   "Ominet Digital",
   "A digital ecosystem for publishing, creativity, professional identity and technology, founded by Omini Nfawa.",
   "/"

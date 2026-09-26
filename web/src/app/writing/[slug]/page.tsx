@@ -15,6 +15,7 @@ import { getArticle, getArticles, getFeaturedBook } from "@/lib/data";
 import { getResearchProfiles } from "@/lib/research";
 import { ResearchProfileSection } from "@/components/ResearchProfileLinks";
 import { SITE_URL } from "@/lib/seo";
+import { getSiteSettings } from "@/lib/site-settings";
 import { hasEntitlement, getCurrentUser } from "@/lib/entitlements";
 import { getEngagement } from "@/lib/engagement";
 import LikeButton from "@/components/LikeButton";
@@ -25,12 +26,13 @@ export const revalidate = 60;
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const article = await getArticle(slug);
-  if (!article) return { title: "Article — Ominet Digital" };
-  const title = article.seoTitle || `${article.title} — Ominet Digital`;
+  if (!article) return { title: "Article" };
+  const { identity } = await getSiteSettings();
+  const title = article.seoTitle || `${article.title} — ${identity.siteName}`;
   const description = article.seoDescription || article.excerpt;
   const url = `${SITE_URL}/writing/${article.slug}`;
   return {
-    title,
+    title: { absolute: title },
     description,
     alternates: { canonical: url },
     ...(article.status && article.status !== "published" ? { robots: { index: false, follow: false } } : {}),
@@ -69,6 +71,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
   const visibleParagraphs = unlocked ? bodyParagraphs : bodyParagraphs.slice(0, 1);
 
   const profileLinks = await getResearchProfiles();
+  const { identity: siteIdentity } = await getSiteSettings();
   const isResearch = /research|thesis|academic|paper/i.test(article.category ?? "");
 
   const jsonLd = {
@@ -82,7 +85,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
       name: article.author || "Omini Nfawa",
       ...(profileLinks.length > 0 ? { sameAs: profileLinks.map((l) => l.url) } : {}),
     },
-    publisher: { "@type": "Organization", name: "Ominet Digital" },
+    publisher: { "@type": "Organization", name: siteIdentity.siteName },
     mainEntityOfPage: `${SITE_URL}/writing/${article.slug}`,
   };
 

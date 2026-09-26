@@ -10,6 +10,7 @@ import TrackedLink from "@/components/TrackedLink";
 import { css } from "@/lib/css";
 import { getBook } from "@/lib/data";
 import { SITE_URL } from "@/lib/seo";
+import { getSiteSettings } from "@/lib/site-settings";
 import { getCurrentUser, hasBookEntitlement } from "@/lib/entitlements";
 import { getBookDelivery } from "@/lib/books/delivery";
 import BookAccess from "@/components/BookAccess";
@@ -24,13 +25,14 @@ export const revalidate = 60;
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const book = await getBook(slug);
-  if (!book) return { title: "Book — Ominet Digital" };
-  const title = book.seoTitle || `${book.title} — Ominet Digital`;
+  if (!book) return { title: "Book" };
+  const { identity } = await getSiteSettings();
+  const title = book.seoTitle || `${book.title} — ${identity.siteName}`;
   const description = book.seoDescription || (book.excerpt ? truncate(book.excerpt, 200) : `${book.title} by ${book.author || "Omini Nfawa"}`);
   const url = `${SITE_URL}/books/${book.slug}`;
   const image = book.ogImageUrl || book.coverImageUrl;
   return {
-    title,
+    title: { absolute: title },
     description,
     alternates: { canonical: url },
     ...(book.status && book.status !== "published" ? { robots: { index: false, follow: false } } : {}),

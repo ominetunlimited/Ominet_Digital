@@ -24,6 +24,7 @@ const AREAS: Record<string, string> = {
   research_profiles: "Research profiles",
   selected_work: "About page",
   site_settings: "Site settings",
+  // (each section is its own row, so the log says which section changed)
   redirects: "Redirects",
   media_assets: "Media",
   profiles: "Roles & permissions",

@@ -14,7 +14,7 @@ function BookCover({ url, label, sizes }: { url?: string; label: string; sizes: 
   return <Image src={url} alt="" fill sizes={sizes} style={{ objectFit: "cover" }} />;
 }
 
-export const metadata = pageMetadata(
+export const generateMetadata = () => pageMetadata(
   "Books",
   "Books by Omini Nfawa — novels, essays and poetry, with purchase links to Selar, Amazon, Google Books and more.",
   "/books"

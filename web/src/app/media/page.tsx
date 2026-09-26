@@ -12,7 +12,7 @@ import { getMediaPhotos, getVideoPosts } from "@/lib/data";
 
 export const revalidate = 60;
 
-export const metadata = pageMetadata(
+export const generateMetadata = () => pageMetadata(
   "Media",
   "Video, photography and documentary work from Omini Nfawa and the Ominet Digital ecosystem.",
   "/media"

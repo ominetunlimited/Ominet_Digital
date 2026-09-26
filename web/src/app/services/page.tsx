@@ -9,7 +9,7 @@ import { getServices } from "@/lib/data";
 import { pageMetadata } from "@/lib/seo";
 import { formatMoney } from "@/lib/money";
 
-export const metadata = pageMetadata(
+export const generateMetadata = () => pageMetadata(
   "Services",
   "Writing, photography, video, design and consulting services from Ominet Digital / Omini Nfawa.",
   "/services"

@@ -3,7 +3,7 @@ import Footer from "@/components/Footer";
 import { css } from "@/lib/css";
 import { pageMetadata } from "@/lib/seo";
 
-export const metadata = pageMetadata(
+export const generateMetadata = () => pageMetadata(
   "PROFILE",
   "A verified record of activity, attribution and identity — carried between opportunities instead of rebuilt for each one.",
   "/profile"

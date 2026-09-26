@@ -1,15 +1,23 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import Analytics from "@/components/Analytics";
+import { SiteSettingsProvider } from "@/components/SiteSettingsProvider";
+import { getSiteSettings } from "@/lib/site-settings";
 import "./globals.css";
 
 const ADSENSE_CLIENT_ID = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
 
-export const metadata: Metadata = {
-  title: "Ominet Digital",
-  description:
-    "A digital ecosystem for publishing, creativity, professional identity and technology, founded by Omini Nfawa.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { identity, seo } = await getSiteSettings();
+  return {
+    // Pages give a short title; the site name is added here in one place.
+    title: { default: identity.siteName, template: `%s — ${identity.siteName}` },
+    description: identity.description,
+    openGraph: { siteName: identity.siteName, ...(seo.defaultOgImageUrl ? { images: [seo.defaultOgImageUrl] } : {}) },
+    ...(seo.faviconUrl ? { icons: { icon: seo.faviconUrl } } : {}),
+    ...(seo.googleVerification ? { verification: { google: seo.googleVerification } } : {}),
+  };
+}
 
 const THEME_INIT = `
 try {
@@ -18,7 +26,8 @@ try {
 } catch (e) {}
 `;
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const { social, identity } = await getSiteSettings();
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -34,7 +43,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <Analytics />
-        {children}
+        {/* Only links that are switched on are handed to the browser — hidden ones never appear in the page source. */}
+        <SiteSettingsProvider value={{ social: social.filter((s) => s.enabled && s.url), siteName: identity.siteName }}>{children}</SiteSettingsProvider>
       </body>
     </html>
   );

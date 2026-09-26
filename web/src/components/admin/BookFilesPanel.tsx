@@ -20,11 +20,14 @@ function fmtSize(n: number) {
 
 export default function BookFilesPanel({
   bookId,
+  ensureBook,
   initialFiles,
   onUsePageCount,
   onUseCover,
 }: {
-  bookId: string;
+  bookId: string | null;
+  /** Called when a file is chosen before the book exists: saves a private draft and returns its id. */
+  ensureBook: () => Promise<string | null>;
   initialFiles: BookFileRecord[];
   onUsePageCount: (pages: number, source: string) => void;
   onUseCover: (url: string) => void;
@@ -42,7 +45,9 @@ export default function BookFilesPanel({
     if (file.size > MAX) return setError("That file is larger than the 70 MB limit.");
     try {
       setStage("preparing");
-      const ticket = await requestBookFileUpload(bookId, file.name, file.size);
+      const id = bookId ?? (await ensureBook());
+      if (!id) return setError("Add the book's title first — the file is attached to the book, so choosing a file saves it as a private draft.");
+      const ticket = await requestBookFileUpload(id, file.name, file.size);
       if (!ticket.ok) return setError(ticket.error);
 
       setStage("uploading");
@@ -52,7 +57,7 @@ export default function BookFilesPanel({
       if (upErr) return setError(`Upload failed: ${upErr.message}`);
 
       setStage("checking");
-      const res = await confirmBookFile(bookId, ticket.path, file.name);
+      const res = await confirmBookFile(id, ticket.path, file.name);
       if (!res.ok) return setError(res.error);
       setFiles((f) => [...f.filter((x) => x.format !== res.file.format), res.file]);
       setNote(`${res.file.format.toUpperCase()} uploaded and checked.`);
@@ -109,7 +114,11 @@ export default function BookFilesPanel({
       </p>
 
       <div style={css("display:grid;gap:var(--space-3);margin-bottom:var(--space-3);")}>
-        {files.length === 0 && <div style={css("font-size:13px;opacity:0.6;")}>No files attached yet.</div>}
+        {files.length === 0 && (
+          <div style={css("font-size:13px;opacity:0.6;")}>
+            No files attached yet.{bookId ? "" : " You can choose one now — the book is saved as a private draft so the file can be attached to it."}
+          </div>
+        )}
         {files.map((f) => {
           const d = f.detected;
           return (

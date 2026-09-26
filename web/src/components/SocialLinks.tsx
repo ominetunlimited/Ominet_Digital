@@ -1,12 +1,14 @@
-import { SOCIAL_ACCOUNTS } from "@/lib/social";
+"use client";
+
 import { SOCIAL_ICONS } from "@/components/icons/SocialIcons";
+import { useSiteSettings } from "@/components/SiteSettingsProvider";
 
 /**
- * Real Ominet Digital social profiles, as icon links. Takes an explicit
- * `color` (rather than inheriting) because every current placement sits on
- * the permanently-navy chrome (Nav/hero/footer), and the global a{} rule
- * keys off --color-text — which flips with the theme and would otherwise
- * render invisible dark-on-dark there, the same bug class fixed in Nav.
+ * The site's social profiles as icon links, taken from Admin → Site settings.
+ * Takes an explicit `color` (rather than inheriting) because every current
+ * placement sits on the permanently-navy chrome (Nav/hero/footer), and the
+ * global a{} rule keys off --color-text — which flips with the theme and would
+ * otherwise render invisible dark-on-dark there.
  */
 export default function SocialLinks({
   color = "#eafaf0",
@@ -17,9 +19,12 @@ export default function SocialLinks({
   size?: number;
   gap?: string;
 }) {
+  const { social } = useSiteSettings();
+  const links = social.filter((s) => s.enabled && s.url);
+  if (links.length === 0) return null;
   return (
     <div style={{ display: "flex", gap, alignItems: "center" }}>
-      {SOCIAL_ACCOUNTS.map(({ platform, label, url }) => {
+      {links.map(({ platform, label, url }) => {
         const Icon = SOCIAL_ICONS[platform];
         return (
           <a

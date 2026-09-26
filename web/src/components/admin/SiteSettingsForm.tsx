@@ -1,0 +1,126 @@
+"use client";
+
+import { useState, type ReactNode } from "react";
+import { css } from "@/lib/css";
+import { useAdminAction } from "@/lib/admin/useAdminAction";
+import SaveButton from "@/components/admin/SaveButton";
+import ImageUploadField from "@/components/admin/ImageUploadField";
+import { saveSiteSettings } from "@/lib/admin/site-settings-actions";
+import type { SectionName, SiteSettings } from "@/lib/site-settings-validate";
+
+function Section({ title, hint, section, data, children }: { title: string; hint: string; section: SectionName; data: unknown; children: ReactNode }) {
+  const { busy, saved, error, run } = useAdminAction();
+  return (
+    <div className="card" style={css("gap:var(--space-3);margin-bottom:var(--space-4);")}>
+      <div>
+        <div style={css("font-family:var(--font-heading);font-size:18px;")}>{title}</div>
+        <div style={css("font-size:12px;opacity:0.6;margin-top:2px;")}>{hint}</div>
+      </div>
+      {children}
+      {error && <p style={css("font-size:13px;color:var(--om-coral);margin:0;")}>{error}</p>}
+      <div>
+        <SaveButton busy={busy} saved={saved} idleLabel="Save" onClick={() => void run(() => saveSiteSettings(section, data))} />
+      </div>
+    </div>
+  );
+}
+
+function Field({ label, children, hint }: { label: string; children: ReactNode; hint?: string }) {
+  return (
+    <div className="field">
+      <label>{label}</label>
+      {children}
+      {hint && <div style={css("font-size:12px;opacity:0.55;margin-top:4px;")}>{hint}</div>}
+    </div>
+  );
+}
+
+export default function SiteSettingsForm({ initial }: { initial: SiteSettings }) {
+  const [identity, setIdentity] = useState(initial.identity);
+  const [contact, setContact] = useState(initial.contact);
+  const [social, setSocial] = useState(initial.social);
+  const [seo, setSeo] = useState(initial.seo);
+  const [footer, setFooter] = useState(initial.footer);
+
+  return (
+    <div style={css("max-width:720px;")}>
+      <Section title="Site identity" hint="The name and description search engines and social networks show for the whole site." section="identity" data={identity}>
+        <Field label="Site name" hint="Added to every page title, e.g. “Books — Your Site Name”.">
+          <input className="input" value={identity.siteName} onChange={(e) => setIdentity({ ...identity, siteName: e.target.value })} />
+        </Field>
+        <Field label={`Description (${identity.description.length}/300)`}>
+          <textarea className="input" rows={3} value={identity.description} onChange={(e) => setIdentity({ ...identity, description: e.target.value })} />
+        </Field>
+        <p style={css("font-size:12px;opacity:0.6;margin:0;")}>Logo: the site uses the supplied Ominet Digital logo everywhere; it is fixed and isn&apos;t editable here.</p>
+      </Section>
+
+      <Section title="Contact" hint="Where visitors are told to reach you. Shown in the footer's Contact link, on booking confirmations and in booking error messages." section="contact" data={contact}>
+        <div style={css("display:flex;gap:var(--space-3);flex-wrap:wrap;")}>
+          <div style={css("flex:1;min-width:220px;")}>
+            <Field label="Support email">
+              <input className="input" type="email" value={contact.supportEmail} onChange={(e) => setContact({ ...contact, supportEmail: e.target.value })} />
+            </Field>
+          </div>
+          <div style={css("flex:1;min-width:220px;")}>
+            <Field label="Booking email">
+              <input className="input" type="email" value={contact.bookingEmail} onChange={(e) => setContact({ ...contact, bookingEmail: e.target.value })} />
+            </Field>
+          </div>
+        </div>
+        <Field label="Phone (optional)">
+          <input className="input" value={contact.phone} onChange={(e) => setContact({ ...contact, phone: e.target.value })} placeholder="+234 …" />
+        </Field>
+      </Section>
+
+      <Section title="Social links" hint="Icons in the top bar, hero and footer. Each link must be a real profile on that network. Untick to hide one." section="social" data={social}>
+        {social.map((s, i) => (
+          <div key={s.platform} style={css("display:flex;gap:var(--space-3);flex-wrap:wrap;align-items:flex-end;")}>
+            <div style={css("flex:1;min-width:110px;max-width:130px;font-size:14px;padding-bottom:10px;")}>{s.label}</div>
+            <div className="field" style={css("flex:3;min-width:220px;")}>
+              <input
+                className="input"
+                aria-label={`${s.label} profile link`}
+                value={s.url}
+                placeholder="https://…"
+                onChange={(e) => setSocial(social.map((x, j) => (j === i ? { ...x, url: e.target.value } : x)))}
+              />
+            </div>
+            <label className="radio" style={css("padding-bottom:10px;font-size:13px;")}>
+              <input type="checkbox" checked={s.enabled} onChange={(e) => setSocial(social.map((x, j) => (j === i ? { ...x, enabled: e.target.checked } : x)))} style={{ position: "static", width: "auto", height: "auto", opacity: 1 }} />
+              Show
+            </label>
+          </div>
+        ))}
+      </Section>
+
+      <Section title="Search & sharing" hint="Favicon, the picture used when a page is shared without its own image, and Google Search Console verification." section="seo" data={seo}>
+        <ImageUploadField label="Favicon (browser tab icon — a square PNG works best)" value={seo.faviconUrl} onChange={(url) => setSeo({ ...seo, faviconUrl: url })} />
+        <ImageUploadField label="Default share image (about 1200 × 630)" value={seo.defaultOgImageUrl} onChange={(url) => setSeo({ ...seo, defaultOgImageUrl: url })} />
+        <Field label="Google Search Console verification code" hint="Just the code from <meta name=&quot;google-site-verification&quot; content=&quot;…&quot;>. Leave blank if you haven't set it up.">
+          <input className="input" value={seo.googleVerification} onChange={(e) => setSeo({ ...seo, googleVerification: e.target.value })} />
+        </Field>
+      </Section>
+
+      <Section title="Footer & legal" hint="The text and links at the bottom of every page." section="footer" data={footer}>
+        <Field label={`Footer text (${footer.blurb.length}/300)`}>
+          <textarea className="input" rows={2} value={footer.blurb} onChange={(e) => setFooter({ ...footer, blurb: e.target.value })} />
+        </Field>
+        <Field label="Name shown after © and the year">
+          <input className="input" value={footer.copyrightName} onChange={(e) => setFooter({ ...footer, copyrightName: e.target.value })} />
+        </Field>
+        <div style={css("display:flex;gap:var(--space-3);flex-wrap:wrap;")}>
+          <div style={css("flex:1;min-width:220px;")}>
+            <Field label="Privacy policy link (optional)" hint="Only shown in the footer once you fill it in.">
+              <input className="input" value={footer.privacyUrl} onChange={(e) => setFooter({ ...footer, privacyUrl: e.target.value })} placeholder="/privacy or https://…" />
+            </Field>
+          </div>
+          <div style={css("flex:1;min-width:220px;")}>
+            <Field label="Terms link (optional)">
+              <input className="input" value={footer.termsUrl} onChange={(e) => setFooter({ ...footer, termsUrl: e.target.value })} placeholder="/terms or https://…" />
+            </Field>
+          </div>
+        </div>
+      </Section>
+    </div>
+  );
+}

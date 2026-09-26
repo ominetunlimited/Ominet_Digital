@@ -11,7 +11,7 @@ import { formatMoney } from "@/lib/money";
 
 export const revalidate = 60;
 
-export const metadata = pageMetadata(
+export const generateMetadata = () => pageMetadata(
   "Store",
   "Ebooks, digital publications and resources from Ominet Digital.",
   "/store"

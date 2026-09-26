@@ -1,7 +1,6 @@
 "use client";
 
 import Nav from "@/components/Nav";
-import Footer from "@/components/Footer";
 import { css } from "@/lib/css";
 
 export default function ErrorPage({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
@@ -15,7 +14,8 @@ export default function ErrorPage({ reset }: { error: Error & { digest?: string 
         <button type="button" className="btn btn-secondary" onClick={() => reset()}>Try again</button>
       </section>
       <div className="hr" />
-      <Footer />
+      {/* Deliberately not the full <Footer />: that is a server component that reads settings, and an error page must not depend on anything that could itself fail. */}
+      <div style={css("padding:var(--space-6);text-align:center;font-size:12px;opacity:0.6;")}>&copy; {new Date().getFullYear()}</div>
     </div>
   );
 }

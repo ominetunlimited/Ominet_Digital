@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getOrCreateAnonKey } from "@/lib/anon-key";
 import { queueAlert, adminLink } from "@/lib/notify/telegram";
+import { getSiteSettings } from "@/lib/site-settings";
 
 export type BookingInput = {
   serviceId: string;
@@ -56,8 +57,9 @@ export async function submitBooking(input: BookingInput): Promise<BookingResult>
     preferredDate = input.preferredDate;
   }
 
+  const { contact } = await getSiteSettings();
   const admin = createAdminClient();
-  if (!admin) return { ok: false, error: "Booking isn't available right now. Please email ominetmedia@gmail.com." };
+  if (!admin) return { ok: false, error: `Booking isn't available right now. Please email ${contact.bookingEmail}.` };
 
   const { data: service } = await admin
     .from("services")
@@ -77,7 +79,7 @@ export async function submitBooking(input: BookingInput): Promise<BookingResult>
     admin.from("bookings").select("id", { count: "exact", head: true }).eq("email", email).gte("created_at", dayAgo),
   ]);
   if ((byGuest.count ?? 0) >= PER_GUEST_PER_HOUR || (byEmail.count ?? 0) >= PER_EMAIL_PER_DAY) {
-    return { ok: false, error: "You've sent several requests already. Please wait a while, or email ominetmedia@gmail.com." };
+    return { ok: false, error: `You've sent several requests already. Please wait a while, or email ${contact.bookingEmail}.` };
   }
 
   const { data, error } = await admin
@@ -95,7 +97,7 @@ export async function submitBooking(input: BookingInput): Promise<BookingResult>
     })
     .select("id")
     .single();
-  if (error || !data) return { ok: false, error: "We couldn't save your request. Please try again, or email ominetmedia@gmail.com." };
+  if (error || !data) return { ok: false, error: `We couldn't save your request. Please try again, or email ${contact.bookingEmail}.` };
 
   // Feeds the Analytics dashboard; a logging failure must never fail the booking.
   await admin.from("analytics_events").insert({ event_type: "booking", metadata: { service_id: service.id } }).then(() => {}, () => {});

@@ -7,7 +7,7 @@ import ImageUploadField from "@/components/admin/ImageUploadField";
 import MoneyInput from "@/components/admin/MoneyInput";
 import { slugify } from "@/lib/slug";
 import { useAdminAction } from "@/lib/admin/useAdminAction";
-import SaveButton from "@/components/admin/SaveButton";
+import FormActions from "@/components/admin/FormActions";
 import { useRouter } from "next/navigation";
 
 const ACCESS = [
@@ -42,14 +42,19 @@ export default function ProductForm({ initial }: { initial?: Partial<ProductInpu
     setValues((v) => ({ ...v, [key]: value }));
   }
 
-  async function submit() {
-    const result = await run(() => saveProduct(values));
-    if (!result?.ok) return;
+  async function persist(status?: string): Promise<string | null> {
+    const payload = status ? { ...values, status } : values;
+    const result = await run(() => saveProduct(payload));
+    if (!result?.ok) return null;
+    if (status) set("status", status);
     if (result.id && !values.id) {
       set("id", result.id);
       setTimeout(() => router.push(`/admin/store/${result.id}`), 900);
     } else router.refresh();
+    return result.id ?? values.id ?? null;
   }
+
+  const submit = () => void persist();
 
   async function remove() {
     if (!values.id || !confirm(`Delete "${values.title}"? This can't be undone.`)) return;
@@ -138,19 +143,24 @@ export default function ProductForm({ initial }: { initial?: Partial<ProductInpu
 
       {error && <p style={css("font-size:13px;color:var(--om-coral);margin-bottom:var(--space-3);")}>{error}</p>}
 
-      <div style={css("display:flex;gap:var(--space-3);")}>
-        <SaveButton busy={busy} saved={saved} disabled={!values.title || !values.slug} idleLabel={values.id ? "Save changes" : "Create"} onClick={submit} />
-        {values.id && values.status === "published" ? (
-          <a href="/store" target="_blank" rel="noopener" className="btn btn-secondary" style={css("text-decoration:none;")}>View in store ↗</a>
-        ) : (
-          <button type="button" className="btn btn-secondary" disabled title="Products have no page of their own — they appear in the Store once published">Preview</button>
-        )}
-        {values.id && (
-          <button type="button" className="btn btn-secondary" onClick={remove} disabled={busy} style={css("color:var(--om-coral);border-color:var(--om-coral);")}>
-            Delete
-          </button>
-        )}
-      </div>
+      <FormActions
+        isNew={!values.id}
+        busy={busy}
+        saved={saved}
+        disabled={!values.title || !values.slug}
+        onSave={submit}
+        onPublish={() => void persist("published")}
+        onDraft={() => void persist("draft")}
+        previewHref={null}
+        previewSlot={
+          values.id && values.status === "published" ? (
+            <a href="/store" target="_blank" rel="noopener" className="btn btn-secondary" style={css("text-decoration:none;")}>View in store ↗</a>
+          ) : (
+            <button type="button" className="btn btn-secondary" disabled title="Products have no page of their own — they appear in the Store once published">Preview</button>
+          )
+        }
+        onDelete={remove}
+      />
     </div>
   );
 }

@@ -10,7 +10,7 @@ import { getFeaturedBook, getArticles } from "@/lib/data";
 import { truncate } from "@/lib/text";
 import { ResearchProfileSection } from "@/components/ResearchProfileLinks";
 
-export const metadata = pageMetadata(
+export const generateMetadata = () => pageMetadata(
   "Omini Nfawa",
   "Essays, research and fiction, alongside books, film and photography from Omini Nfawa.",
   "/omini-nfawa"
@@ -150,7 +150,7 @@ export default async function OminiNfawaPage() {
 
       <ResearchProfileSection placement="profile" title="RESEARCH PROFILES" />
 
-      <section style={css("padding:var(--space-8) var(--space-6);display:flex;justify-content:space-between;align-items:center;gap:var(--space-6);flex-wrap:wrap;")}>
+      <section id="newsletter" style={css("padding:var(--space-8) var(--space-6);display:flex;justify-content:space-between;align-items:center;gap:var(--space-6);flex-wrap:wrap;")}>
         <div style={css("flex:1 1 260px;")}>
           <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-2);")}>NEWSLETTER</div>
           <div style={css("font-family:var(--font-heading);font-size:24px;")}>New writing and book news, occasionally.</div>

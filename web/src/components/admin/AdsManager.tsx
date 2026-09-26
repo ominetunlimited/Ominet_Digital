@@ -103,6 +103,7 @@ function Row({ draft, campaigns, placements, onChange, onRemoved }: { draft: Dra
         <div className="field" style={css("flex:1;min-width:200px;")}>
           <label>Where it appears</label>
           <select className="input" value={draft.slotKey} onChange={(e) => set("slotKey", e.target.value)}>
+            <option value="">Choose where…</option>
             {placements.map((p) => <option key={p.slotKey} value={p.slotKey}>{p.label} — {p.where}</option>)}
           </select>
         </div>
@@ -156,7 +157,7 @@ function Row({ draft, campaigns, placements, onChange, onRemoved }: { draft: Dra
 
       {error && <p style={css("font-size:13px;color:var(--om-coral);margin:0;")}>{error}</p>}
       <div style={css("display:flex;gap:var(--space-2);flex-wrap:wrap;")}>
-        <SaveButton busy={busy} saved={saved} idleLabel={draft.id ? "Save changes" : "Add ad"} onClick={save} disabled={!draft.title.trim() || !draft.campaignId || !draft.destinationUrl.trim()} />
+        <SaveButton busy={busy} saved={saved} idleLabel={draft.id ? "Save changes" : "Add ad"} onClick={save} disabled={!draft.title.trim() || !draft.campaignId || !draft.slotKey || !draft.destinationUrl.trim()} />
         {draft.id && draft.status !== "published" && draft.status !== "archived" && <button type="button" className="btn btn-secondary" disabled={busy} onClick={() => status("published")}>Publish</button>}
         {draft.id && draft.status === "published" && <button type="button" className="btn btn-secondary" disabled={busy} onClick={() => status("unpublished")}>Unpublish</button>}
         {draft.id && <button type="button" className="btn btn-secondary" disabled={busy} onClick={feature}>{draft.featured ? "Unfeature" : "Feature"}</button>}
@@ -177,7 +178,7 @@ export default function AdsManager({ initial, campaigns, placements }: { initial
       {rows.map((r) => (
         <Row key={r.key} draft={r} campaigns={campaigns} placements={placements} onChange={(d) => setRows((l) => l.map((x) => (x.key === r.key ? d : x)))} onRemoved={() => setRows((l) => l.filter((x) => x.key !== r.key))} />
       ))}
-      {canAdd && <div><button type="button" className="btn btn-secondary" onClick={() => setRows((l) => [...l, blank(campaigns[0].id, placements[0].slotKey)])}>+ Add an ad</button></div>}
+      {canAdd && <div><button type="button" className="btn btn-secondary" onClick={() => setRows((l) => [...l, blank(campaigns[0].id, "")])}>+ Add an ad</button></div>}
     </div>
   );
 }

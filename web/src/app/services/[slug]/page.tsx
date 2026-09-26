@@ -10,6 +10,7 @@ import BookingForm from "@/components/BookingForm";
 import { css } from "@/lib/css";
 import { getService } from "@/lib/data";
 import { SITE_URL } from "@/lib/seo";
+import { getSiteSettings } from "@/lib/site-settings";
 import { formatMoney } from "@/lib/money";
 
 export const revalidate = 60;
@@ -17,13 +18,14 @@ export const revalidate = 60;
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const service = await getService(slug);
-  if (!service) return { title: "Service — Ominet Digital" };
-  const title = service.seoTitle || `${service.title} — Ominet Digital`;
-  const description = service.seoDescription || service.shortDescription || `${service.title} — a service from Ominet Digital.`;
+  if (!service) return { title: "Service" };
+  const { identity } = await getSiteSettings();
+  const title = service.seoTitle || `${service.title} — ${identity.siteName}`;
+  const description = service.seoDescription || service.shortDescription || `${service.title} — a service from ${identity.siteName}.`;
   const url = `${SITE_URL}/services/${service.slug}`;
   const image = service.ogImageUrl || service.featuredImageUrl;
   return {
-    title,
+    title: { absolute: title },
     description,
     alternates: { canonical: url },
     ...(service.status && service.status !== "published" ? { robots: { index: false, follow: false } } : {}),
@@ -43,6 +45,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
   const service = await getService(slug);
   if (!service) notFound();
 
+  const { identity: siteIdentity, contact } = await getSiteSettings();
   const ctaLabel = service.ctaLabel || (service.pricingMode === "quote" ? "Request a quote" : "Book this service");
 
   const jsonLd = {
@@ -50,7 +53,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
     "@type": "Service",
     name: service.title,
     description: service.shortDescription,
-    provider: { "@type": "Organization", name: "Ominet Digital" },
+    provider: { "@type": "Organization", name: siteIdentity.siteName },
     areaServed: service.locationMode === "remote" ? "Remote" : undefined,
   };
 
@@ -92,7 +95,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
                 {ctaLabel}
               </TrackedLink>
             ) : (
-              <BookingForm serviceId={service.id} serviceTitle={service.title} ctaLabel={ctaLabel} />
+              <BookingForm serviceId={service.id} serviceTitle={service.title} ctaLabel={ctaLabel} supportEmail={contact.bookingEmail} />
             )
           ) : (
             <p style={css("font-size:13px;opacity:0.5;")}>Not currently bookable.</p>

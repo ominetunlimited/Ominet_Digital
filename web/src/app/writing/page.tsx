@@ -5,7 +5,7 @@ import { css } from "@/lib/css";
 import { getArticles } from "@/lib/data";
 import { pageMetadata } from "@/lib/seo";
 
-export const metadata = pageMetadata(
+export const generateMetadata = () => pageMetadata(
   "Writing",
   "Articles, essays, research, fiction and interviews from Omini Nfawa.",
   "/writing"

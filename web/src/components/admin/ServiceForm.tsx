@@ -4,8 +4,7 @@ import { useState } from "react";
 import { css } from "@/lib/css";
 import { saveService, deleteService, type ServiceInput, type FaqItem } from "@/lib/admin/service-actions";
 import { useAdminAction } from "@/lib/admin/useAdminAction";
-import SaveButton from "@/components/admin/SaveButton";
-import PreviewButton from "@/components/admin/PreviewButton";
+import FormActions from "@/components/admin/FormActions";
 import { useRouter } from "next/navigation";
 import ImageUploadField from "@/components/admin/ImageUploadField";
 import MoneyInput from "@/components/admin/MoneyInput";
@@ -65,15 +64,21 @@ export default function ServiceForm({ initial }: { initial?: Partial<ServiceInpu
     set("faq", values.faq.map((f, idx) => (idx === i ? { ...f, ...patch } : f)));
   }
 
-  async function submit() {
-    const result = await run(() => saveService(values));
-    if (!result?.ok) return;
+  async function persist(status?: string, navigate = true): Promise<string | null> {
+    const payload = status ? { ...values, status } : values;
+    const result = await run(() => saveService(payload));
+    if (!result?.ok) return null;
     setSavedSlug(slugify(values.slug || values.title));
+    if (status) set("status", status);
     if (result.id && !values.id) {
       set("id", result.id);
-      setTimeout(() => router.push(`/admin/services/${result.id}`), 900);
+      if (navigate) setTimeout(() => router.push(`/admin/services/${result.id}`), 900);
     } else router.refresh();
+    return result.id ?? values.id ?? null;
   }
+
+  const submit = () => void persist();
+  const previewNew = async () => ((await persist("draft", false)) ? `/services/${slugify(values.slug || values.title)}` : null);
 
   async function remove() {
     if (!values.id || !confirm(`Delete "${values.title}"? This can't be undone.`)) return;
@@ -229,15 +234,18 @@ export default function ServiceForm({ initial }: { initial?: Partial<ServiceInpu
 
       {error && <p style={css("font-size:13px;color:var(--om-coral);margin-bottom:var(--space-3);")}>{error}</p>}
 
-      <div style={css("display:flex;gap:var(--space-3);")}>
-        <SaveButton busy={busy} saved={saved} disabled={!values.title || !values.slug} idleLabel={values.id ? "Save changes" : "Create"} onClick={submit} />
-        <PreviewButton href={savedSlug ? `/services/${savedSlug}` : null} saved={Boolean(values.id)} />
-        {values.id && (
-          <button type="button" className="btn btn-secondary" onClick={remove} disabled={busy} style={css("color:var(--om-coral);border-color:var(--om-coral);")}>
-            Delete
-          </button>
-        )}
-      </div>
+      <FormActions
+        isNew={!values.id}
+        busy={busy}
+        saved={saved}
+        disabled={!values.title || !values.slug}
+        onSave={submit}
+        onPublish={() => void persist("published")}
+        onDraft={() => void persist("draft")}
+        previewHref={savedSlug ? `/services/${savedSlug}` : null}
+        onPreviewNew={previewNew}
+        onDelete={remove}
+      />
     </div>
   );
 }

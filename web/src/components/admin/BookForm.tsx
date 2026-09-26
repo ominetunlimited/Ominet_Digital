@@ -6,11 +6,10 @@ import { saveBook, deleteBook, type BookInput } from "@/lib/admin/book-actions";
 import ImageUploadField from "@/components/admin/ImageUploadField";
 import { slugify } from "@/lib/slug";
 import { useAdminAction } from "@/lib/admin/useAdminAction";
-import SaveButton from "@/components/admin/SaveButton";
+import FormActions from "@/components/admin/FormActions";
 import { useRouter } from "next/navigation";
 import MoneyInput from "@/components/admin/MoneyInput";
 import ListInput from "@/components/admin/ListInput";
-import PreviewButton from "@/components/admin/PreviewButton";
 import BookFilesPanel from "@/components/admin/BookFilesPanel";
 import type { BookFileRecord } from "@/lib/admin/book-file-actions";
 
@@ -64,15 +63,27 @@ export default function BookForm({
     set("purchaseLinks", values.purchaseLinks.map((l, idx) => (idx === i ? { ...l, ...patch } : l)));
   }
 
-  async function submit() {
-    const result = await run(() => saveBook(values));
-    if (!result?.ok) return;
-    setSavedSlug(slugify(values.slug || values.title));
+  // One save routine for every button. `status` overrides the dropdown (used by
+  // Publish / Save as draft / Preview on a new book); `navigate` is false when a
+  // draft is created in the background so the form you're filling in stays put.
+  async function persist(status?: string, navigate = true): Promise<string | null> {
+    const payload = status ? { ...values, status } : values;
+    const result = await run(() => saveBook(payload));
+    if (!result?.ok) return null;
+    const slug = slugify(values.slug || values.title);
+    setSavedSlug(slug);
+    if (status) set("status", status);
     if (result.id && !values.id) {
       set("id", result.id);
-      setTimeout(() => router.push(`/admin/books/${result.id}`), 900);
+      if (navigate) setTimeout(() => router.push(`/admin/books/${result.id}`), 900);
     } else router.refresh();
+    return result.id ?? values.id ?? null;
   }
+
+  const submit = () => void persist();
+  // Files are attached to a book, so choosing one on a new book quietly saves a private draft first.
+  const ensureBook = async () => values.id ?? (await persist("draft", false));
+  const previewNew = async () => ((await persist("draft", false)) ? `/books/${slugify(values.slug || values.title)}` : null);
 
   async function remove() {
     if (!values.id || !confirm(`Delete "${values.title}"? This can't be undone.`)) return;
@@ -244,28 +255,28 @@ export default function BookForm({
       </div>
       <ImageUploadField label="Social preview image (blank = the cover)" value={values.og_image_url} onChange={(url) => set("og_image_url", url)} />
 
-      {values.id ? (
-        <BookFilesPanel
-          bookId={values.id}
-          initialFiles={files}
-          onUsePageCount={(n, src) => setValues((v) => ({ ...v, page_count: n, page_count_source: src }))}
-          onUseCover={(url) => set("cover_image_url", url)}
-        />
-      ) : (
-        <p style={css("font-size:13px;opacity:0.6;margin-bottom:var(--space-6);")}>Create the book first, then you can attach PDF / EPUB / MOBI / DOCX files to it.</p>
-      )}
+      <BookFilesPanel
+        bookId={values.id ?? null}
+        ensureBook={ensureBook}
+        initialFiles={files}
+        onUsePageCount={(n, src) => setValues((v) => ({ ...v, page_count: n, page_count_source: src }))}
+        onUseCover={(url) => set("cover_image_url", url)}
+      />
 
       {error && <p style={css("font-size:13px;color:var(--om-coral);margin-bottom:var(--space-3);")}>{error}</p>}
 
-      <div style={css("display:flex;gap:var(--space-3);")}>
-        <SaveButton busy={busy} saved={saved} disabled={!values.title || !values.slug} idleLabel={values.id ? "Save changes" : "Create"} onClick={submit} />
-        <PreviewButton href={savedSlug ? `/books/${savedSlug}` : null} saved={Boolean(values.id)} />
-        {values.id && (
-          <button type="button" className="btn btn-secondary" onClick={remove} disabled={busy} style={css("color:var(--om-coral);border-color:var(--om-coral);")}>
-            Delete
-          </button>
-        )}
-      </div>
+      <FormActions
+        isNew={!values.id}
+        busy={busy}
+        saved={saved}
+        disabled={!values.title || !values.slug}
+        onSave={submit}
+        onPublish={() => void persist("published")}
+        onDraft={() => void persist("draft")}
+        previewHref={savedSlug ? `/books/${savedSlug}` : null}
+        onPreviewNew={previewNew}
+        onDelete={remove}
+      />
     </div>
   );
 }

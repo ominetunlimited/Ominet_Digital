@@ -5,9 +5,8 @@ import { css } from "@/lib/css";
 import { submitBooking } from "@/lib/bookings";
 import { useAsyncAction } from "@/lib/useAsyncAction";
 
-const SUPPORT_EMAIL = "ominetmedia@gmail.com";
-
-export default function BookingForm({ serviceId, serviceTitle, ctaLabel }: { serviceId: string; serviceTitle: string; ctaLabel: string }) {
+export default function BookingForm({ serviceId, serviceTitle, ctaLabel, supportEmail }: { serviceId: string; serviceTitle: string; ctaLabel: string; supportEmail: string }) {
+  const SUPPORT_EMAIL = supportEmail;
   const [open, setOpen] = useState(false);
   const [values, setValues] = useState({ name: "", email: "", phone: "", preferredDate: "", preferredTime: "", message: "", website: "" });
   const [reference, setReference] = useState<string | null>(null);

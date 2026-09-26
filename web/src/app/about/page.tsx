@@ -6,7 +6,7 @@ import { pageMetadata } from "@/lib/seo";
 import { ResearchProfileSection } from "@/components/ResearchProfileLinks";
 import { getSelectedWork } from "@/lib/selected-work";
 
-export const metadata = pageMetadata(
+export const generateMetadata = () => pageMetadata(
   "About",
   "Omini Nfawa — writer, researcher and filmmaker working across essays, fiction and documentary. Founder of Ominet Digital and PROFILE.",
   "/about"

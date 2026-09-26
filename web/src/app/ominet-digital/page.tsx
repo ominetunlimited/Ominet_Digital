@@ -4,7 +4,7 @@ import PlaceholderImage from "@/components/PlaceholderImage";
 import { css } from "@/lib/css";
 import { pageMetadata } from "@/lib/seo";
 
-export const metadata = pageMetadata(
+export const generateMetadata = () => pageMetadata(
   "Studio & Services",
   "Video, photography, graphic design and digital publishing — the studio behind the work.",
   "/ominet-digital"

@@ -6,8 +6,7 @@ import { saveContent, deleteContent, type ContentInput } from "@/lib/admin/conte
 import ImageUploadField from "@/components/admin/ImageUploadField";
 import VideoField from "@/components/admin/VideoField";
 import MoneyInput from "@/components/admin/MoneyInput";
-import SaveButton from "@/components/admin/SaveButton";
-import PreviewButton from "@/components/admin/PreviewButton";
+import FormActions from "@/components/admin/FormActions";
 import { useRouter } from "next/navigation";
 import { slugify } from "@/lib/slug";
 import { useAdminAction } from "@/lib/admin/useAdminAction";
@@ -47,17 +46,24 @@ export default function ContentForm({ initial }: { initial?: Partial<ContentInpu
     setValues((v) => ({ ...v, [key]: value }));
   }
 
-  async function submit() {
-    const result = await run(() => saveContent(values));
-    if (!result?.ok) return;
+  // One save routine for every button. `status` overrides the dropdown (Publish /
+  // Save as draft / Preview on a new item); a brand-new item moves to its own edit
+  // page after "Saved" has shown, unless a draft is created quietly for Preview.
+  async function persist(status?: string, navigate = true): Promise<string | null> {
+    const payload = status ? { ...values, status } : values;
+    const result = await run(() => saveContent(payload));
+    if (!result?.ok) return null;
     setSavedSlug(slugify(values.slug || values.title));
-    // A brand-new item moves to its own edit page (after "Saved" has shown);
-    // an existing one just stays put with its values intact.
+    if (status) set("status", status);
     if (result.id && !values.id) {
       set("id", result.id); // a second click before navigation updates, not duplicates
-      setTimeout(() => router.push(`/admin/content/${result.id}`), 900);
+      if (navigate) setTimeout(() => router.push(`/admin/content/${result.id}`), 900);
     } else router.refresh();
+    return result.id ?? values.id ?? null;
   }
+
+  const submit = () => void persist();
+  const previewNew = async () => ((await persist("draft", false)) ? `/writing/${slugify(values.slug || values.title)}` : null);
 
   async function remove() {
     if (!values.id || !confirm(`Delete "${values.title}"? This can't be undone.`)) return;
@@ -164,15 +170,18 @@ export default function ContentForm({ initial }: { initial?: Partial<ContentInpu
 
       {error && <p style={css("font-size:13px;color:var(--om-coral);margin-bottom:var(--space-3);")}>{error}</p>}
 
-      <div style={css("display:flex;gap:var(--space-3);")}>
-        <SaveButton busy={busy} saved={saved} disabled={!values.title || !values.slug} idleLabel={values.id ? "Save changes" : "Create"} onClick={submit} />
-        <PreviewButton href={savedSlug ? `/writing/${savedSlug}` : null} saved={Boolean(values.id)} />
-        {values.id && (
-          <button type="button" className="btn btn-secondary" onClick={remove} disabled={busy} style={css("color:var(--om-coral);border-color:var(--om-coral);")}>
-            Delete
-          </button>
-        )}
-      </div>
+      <FormActions
+        isNew={!values.id}
+        busy={busy}
+        saved={saved}
+        disabled={!values.title || !values.slug}
+        onSave={submit}
+        onPublish={() => void persist("published")}
+        onDraft={() => void persist("draft")}
+        previewHref={savedSlug ? `/writing/${savedSlug}` : null}
+        onPreviewNew={previewNew}
+        onDelete={remove}
+      />
     </div>
   );
 }
