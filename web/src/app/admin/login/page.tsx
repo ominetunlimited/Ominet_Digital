@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { css } from "@/lib/css";
 import { signInWithPassword } from "@/lib/admin/actions";
 import { supabaseConfigured } from "@/lib/supabase/env";
 import { useAdminAction } from "@/lib/admin/useAdminAction";
 
-export default function AdminLoginPage() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
@@ -54,5 +54,13 @@ export default function AdminLoginPage() {
         </button>
       </div>
     </div>
+  );
+}
+
+export default function AdminLoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
   );
 }
