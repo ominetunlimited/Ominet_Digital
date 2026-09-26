@@ -16,7 +16,21 @@ const KNOWN_EVENTS = new Set([
   "payment_failed",
 ]);
 
+const MAX_METADATA_CHARS = 2000;
+
 export async function POST(request: Request) {
+  // Only our own pages send beacons. A browser always states where a
+  // cross-site request came from, so a foreign Origin is someone else's page
+  // (or a script) trying to stuff our analytics.
+  const origin = request.headers.get("origin");
+  if (origin) {
+    let sameSite = false;
+    try {
+      sameSite = new URL(origin).host === request.headers.get("host");
+    } catch {}
+    if (!sameSite) return NextResponse.json({ ok: false }, { status: 200 });
+  }
+
   const supabase = await createClient();
   if (!supabase) return NextResponse.json({ ok: false }, { status: 200 });
 
@@ -37,6 +51,8 @@ export async function POST(request: Request) {
   if (!body.eventType || !KNOWN_EVENTS.has(body.eventType)) {
     return NextResponse.json({ ok: false }, { status: 200 });
   }
+
+  if (body.metadata && JSON.stringify(body.metadata).length > MAX_METADATA_CHARS) body.metadata = {};
 
   const visitorKey = await getOrCreateAnonKey();
 

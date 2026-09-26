@@ -20,6 +20,6 @@ export async function getOrCreateAnonKey(): Promise<string> {
   const existing = store.get(COOKIE)?.value;
   if (existing) return existing;
   const key = randomUUID();
-  store.set(COOKIE, key, { httpOnly: true, sameSite: "lax", maxAge: MAX_AGE, path: "/" });
+  store.set(COOKIE, key, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", maxAge: MAX_AGE, path: "/" });
   return key;
 }
