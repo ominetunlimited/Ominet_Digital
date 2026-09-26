@@ -5,26 +5,20 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { css } from "@/lib/css";
 import { signInWithPassword } from "@/lib/admin/actions";
 import { supabaseConfigured } from "@/lib/supabase/env";
+import { useAdminAction } from "@/lib/admin/useAdminAction";
 
 export default function AdminLoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+  const { busy, error, run } = useAdminAction();
 
   const notStaff = searchParams.get("error") === "not_staff";
 
   async function submit() {
-    setBusy(true);
-    setError(null);
-    const result = await signInWithPassword(email, password);
-    setBusy(false);
-    if (!result.ok) {
-      setError(result.error);
-      return;
-    }
+    const result = await run(() => signInWithPassword(email, password));
+    if (!result?.ok) return;
     router.push(searchParams.get("next") || "/admin");
     router.refresh();
   }

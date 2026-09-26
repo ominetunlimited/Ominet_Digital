@@ -5,6 +5,7 @@ import { css } from "@/lib/css";
 import { saveBook, deleteBook, type BookInput } from "@/lib/admin/book-actions";
 import ImageUploadField from "@/components/admin/ImageUploadField";
 import { slugify } from "@/lib/slug";
+import { useAdminAction } from "@/lib/admin/useAdminAction";
 
 const STATUSES = ["draft", "scheduled", "published", "archived"];
 
@@ -25,8 +26,7 @@ export default function BookForm({ initial }: { initial?: Partial<BookInput> & {
     purchaseLinks: initial?.purchaseLinks ?? [],
   });
   const [slugTouched, setSlugTouched] = useState(Boolean(initial?.slug));
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+  const { busy, error, run } = useAdminAction();
 
   function set<K extends keyof BookInput>(key: K, value: BookInput[K]) {
     setValues((v) => ({ ...v, [key]: value }));
@@ -37,19 +37,12 @@ export default function BookForm({ initial }: { initial?: Partial<BookInput> & {
   }
 
   async function submit() {
-    setBusy(true);
-    setError(null);
-    const result = await saveBook(values);
-    setBusy(false);
-    if (result && !result.ok) setError(result.error);
+    await run(() => saveBook(values));
   }
 
   async function remove() {
     if (!values.id || !confirm(`Delete "${values.title}"? This can't be undone.`)) return;
-    setBusy(true);
-    const result = await deleteBook(values.id);
-    setBusy(false);
-    if (result && !result.ok) setError(result.error);
+    await run(() => deleteBook(values.id!));
   }
 
   return (

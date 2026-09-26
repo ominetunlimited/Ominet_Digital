@@ -81,6 +81,11 @@ export async function getArticles(): Promise<Article[]> {
   return data.map(mapArticle);
 }
 
+export async function getLatestArticle(): Promise<Article | undefined> {
+  const articles = await getArticles();
+  return articles[0];
+}
+
 export async function getArticle(slug: string): Promise<Article | undefined> {
   if (!supabaseConfigured) return mockArticles.find((a) => a.slug === slug);
   const supabase = await createClient();
@@ -116,8 +121,11 @@ type BookRow = {
   cover_image_url?: string | null;
   formats: string[] | null;
   status: string;
+  featured?: boolean | null;
   book_purchase_links: { label: string; platform: string; url: string }[];
 };
+
+const BOOK_SELECT = "id,slug,title,kind,year,pages,excerpt,cover_image_url,formats,status,featured,book_purchase_links(label,platform,url)";
 
 function mapBook(row: BookRow): Book {
   return {
@@ -132,6 +140,7 @@ function mapBook(row: BookRow): Book {
     purchaseLinks: (row.book_purchase_links ?? []).map((l) => ({ label: l.label, platform: l.platform, url: l.url })),
     formats: row.formats ?? [],
     upcoming: row.status !== "published",
+    featured: row.featured ?? false,
   };
 }
 
@@ -140,7 +149,7 @@ export async function getBooks(): Promise<{ published: Book[]; upcoming: Book[] 
   const supabase = await createClient();
   const { data, error } = await supabase!
     .from("books")
-    .select("id,slug,title,kind,year,pages,excerpt,cover_image_url,formats,status,book_purchase_links(label,platform,url)")
+    .select(BOOK_SELECT)
     .order("year", { ascending: false });
   if (error || !data) return { published: mockBooks, upcoming: mockUpcomingBooks };
   const mapped = (data as unknown as BookRow[]).map(mapBook);
@@ -150,12 +159,18 @@ export async function getBooks(): Promise<{ published: Book[]; upcoming: Book[] 
   };
 }
 
+export async function getFeaturedBook(): Promise<Book | undefined> {
+  const { published } = await getBooks();
+  if (published.length === 0) return undefined;
+  return published.find((b) => b.featured) ?? published[0];
+}
+
 export async function getBook(slug: string): Promise<Book | undefined> {
   if (!supabaseConfigured) return mockBooks.find((b) => b.slug === slug);
   const supabase = await createClient();
   const { data, error } = await supabase!
     .from("books")
-    .select("id,slug,title,kind,year,pages,excerpt,cover_image_url,formats,status,book_purchase_links(label,platform,url)")
+    .select(BOOK_SELECT)
     .eq("slug", slug)
     .maybeSingle();
   if (error || !data) return undefined;

@@ -91,6 +91,7 @@ export type Book = {
   purchaseLinks: { label: string; platform: string; url: string }[];
   formats: string[];
   upcoming?: boolean;
+  featured?: boolean;
 };
 
 export const books: Book[] = [

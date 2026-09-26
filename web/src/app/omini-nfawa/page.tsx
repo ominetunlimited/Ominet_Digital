@@ -1,17 +1,22 @@
 import Link from "next/link";
+import Image from "next/image";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import PlaceholderImage from "@/components/PlaceholderImage";
 import { css } from "@/lib/css";
 import { pageMetadata } from "@/lib/seo";
+import { getFeaturedBook } from "@/lib/data";
+import { truncate } from "@/lib/text";
 
 export const metadata = pageMetadata(
   "Omini Nfawa",
   "Essays, research and fiction, alongside books, film and photography from Omini Nfawa.",
   "/omini-nfawa"
 );
+export const revalidate = 60;
 
-export default function OminiNfawaPage() {
+export default async function OminiNfawaPage() {
+  const featuredBook = await getFeaturedBook();
   return (
     <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;")}>
       <Nav />
@@ -61,26 +66,32 @@ export default function OminiNfawaPage() {
 
       <div className="hr" />
 
-      <section style={css("padding:var(--space-8) var(--space-6);display:flex;flex-wrap:wrap;gap:var(--space-8);")}>
-        <div style={css("aspect-ratio:2/3;border-radius:var(--radius-md);overflow:hidden;flex:1 1 240px;max-width:320px;")}>
-          <PlaceholderImage label="Book cover" />
-        </div>
-        <div style={css("flex:2 1 380px;display:flex;flex-direction:column;justify-content:center;")}>
-          <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>FEATURED BOOK</div>
-          <h2 style={css("font-family:var(--font-heading);font-size:36px;margin:0 0 var(--space-2);")}>The Long Return</h2>
-          <div style={css("font-size:14px;opacity:0.6;margin-bottom:var(--space-3);")}>A novel &middot; Omini Nfawa</div>
-          <p style={css("font-size:16px;line-height:1.7;opacity:0.75;max-width:52ch;margin:0 0 var(--space-4);")}>A family separated by three borders finds its way back to a single house, one letter at a time.</p>
-          <div style={css("display:flex;gap:var(--space-2);margin-bottom:var(--space-4);")}>
-            <span className="tag tag-outline">Ebook</span>
-            <span className="tag tag-outline">Paperback</span>
-            <span className="tag tag-outline">Audio</span>
+      {featuredBook && (
+        <section style={css("padding:var(--space-8) var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;gap:var(--space-8);")}>
+          <div style={css("aspect-ratio:1/1;position:relative;border-radius:var(--radius-md);overflow:hidden;flex:1 1 240px;max-width:320px;")}>
+            {featuredBook.coverImageUrl ? (
+              <Image src={featuredBook.coverImageUrl} alt="" fill sizes="(max-width: 700px) 90vw, 320px" style={{ objectFit: "cover" }} />
+            ) : (
+              <PlaceholderImage label="Book cover" />
+            )}
           </div>
-          <div style={css("display:flex;gap:var(--space-3);flex-wrap:wrap;")}>
-            <Link href="/books/the-long-return"><button type="button" className="btn btn-primary">View book</button></Link>
-            <Link href="/books/the-long-return">Where to buy &rarr;</Link>
+          <div style={css("flex:2 1 380px;display:flex;flex-direction:column;justify-content:center;")}>
+            <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>FEATURED BOOK</div>
+            <h2 style={css("font-family:var(--font-heading);font-size:36px;margin:0 0 var(--space-2);")}>{featuredBook.title}</h2>
+            <div style={css("font-size:14px;opacity:0.6;margin-bottom:var(--space-3);")}>{featuredBook.kind} &middot; Omini Nfawa</div>
+            <p style={css("font-size:16px;line-height:1.7;opacity:0.75;max-width:52ch;margin:0 0 var(--space-4);")}>{truncate(featuredBook.excerpt)}</p>
+            {featuredBook.formats.length > 0 && (
+              <div style={css("display:flex;gap:var(--space-2);margin-bottom:var(--space-4);")}>
+                {featuredBook.formats.map((f) => <span key={f} className="tag tag-outline">{f}</span>)}
+              </div>
+            )}
+            <div style={css("display:flex;gap:var(--space-3);flex-wrap:wrap;")}>
+              <Link href={`/books/${featuredBook.slug}`}><button type="button" className="btn btn-primary">View book</button></Link>
+              <Link href={`/books/${featuredBook.slug}`}>Where to buy &rarr;</Link>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       <div className="hr" />
 

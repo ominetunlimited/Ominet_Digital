@@ -1,9 +1,10 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { css } from "@/lib/css";
 import { uploadMedia } from "@/lib/admin/media-actions";
 import { compressImage } from "@/lib/compressImage";
+import { useAdminAction } from "@/lib/admin/useAdminAction";
 
 /**
  * Optional cover-image field for admin forms (content, books). Upload a
@@ -19,25 +20,19 @@ export default function ImageUploadField({
   value: string;
   onChange: (url: string) => void;
 }) {
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { busy, error, run } = useAdminAction();
   const inputRef = useRef<HTMLInputElement>(null);
 
   async function handleFile() {
     const file = inputRef.current?.files?.[0];
     if (!file) return;
-    setBusy(true);
-    setError(null);
-    const compressed = await compressImage(file);
-    const formData = new FormData();
-    formData.set("file", compressed);
-    const result = await uploadMedia(formData);
-    setBusy(false);
-    if (!result.ok) {
-      setError(result.error);
-      return;
-    }
-    if (result.url) onChange(result.url);
+    const result = await run(async () => {
+      const compressed = await compressImage(file);
+      const formData = new FormData();
+      formData.set("file", compressed);
+      return uploadMedia(formData);
+    });
+    if (result?.ok && result.url) onChange(result.url);
     if (inputRef.current) inputRef.current.value = "";
   }
 

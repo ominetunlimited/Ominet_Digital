@@ -9,6 +9,10 @@ import NewsletterForm from "@/components/NewsletterForm";
 import SocialLinks from "@/components/SocialLinks";
 import { css } from "@/lib/css";
 import { pageMetadata, SITE_URL, SITE_NAME } from "@/lib/seo";
+import { getFeaturedBook, getLatestArticle } from "@/lib/data";
+import { truncate } from "@/lib/text";
+
+export const revalidate = 60;
 
 export const metadata = pageMetadata(
   "Ominet Digital",
@@ -24,7 +28,9 @@ const jsonLd = {
   publisher: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
 };
 
-export default function Home() {
+export default async function Home() {
+  const [featuredBook, latestArticle] = await Promise.all([getFeaturedBook(), getLatestArticle()]);
+
   return (
     <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;")}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
@@ -99,37 +105,41 @@ export default function Home() {
 
       <div className="hr" />
 
-      <section style={css("padding:var(--space-8) var(--space-6);display:flex;flex-wrap:wrap;gap:var(--space-8);")}>
-        <div style={css("aspect-ratio:2/3;flex:1 1 240px;max-width:320px;border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-md);")}>
-          <PlaceholderImage label="Book cover" />
-        </div>
-        <div style={css("flex:2 1 380px;display:flex;flex-direction:column;justify-content:center;")}>
-          <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>FEATURED BOOK &middot; OMINI NFAWA</div>
-          <h2 style={css("font-family:var(--font-heading);font-size:36px;margin:0 0 var(--space-2);")}>The Long Return</h2>
-          <p style={css("font-size:16px;line-height:1.7;opacity:0.75;max-width:52ch;margin:0 0 var(--space-4);")}>A family separated by three borders finds its way back to a single house, one letter at a time.</p>
-          <div style={css("display:flex;gap:var(--space-3);flex-wrap:wrap;")}>
-            <Link href="/books/the-long-return"><button type="button" className="btn btn-primary">View book</button></Link>
-            <Link href="/books/the-long-return">Where to buy &rarr;</Link>
+      {featuredBook && (
+        <section style={css("padding:var(--space-8) var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;gap:var(--space-8);")}>
+          <div style={css("aspect-ratio:1/1;position:relative;flex:1 1 240px;max-width:320px;border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-md);")}>
+            {featuredBook.coverImageUrl ? (
+              <Image src={featuredBook.coverImageUrl} alt="" fill sizes="(max-width: 700px) 90vw, 320px" style={{ objectFit: "cover" }} />
+            ) : (
+              <PlaceholderImage label="Book cover" />
+            )}
           </div>
-        </div>
-      </section>
+          <div style={css("flex:2 1 380px;display:flex;flex-direction:column;justify-content:center;")}>
+            <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>FEATURED BOOK &middot; OMINI NFAWA</div>
+            <h2 style={css("font-family:var(--font-heading);font-size:36px;margin:0 0 var(--space-2);")}>{featuredBook.title}</h2>
+            <p style={css("font-size:16px;line-height:1.7;opacity:0.75;max-width:52ch;margin:0 0 var(--space-4);")}>{truncate(featuredBook.excerpt)}</p>
+            <div style={css("display:flex;gap:var(--space-3);flex-wrap:wrap;")}>
+              <Link href={`/books/${featuredBook.slug}`}><button type="button" className="btn btn-primary">View book</button></Link>
+              <Link href={`/books/${featuredBook.slug}`}>Where to buy &rarr;</Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       <div className="hr" />
 
-      <section style={css("padding:var(--space-8) var(--space-6);display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--space-6);")}>
-        <div className="card">
-          <div className="card-kicker">LATEST WRITING</div>
-          <div className="card-title">On Writing as a Second Country</div>
-          <p className="card-body">An essay on migration, memory and the languages we write in.</p>
-          <div className="card-meta"><span>Sept 2026</span></div>
-        </div>
-        <div className="card">
-          <div className="card-kicker">FEATURED MEDIA</div>
-          <div className="card-title">The Long Return &mdash; Trailer</div>
-          <p className="card-body">A short film introducing the novel, shot on location.</p>
-          <div className="card-meta"><span>6 min</span></div>
-        </div>
-      </section>
+      {latestArticle && (
+        <section style={css("padding:var(--space-8) var(--space-6);display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--space-6);")}>
+          <Link href={`/writing/${latestArticle.slug}`} style={css("display:block;")}>
+            <div className="card">
+              <div className="card-kicker">LATEST WRITING</div>
+              <div className="card-title">{latestArticle.title}</div>
+              <p className="card-body">{truncate(latestArticle.excerpt, 160)}</p>
+              <div className="card-meta"><span>{latestArticle.date}</span></div>
+            </div>
+          </Link>
+        </section>
+      )}
 
       <div className="hr" />
 

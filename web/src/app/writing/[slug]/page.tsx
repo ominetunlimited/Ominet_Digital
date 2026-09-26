@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
@@ -94,10 +95,9 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
         {article.dek && <p style={css("font-size:19px;line-height:1.5;opacity:0.75;margin:0 0 var(--space-4);")}>{article.dek}</p>}
         <div style={css("font-size:13px;opacity:0.6;margin-bottom:var(--space-6);")}>By {article.author}</div>
 
-        <div style={css("aspect-ratio:16/9;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-6);")}>
+        <div style={css("aspect-ratio:16/9;position:relative;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-6);")}>
           {article.featuredImageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={article.featuredImageUrl} alt="" style={css("width:100%;height:100%;object-fit:cover;")} />
+            <Image src={article.featuredImageUrl} alt="" fill sizes="(max-width: 760px) 100vw, 720px" style={{ objectFit: "cover" }} priority />
           ) : (
             <PlaceholderImage label="Hero image" />
           )}

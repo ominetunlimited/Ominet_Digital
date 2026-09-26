@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import PlaceholderImage from "@/components/PlaceholderImage";
@@ -6,11 +7,11 @@ import EmptyState from "@/components/EmptyState";
 import { css } from "@/lib/css";
 import { getBooks } from "@/lib/data";
 import { pageMetadata } from "@/lib/seo";
+import { truncate } from "@/lib/text";
 
-function BookCover({ url, label }: { url?: string; label: string }) {
+function BookCover({ url, label, sizes }: { url?: string; label: string; sizes: string }) {
   if (!url) return <PlaceholderImage label={label} />;
-  // eslint-disable-next-line @next/next/no-img-element
-  return <img src={url} alt="" style={css("width:100%;height:100%;object-fit:cover;")} />;
+  return <Image src={url} alt="" fill sizes={sizes} style={{ objectFit: "cover" }} />;
 }
 
 export const metadata = pageMetadata(
@@ -22,7 +23,7 @@ export const revalidate = 60;
 
 export default async function BooksPage() {
   const { published, upcoming: upcomingBooks } = await getBooks();
-  const featured = published[0];
+  const featured = published.find((b) => b.featured) ?? published[0];
 
   return (
     <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>
@@ -43,14 +44,14 @@ export default async function BooksPage() {
       {featured && (
         <>
           <div className="hr" />
-          <section style={css("padding:var(--space-8) var(--space-6);display:flex;flex-wrap:wrap;gap:var(--space-8);")}>
-            <div style={css("aspect-ratio:2/3;border-radius:var(--radius-md);overflow:hidden;flex:1 1 240px;max-width:320px;")}>
-              <BookCover url={featured.coverImageUrl} label="Book cover" />
+          <section style={css("padding:var(--space-8) var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;gap:var(--space-8);")}>
+            <div style={css("aspect-ratio:1/1;position:relative;border-radius:var(--radius-md);overflow:hidden;flex:1 1 240px;max-width:320px;")}>
+              <BookCover url={featured.coverImageUrl} label="Book cover" sizes="(max-width: 700px) 90vw, 320px" />
             </div>
             <div style={css("flex:2 1 380px;display:flex;flex-direction:column;justify-content:center;")}>
               <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>FEATURED</div>
               <h2 style={css("font-family:var(--font-heading);font-size:36px;margin:0 0 var(--space-2);")}>{featured.title}</h2>
-              <p style={css("font-size:16px;line-height:1.7;opacity:0.75;max-width:52ch;margin:0 0 var(--space-4);")}>{featured.excerpt}</p>
+              <p style={css("font-size:16px;line-height:1.7;opacity:0.75;max-width:52ch;margin:0 0 var(--space-4);")}>{truncate(featured.excerpt)}</p>
               <Link href={`/books/${featured.slug}`}><button type="button" className="btn btn-primary">View book</button></Link>
             </div>
           </section>
@@ -65,7 +66,7 @@ export default async function BooksPage() {
             <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--space-6);")}>
               {upcomingBooks.map((b) => (
                 <div key={b.slug}>
-                  <div style={css("aspect-ratio:2/3;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-3);")}><BookCover url={b.coverImageUrl} label="Cover" /></div>
+                  <div style={css("aspect-ratio:2/3;position:relative;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-3);")}><BookCover url={b.coverImageUrl} label="Cover" sizes="180px" /></div>
                   <div style={css("font-family:var(--font-heading);font-size:18px;")}>{b.title}</div>
                   <div style={css("font-size:12px;opacity:0.55;")}>{b.kind} &middot; {b.year}</div>
                 </div>
@@ -85,7 +86,7 @@ export default async function BooksPage() {
         <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:var(--space-4);")}>
           {published.map((b) => (
             <Link key={b.slug} href={`/books/${b.slug}`}>
-              <div style={css("aspect-ratio:2/3;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-3);")}><BookCover url={b.coverImageUrl} label="Cover" /></div>
+              <div style={css("aspect-ratio:2/3;position:relative;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-3);")}><BookCover url={b.coverImageUrl} label="Cover" sizes="160px" /></div>
               <div style={css("font-family:var(--font-heading);font-size:16px;")}>{b.title}</div>
               <div style={css("font-size:12px;opacity:0.55;")}>{b.year}</div>
             </Link>

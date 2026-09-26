@@ -46,7 +46,10 @@ export async function fetchVideoThumbnail(url: string): Promise<ThumbnailResult>
     };
   }
   try {
-    const res = await fetch(endpoint(url));
+    // No timeout here previously meant a stalled oEmbed request (this fires
+    // on every blur of the video URL field) could hang the admin form's
+    // "Fetch thumbnail" state indefinitely, with nothing to time it out.
+    const res = await fetch(endpoint(url), { signal: AbortSignal.timeout(8_000) });
     if (!res.ok) return { ok: false, platform, error: `Couldn't fetch oEmbed data (${res.status}).` };
     const json = await res.json();
     if (!json.thumbnail_url) return { ok: false, platform, error: "No thumbnail returned for that link." };

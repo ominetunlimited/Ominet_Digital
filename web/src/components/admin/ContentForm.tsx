@@ -6,6 +6,7 @@ import { saveContent, deleteContent, type ContentInput } from "@/lib/admin/conte
 import ImageUploadField from "@/components/admin/ImageUploadField";
 import VideoField from "@/components/admin/VideoField";
 import { slugify } from "@/lib/slug";
+import { useAdminAction } from "@/lib/admin/useAdminAction";
 
 const TYPES = ["article", "essay", "research", "poem", "fiction", "review", "interview", "note"];
 const ACCESS = ["free", "paid", "members", "preview"];
@@ -34,27 +35,19 @@ export default function ContentForm({ initial }: { initial?: Partial<ContentInpu
     video_thumbnail_url: initial?.video_thumbnail_url ?? "",
   });
   const [slugTouched, setSlugTouched] = useState(Boolean(initial?.slug));
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+  const { busy, error, run } = useAdminAction();
 
   function set<K extends keyof ContentInput>(key: K, value: ContentInput[K]) {
     setValues((v) => ({ ...v, [key]: value }));
   }
 
   async function submit() {
-    setBusy(true);
-    setError(null);
-    const result = await saveContent(values);
-    setBusy(false);
-    if (result && !result.ok) setError(result.error);
+    await run(() => saveContent(values));
   }
 
   async function remove() {
     if (!values.id || !confirm(`Delete "${values.title}"? This can't be undone.`)) return;
-    setBusy(true);
-    const result = await deleteContent(values.id);
-    setBusy(false);
-    if (result && !result.ok) setError(result.error);
+    await run(() => deleteContent(values.id!));
   }
 
   return (

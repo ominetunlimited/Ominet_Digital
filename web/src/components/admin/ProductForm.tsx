@@ -5,6 +5,7 @@ import { css } from "@/lib/css";
 import { saveProduct, deleteProduct, type ProductInput } from "@/lib/admin/product-actions";
 import ImageUploadField from "@/components/admin/ImageUploadField";
 import { slugify } from "@/lib/slug";
+import { useAdminAction } from "@/lib/admin/useAdminAction";
 
 const ACCESS = [
   { value: "free", label: "Free download" },
@@ -31,27 +32,19 @@ export default function ProductForm({ initial }: { initial?: Partial<ProductInpu
     status: initial?.status ?? "draft",
   });
   const [slugTouched, setSlugTouched] = useState(Boolean(initial?.slug));
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+  const { busy, error, run } = useAdminAction();
 
   function set<K extends keyof ProductInput>(key: K, value: ProductInput[K]) {
     setValues((v) => ({ ...v, [key]: value }));
   }
 
   async function submit() {
-    setBusy(true);
-    setError(null);
-    const result = await saveProduct(values);
-    setBusy(false);
-    if (result && !result.ok) setError(result.error);
+    await run(() => saveProduct(values));
   }
 
   async function remove() {
     if (!values.id || !confirm(`Delete "${values.title}"? This can't be undone.`)) return;
-    setBusy(true);
-    const result = await deleteProduct(values.id);
-    setBusy(false);
-    if (result && !result.ok) setError(result.error);
+    await run(() => deleteProduct(values.id!));
   }
 
   const needsPrice = values.access === "paid" || values.access === "gated";

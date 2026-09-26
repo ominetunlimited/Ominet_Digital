@@ -4,37 +4,33 @@ import { useRef, useState } from "react";
 import { css } from "@/lib/css";
 import { uploadMedia, deleteMedia } from "@/lib/admin/media-actions";
 import { compressImage } from "@/lib/compressImage";
+import { useAdminAction } from "@/lib/admin/useAdminAction";
 
 type Asset = { id: string; url: string; title: string | null; kind: string; storage_path: string };
 
 export default function MediaLibrary({ initialAssets }: { initialAssets: Asset[] }) {
   const [assets, setAssets] = useState(initialAssets);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { busy, error, run } = useAdminAction();
   const inputRef = useRef<HTMLInputElement>(null);
 
   async function handleUpload() {
     const file = inputRef.current?.files?.[0];
     if (!file) return;
-    setBusy(true);
-    setError(null);
-    const compressed = await compressImage(file);
-    const formData = new FormData();
-    formData.set("file", compressed);
-    const result = await uploadMedia(formData);
-    setBusy(false);
-    if (!result.ok) {
-      setError(result.error);
-      return;
-    }
+    const result = await run(async () => {
+      const compressed = await compressImage(file);
+      const formData = new FormData();
+      formData.set("file", compressed);
+      return uploadMedia(formData);
+    });
+    if (!result?.ok) return;
     if (inputRef.current) inputRef.current.value = "";
     window.location.reload();
   }
 
   async function handleDelete(asset: Asset) {
     if (!confirm(`Delete "${asset.title}"?`)) return;
-    await deleteMedia(asset.id, asset.storage_path);
-    setAssets((a) => a.filter((x) => x.id !== asset.id));
+    const result = await run(() => deleteMedia(asset.id, asset.storage_path));
+    if (result?.ok) setAssets((a) => a.filter((x) => x.id !== asset.id));
   }
 
   return (

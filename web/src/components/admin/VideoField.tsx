@@ -5,6 +5,7 @@ import { css } from "@/lib/css";
 import { fetchVideoThumbnail } from "@/lib/video";
 import { uploadMedia } from "@/lib/admin/media-actions";
 import { compressImage } from "@/lib/compressImage";
+import { useAdminAction } from "@/lib/admin/useAdminAction";
 
 export default function VideoField({
   videoUrl,
@@ -17,16 +18,15 @@ export default function VideoField({
   onVideoUrlChange: (url: string) => void;
   onThumbnailUrlChange: (url: string) => void;
 }) {
-  const [busy, setBusy] = useState(false);
+  const { busy, error, run } = useAdminAction();
   const [message, setMessage] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   async function autoFetchThumbnail() {
     if (!videoUrl) return;
-    setBusy(true);
     setMessage(null);
-    const result = await fetchVideoThumbnail(videoUrl);
-    setBusy(false);
+    const result = await run(() => fetchVideoThumbnail(videoUrl));
+    if (!result) return;
     if (result.ok) {
       onThumbnailUrlChange(result.thumbnailUrl);
       setMessage(`Thumbnail found (${result.platform}).`);
@@ -38,14 +38,15 @@ export default function VideoField({
   async function uploadThumbnail() {
     const file = inputRef.current?.files?.[0];
     if (!file) return;
-    setBusy(true);
-    const compressed = await compressImage(file);
-    const formData = new FormData();
-    formData.set("file", compressed);
-    const result = await uploadMedia(formData);
-    setBusy(false);
-    if (result.ok && result.url) onThumbnailUrlChange(result.url);
-    else setMessage(result.ok ? null : result.error);
+    setMessage(null);
+    const result = await run(async () => {
+      const compressed = await compressImage(file);
+      const formData = new FormData();
+      formData.set("file", compressed);
+      return uploadMedia(formData);
+    });
+    if (result?.ok && result.url) onThumbnailUrlChange(result.url);
+    else if (result && !result.ok) setMessage(result.error);
     if (inputRef.current) inputRef.current.value = "";
   }
 
@@ -65,7 +66,7 @@ export default function VideoField({
           Fetch thumbnail
         </button>
       </div>
-      {message && <p style={css("font-size:12px;opacity:0.6;margin-top:var(--space-1);")}>{message}</p>}
+      {(message || error) && <p style={css("font-size:12px;opacity:0.6;margin-top:var(--space-1);")}>{message || error}</p>}
 
       {videoUrl && (
         <div style={css("margin-top:var(--space-3);display:flex;gap:var(--space-3);align-items:center;")}>

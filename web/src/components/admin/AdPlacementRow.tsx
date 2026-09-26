@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { css } from "@/lib/css";
 import { updateAdPlacement } from "@/lib/admin/ad-actions";
+import { useAdminAction } from "@/lib/admin/useAdminAction";
 
 type Placement = {
   id: string;
@@ -22,12 +23,11 @@ export default function AdPlacementRow({ placement }: { placement: Placement }) 
   const [snippet, setSnippet] = useState(placement.html_snippet ?? "");
   const [active, setActive] = useState(placement.active);
   const [saved, setSaved] = useState(false);
-  const [busy, setBusy] = useState(false);
+  const { busy, error, run } = useAdminAction();
 
   async function save() {
-    setBusy(true);
-    await updateAdPlacement(placement.id, { provider, ad_client: adClient, ad_slot: adSlot, html_snippet: snippet, active });
-    setBusy(false);
+    const result = await run(() => updateAdPlacement(placement.id, { provider, ad_client: adClient, ad_slot: adSlot, html_snippet: snippet, active }));
+    if (!result?.ok) return;
     setSaved(true);
     setTimeout(() => setSaved(false), 1500);
   }
@@ -61,6 +61,7 @@ export default function AdPlacementRow({ placement }: { placement: Placement }) 
       <div style={css("display:flex;align-items:center;gap:var(--space-3);margin-top:var(--space-2);")}>
         <button type="button" className="btn btn-secondary" onClick={save} disabled={busy}>{busy ? "Saving…" : "Save"}</button>
         {saved && <span style={css("font-size:12px;opacity:0.6;")}>Saved</span>}
+        {error && <span style={css("font-size:12px;color:var(--om-coral);")}>{error}</span>}
       </div>
     </div>
   );
