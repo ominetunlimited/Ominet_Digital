@@ -4,6 +4,7 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import PlaceholderImage from "@/components/PlaceholderImage";
 import EmptyState from "@/components/EmptyState";
+import AdSlot from "@/components/AdSlot";
 import VideoThumbnail from "@/components/VideoThumbnail";
 import { css } from "@/lib/css";
 import { pageMetadata } from "@/lib/seo";
@@ -33,6 +34,8 @@ export default async function MediaPage() {
         <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>MEDIA</div>
         <h1 style={css("font-family:var(--font-heading);font-size:56px;margin:0;")}>Video &amp; Photography</h1>
       </section>
+
+      <AdSlot slotKey="media_page" />
 
       <div className="hr" />
 

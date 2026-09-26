@@ -5,6 +5,7 @@ import { css } from "@/lib/css";
 import { saveService, deleteService, type ServiceInput, type FaqItem } from "@/lib/admin/service-actions";
 import { useAdminAction } from "@/lib/admin/useAdminAction";
 import SaveButton from "@/components/admin/SaveButton";
+import PreviewButton from "@/components/admin/PreviewButton";
 import { useRouter } from "next/navigation";
 import ImageUploadField from "@/components/admin/ImageUploadField";
 import MoneyInput from "@/components/admin/MoneyInput";
@@ -52,6 +53,7 @@ export default function ServiceForm({ initial }: { initial?: Partial<ServiceInpu
     og_image_url: initial?.og_image_url ?? "",
   });
   const [slugTouched, setSlugTouched] = useState(Boolean(initial?.slug));
+  const [savedSlug, setSavedSlug] = useState(initial?.slug ?? "");
   const { busy, saved, error, run } = useAdminAction();
   const router = useRouter();
 
@@ -66,6 +68,7 @@ export default function ServiceForm({ initial }: { initial?: Partial<ServiceInpu
   async function submit() {
     const result = await run(() => saveService(values));
     if (!result?.ok) return;
+    setSavedSlug(slugify(values.slug || values.title));
     if (result.id && !values.id) {
       set("id", result.id);
       setTimeout(() => router.push(`/admin/services/${result.id}`), 900);
@@ -86,7 +89,7 @@ export default function ServiceForm({ initial }: { initial?: Partial<ServiceInpu
         <input
           className="input"
           value={values.title}
-          onChange={(e) => { set("title", e.target.value); if (!slugTouched) set("slug", slugify(e.target.value)); }}
+          onChange={(e) => { set("title", e.target.value); if (!slugTouched || values.slug === slugify(values.title)) set("slug", slugify(e.target.value)); }}
         />
       </div>
       <div className="field" style={css("margin-bottom:var(--space-4);")}>
@@ -228,6 +231,7 @@ export default function ServiceForm({ initial }: { initial?: Partial<ServiceInpu
 
       <div style={css("display:flex;gap:var(--space-3);")}>
         <SaveButton busy={busy} saved={saved} disabled={!values.title || !values.slug} idleLabel={values.id ? "Save changes" : "Create"} onClick={submit} />
+        <PreviewButton href={savedSlug ? `/services/${savedSlug}` : null} saved={Boolean(values.id)} />
         {values.id && (
           <button type="button" className="btn btn-secondary" onClick={remove} disabled={busy} style={css("color:var(--om-coral);border-color:var(--om-coral);")}>
             Delete

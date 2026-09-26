@@ -24,6 +24,7 @@ export type Article = {
   featuredImageUrl?: string;
   videoUrl?: string;
   videoThumbnailUrl?: string;
+  status?: string;
 };
 
 export const articles: Article[] = [
@@ -95,6 +96,7 @@ export type Book = {
   seoDescription?: string;
   purchaseLinks: { label: string; platform: string; url: string }[];
   formats: string[];
+  status?: string;
   upcoming?: boolean;
   featured?: boolean;
 };

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import Nav from "@/components/Nav";
+import PreviewBanner from "@/components/PreviewBanner";
 import Footer from "@/components/Footer";
 import PlaceholderImage from "@/components/PlaceholderImage";
 import VideoThumbnail from "@/components/VideoThumbnail";
@@ -32,6 +33,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     title,
     description,
     alternates: { canonical: url },
+    ...(article.status && article.status !== "published" ? { robots: { index: false, follow: false } } : {}),
     openGraph: {
       title,
       description,
@@ -87,6 +89,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
   return (
     <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <PreviewBanner status={article.status} editHref={article.id ? `/admin/content/${article.id}` : undefined} />
       <Nav />
       <svg width="300" height="300" viewBox="0 0 300 300" style={css("position:absolute;right:-70px;top:40px;pointer-events:none;")} aria-hidden="true">
         <circle cx="150" cy="150" r="149" fill="none" stroke="var(--color-accent)" strokeWidth="1" opacity="0.16" />

@@ -9,6 +9,8 @@ import { useAdminAction } from "@/lib/admin/useAdminAction";
 import SaveButton from "@/components/admin/SaveButton";
 import { useRouter } from "next/navigation";
 import MoneyInput from "@/components/admin/MoneyInput";
+import ListInput from "@/components/admin/ListInput";
+import PreviewButton from "@/components/admin/PreviewButton";
 import BookFilesPanel from "@/components/admin/BookFilesPanel";
 import type { BookFileRecord } from "@/lib/admin/book-file-actions";
 
@@ -50,6 +52,7 @@ export default function BookForm({
     purchaseLinks: initial?.purchaseLinks ?? [],
   });
   const [slugTouched, setSlugTouched] = useState(Boolean(initial?.slug));
+  const [savedSlug, setSavedSlug] = useState(initial?.slug ?? "");
   const { busy, saved, error, run } = useAdminAction();
   const router = useRouter();
 
@@ -64,6 +67,7 @@ export default function BookForm({
   async function submit() {
     const result = await run(() => saveBook(values));
     if (!result?.ok) return;
+    setSavedSlug(slugify(values.slug || values.title));
     if (result.id && !values.id) {
       set("id", result.id);
       setTimeout(() => router.push(`/admin/books/${result.id}`), 900);
@@ -79,16 +83,28 @@ export default function BookForm({
     <div style={css("max-width:640px;")}>
       <div className="field" style={css("margin-bottom:var(--space-4);")}>
         <label>Title</label>
-        <input className="input" value={values.title} onChange={(e) => { set("title", e.target.value); if (!slugTouched) set("slug", slugify(e.target.value)); }} />
+        <input
+          className="input"
+          value={values.title}
+          onChange={(e) => {
+            const title = e.target.value;
+            // Keep the link in step with the title until you deliberately write your own.
+            const following = !slugTouched || values.slug === slugify(values.title);
+            setValues((v) => ({ ...v, title, ...(following ? { slug: slugify(title) } : {}) }));
+          }}
+        />
       </div>
       <div className="field" style={css("margin-bottom:var(--space-4);")}>
-        <label>Slug (this is the URL — /books/your-slug)</label>
+        <label>Web address (made from the title automatically)</label>
         <input
           className="input"
           value={values.slug}
           onChange={(e) => { setSlugTouched(true); set("slug", e.target.value); }}
           onBlur={(e) => set("slug", slugify(e.target.value))}
         />
+        <div style={css("font-size:12px;opacity:0.55;margin-top:4px;overflow-wrap:anywhere;")}>
+          Your book will live at /books/{slugify(values.slug) || "…"} — only change this if you want a different link.
+        </div>
       </div>
       <ImageUploadField label="Cover image" value={values.cover_image_url} onChange={(url) => set("cover_image_url", url)} />
       <div style={css("display:flex;gap:var(--space-4);margin-bottom:var(--space-4);")}>
@@ -134,11 +150,7 @@ export default function BookForm({
         </div>
         <div className="field" style={css("flex:1;min-width:160px;")}>
           <label>Tags (comma-separated)</label>
-          <input
-            className="input"
-            value={values.tags.join(", ")}
-            onChange={(e) => set("tags", e.target.value.split(",").map((s) => s.trim()).filter(Boolean))}
-          />
+          <ListInput value={values.tags} onChange={(list) => set("tags", list)} />
         </div>
       </div>
       <div className="field" style={css("margin-bottom:var(--space-4);max-width:240px;")}>
@@ -185,12 +197,7 @@ export default function BookForm({
       </div>
       <div className="field" style={css("margin-bottom:var(--space-4);")}>
         <label>Formats (comma-separated)</label>
-        <input
-          className="input"
-          value={values.formats.join(", ")}
-          onChange={(e) => set("formats", e.target.value.split(",").map((s) => s.trim()).filter(Boolean))}
-          placeholder="Ebook, Paperback, Audio"
-        />
+        <ListInput value={values.formats} onChange={(list) => set("formats", list)} placeholder="Ebook, Paperback, Audio" />
       </div>
       <label className="radio" style={css("margin-bottom:var(--space-6);")}>
         <input type="checkbox" checked={values.featured} onChange={(e) => set("featured", e.target.checked)} style={{ position: "static", width: "auto", height: "auto", opacity: 1 }} />
@@ -252,6 +259,7 @@ export default function BookForm({
 
       <div style={css("display:flex;gap:var(--space-3);")}>
         <SaveButton busy={busy} saved={saved} disabled={!values.title || !values.slug} idleLabel={values.id ? "Save changes" : "Create"} onClick={submit} />
+        <PreviewButton href={savedSlug ? `/books/${savedSlug}` : null} saved={Boolean(values.id)} />
         {values.id && (
           <button type="button" className="btn btn-secondary" onClick={remove} disabled={busy} style={css("color:var(--om-coral);border-color:var(--om-coral);")}>
             Delete

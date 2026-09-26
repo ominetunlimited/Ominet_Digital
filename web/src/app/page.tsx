@@ -104,6 +104,8 @@ export default async function Home() {
         </div>
       </section>
 
+      <AdSlot slotKey="home_middle" />
+
       <div className="hr" />
 
       {featuredBook && (

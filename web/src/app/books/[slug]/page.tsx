@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import Nav from "@/components/Nav";
+import PreviewBanner from "@/components/PreviewBanner";
 import Footer from "@/components/Footer";
 import PlaceholderImage from "@/components/PlaceholderImage";
 import ShareBar from "@/components/ShareBar";
@@ -12,6 +13,7 @@ import { SITE_URL } from "@/lib/seo";
 import { getCurrentUser, hasBookEntitlement } from "@/lib/entitlements";
 import { getBookDelivery } from "@/lib/books/delivery";
 import BookAccess from "@/components/BookAccess";
+import AdSlot from "@/components/AdSlot";
 import { truncate } from "@/lib/text";
 import { getEngagement } from "@/lib/engagement";
 import LikeButton from "@/components/LikeButton";
@@ -31,6 +33,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     title,
     description,
     alternates: { canonical: url },
+    ...(book.status && book.status !== "published" ? { robots: { index: false, follow: false } } : {}),
     openGraph: { title, description, url, type: "book", ...(image ? { images: [image] } : {}) },
     twitter: { card: "summary_large_image", title, description, ...(image ? { images: [image] } : {}) },
   };
@@ -70,6 +73,7 @@ export default async function BookDetailPage({ params }: { params: Promise<{ slu
   return (
     <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <PreviewBanner status={book.status} editHref={book.id ? `/admin/books/${book.id}` : undefined} />
       <Nav />
       <svg width="380" height="380" viewBox="0 0 380 380" style={css("position:absolute;left:-70px;top:30px;pointer-events:none;")} aria-hidden="true">
         <circle cx="190" cy="190" r="189" fill="none" stroke="var(--om-coral)" strokeWidth="1" opacity="0.2" />
@@ -115,6 +119,8 @@ export default async function BookDetailPage({ params }: { params: Promise<{ slu
               )}
             </div>
           )}
+
+          <AdSlot slotKey="book_page" />
 
           <ShareBar url={`${SITE_URL}/books/${book.slug}`} title={book.title} />
         </div>

@@ -66,7 +66,7 @@ export default function ProductForm({ initial }: { initial?: Partial<ProductInpu
         <input
           className="input"
           value={values.title}
-          onChange={(e) => { set("title", e.target.value); if (!slugTouched) set("slug", slugify(e.target.value)); }}
+          onChange={(e) => { set("title", e.target.value); if (!slugTouched || values.slug === slugify(values.title)) set("slug", slugify(e.target.value)); }}
         />
       </div>
       <div className="field" style={css("margin-bottom:var(--space-4);")}>
@@ -140,6 +140,11 @@ export default function ProductForm({ initial }: { initial?: Partial<ProductInpu
 
       <div style={css("display:flex;gap:var(--space-3);")}>
         <SaveButton busy={busy} saved={saved} disabled={!values.title || !values.slug} idleLabel={values.id ? "Save changes" : "Create"} onClick={submit} />
+        {values.id && values.status === "published" ? (
+          <a href="/store" target="_blank" rel="noopener" className="btn btn-secondary" style={css("text-decoration:none;")}>View in store ↗</a>
+        ) : (
+          <button type="button" className="btn btn-secondary" disabled title="Products have no page of their own — they appear in the Store once published">Preview</button>
+        )}
         {values.id && (
           <button type="button" className="btn btn-secondary" onClick={remove} disabled={busy} style={css("color:var(--om-coral);border-color:var(--om-coral);")}>
             Delete

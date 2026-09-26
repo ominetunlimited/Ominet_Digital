@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import Nav from "@/components/Nav";
+import PreviewBanner from "@/components/PreviewBanner";
 import Footer from "@/components/Footer";
 import PlaceholderImage from "@/components/PlaceholderImage";
 import ShareBar from "@/components/ShareBar";
@@ -25,6 +26,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     title,
     description,
     alternates: { canonical: url },
+    ...(service.status && service.status !== "published" ? { robots: { index: false, follow: false } } : {}),
     openGraph: { title, description, url, type: "website", images: image ? [image] : undefined },
     twitter: { card: "summary_large_image", title, description, images: image ? [image] : undefined },
   };
@@ -55,6 +57,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
   return (
     <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <PreviewBanner status={service.status} editHref={service.id ? `/admin/services/${service.id}` : undefined} />
       <Nav />
 
       <section style={css("padding:var(--space-8) var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;gap:var(--space-8);")}>

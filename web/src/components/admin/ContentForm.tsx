@@ -7,6 +7,7 @@ import ImageUploadField from "@/components/admin/ImageUploadField";
 import VideoField from "@/components/admin/VideoField";
 import MoneyInput from "@/components/admin/MoneyInput";
 import SaveButton from "@/components/admin/SaveButton";
+import PreviewButton from "@/components/admin/PreviewButton";
 import { useRouter } from "next/navigation";
 import { slugify } from "@/lib/slug";
 import { useAdminAction } from "@/lib/admin/useAdminAction";
@@ -38,6 +39,7 @@ export default function ContentForm({ initial }: { initial?: Partial<ContentInpu
     video_thumbnail_url: initial?.video_thumbnail_url ?? "",
   });
   const [slugTouched, setSlugTouched] = useState(Boolean(initial?.slug));
+  const [savedSlug, setSavedSlug] = useState(initial?.slug ?? "");
   const { busy, saved, error, run } = useAdminAction();
   const router = useRouter();
 
@@ -48,6 +50,7 @@ export default function ContentForm({ initial }: { initial?: Partial<ContentInpu
   async function submit() {
     const result = await run(() => saveContent(values));
     if (!result?.ok) return;
+    setSavedSlug(slugify(values.slug || values.title));
     // A brand-new item moves to its own edit page (after "Saved" has shown);
     // an existing one just stays put with its values intact.
     if (result.id && !values.id) {
@@ -70,7 +73,7 @@ export default function ContentForm({ initial }: { initial?: Partial<ContentInpu
           value={values.title}
           onChange={(e) => {
             set("title", e.target.value);
-            if (!slugTouched) set("slug", slugify(e.target.value));
+            if (!slugTouched || values.slug === slugify(values.title)) set("slug", slugify(e.target.value));
           }}
         />
       </div>
@@ -163,6 +166,7 @@ export default function ContentForm({ initial }: { initial?: Partial<ContentInpu
 
       <div style={css("display:flex;gap:var(--space-3);")}>
         <SaveButton busy={busy} saved={saved} disabled={!values.title || !values.slug} idleLabel={values.id ? "Save changes" : "Create"} onClick={submit} />
+        <PreviewButton href={savedSlug ? `/writing/${savedSlug}` : null} saved={Boolean(values.id)} />
         {values.id && (
           <button type="button" className="btn btn-secondary" onClick={remove} disabled={busy} style={css("color:var(--om-coral);border-color:var(--om-coral);")}>
             Delete

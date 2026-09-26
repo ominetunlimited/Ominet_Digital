@@ -32,6 +32,7 @@ type ContentRow = {
   dek: string | null;
   excerpt: string | null;
   type: string;
+  status?: string;
   access: string;
   price_cents: number | null;
   currency: string | null;
@@ -53,6 +54,7 @@ function mapArticle(row: ContentRow): Article {
     title: row.title,
     dek: row.dek ?? undefined,
     excerpt: row.excerpt ?? "",
+    status: row.status,
     category: row.type.toUpperCase(),
     access: row.access as Article["access"],
     price: formatPrice(row.price_cents, row.currency),
@@ -91,9 +93,8 @@ export async function getArticle(slug: string): Promise<Article | undefined> {
   const supabase = await createClient();
   let { data, error } = await supabase!
     .from("content")
-    .select("id,slug,title,dek,excerpt,type,access,price_cents,currency,published_at,read_minutes,body,seo_title,seo_description,og_image_url,featured_image_url,video_url,video_thumbnail_url")
+    .select("id,slug,title,dek,excerpt,type,status,access,price_cents,currency,published_at,read_minutes,body,seo_title,seo_description,og_image_url,featured_image_url,video_url,video_thumbnail_url")
     .eq("slug", slug)
-    .eq("status", "published")
     .maybeSingle();
   // 42703 = undefined column — the video_url/video_thumbnail_url migration
   // (0003_video_fields.sql) may not be applied to this project yet. Retry
@@ -101,9 +102,8 @@ export async function getArticle(slug: string): Promise<Article | undefined> {
   if (error?.code === "42703") {
     ({ data, error } = await supabase!
       .from("content")
-      .select("id,slug,title,dek,excerpt,type,access,price_cents,currency,published_at,read_minutes,body,seo_title,seo_description,og_image_url,featured_image_url")
+      .select("id,slug,title,dek,excerpt,type,status,access,price_cents,currency,published_at,read_minutes,body,seo_title,seo_description,og_image_url,featured_image_url")
       .eq("slug", slug)
-      .eq("status", "published")
       .maybeSingle());
   }
   if (error || !data) return undefined;
@@ -156,6 +156,7 @@ function mapBook(row: BookRow): Book {
     seoDescription: row.seo_description ?? undefined,
     purchaseLinks: (row.book_purchase_links ?? []).map((l) => ({ label: l.label, platform: l.platform, url: l.url })),
     formats: row.formats ?? [],
+    status: row.status,
     upcoming: row.status !== "published",
     featured: row.featured ?? false,
   };
@@ -302,6 +303,7 @@ export type Service = {
   seoTitle?: string;
   seoDescription?: string;
   ogImageUrl?: string;
+  status?: string;
 };
 
 type ServiceRow = {
@@ -328,10 +330,11 @@ type ServiceRow = {
   seo_title: string | null;
   seo_description: string | null;
   og_image_url: string | null;
+  status?: string;
 };
 
 const SERVICE_SELECT =
-  "id,slug,title,short_description,full_description,featured_image_url,gallery,category,price_cents,currency,pricing_mode,duration,availability,location_mode,booking_enabled,requirements,faq,external_booking_url,cta_label,featured,seo_title,seo_description,og_image_url";
+  "id,slug,title,short_description,full_description,featured_image_url,gallery,category,price_cents,currency,pricing_mode,duration,availability,location_mode,booking_enabled,requirements,faq,external_booking_url,cta_label,featured,seo_title,seo_description,og_image_url,status";
 
 function mapService(row: ServiceRow): Service {
   return {
@@ -358,6 +361,7 @@ function mapService(row: ServiceRow): Service {
     seoTitle: row.seo_title ?? undefined,
     seoDescription: row.seo_description ?? undefined,
     ogImageUrl: row.og_image_url ?? undefined,
+    status: row.status,
   };
 }
 
@@ -380,7 +384,6 @@ export async function getService(slug: string): Promise<Service | undefined> {
     .from("services")
     .select(SERVICE_SELECT)
     .eq("slug", slug)
-    .eq("status", "published")
     .maybeSingle();
   if (error || !data) return undefined;
   return mapService(data as unknown as ServiceRow);
@@ -414,35 +417,6 @@ export async function getVideoPosts(limit = 6): Promise<VideoPost[]> {
     .limit(limit);
   if (error || !data) return [];
   return data.map((r) => ({ slug: r.slug, title: r.title, videoUrl: r.video_url as string, videoThumbnailUrl: r.video_thumbnail_url ?? undefined, readMinutes: r.read_minutes }));
-}
-
-export type AdPlacement = {
-  slotKey: string;
-  provider: string;
-  adClient: string | null;
-  adSlot: string | null;
-  htmlSnippet: string | null;
-  active: boolean;
-};
-
-export async function getAdPlacement(slotKey: string): Promise<AdPlacement | null> {
-  if (!supabaseConfigured) return null;
-  const supabase = await createClient();
-  const { data } = await supabase!
-    .from("ad_placements")
-    .select("slot_key,provider,ad_client,ad_slot,html_snippet,active")
-    .eq("slot_key", slotKey)
-    .eq("active", true)
-    .maybeSingle();
-  if (!data) return null;
-  return {
-    slotKey: data.slot_key,
-    provider: data.provider,
-    adClient: data.ad_client,
-    adSlot: data.ad_slot,
-    htmlSnippet: data.html_snippet,
-    active: data.active,
-  };
 }
 
 export async function searchContent(query: string) {

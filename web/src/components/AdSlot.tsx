@@ -1,25 +1,25 @@
-import { getAdPlacement } from "@/lib/data";
+import { getSlot, pickAd } from "@/lib/ads";
 import { css } from "@/lib/css";
+import TrackedAd from "@/components/TrackedAd";
 
 /**
- * Renders nothing unless an admin has activated this slot (see
- * /admin/advertising) — ads only appear where explicitly enabled, per
- * project/README.md section 26. Sponsored/direct placements are always
- * labelled "Sponsored" so they're never mistaken for editorial content.
+ * Renders nothing unless an admin has activated this slot (Admin → Advertising).
+ * A slot is either AdSense or "direct": structured ads (image, headline, link)
+ * that the site itself renders and labels. Raw HTML is never injected.
  */
 export default async function AdSlot({ slotKey }: { slotKey: string }) {
-  const placement = await getAdPlacement(slotKey);
-  if (!placement) return null;
+  const slot = await getSlot(slotKey);
+  if (!slot) return null;
 
-  if (placement.provider === "adsense") {
-    if (!placement.adClient || !placement.adSlot) return null;
+  if (slot.provider === "adsense") {
+    if (!slot.adClient || !slot.adSlot) return null;
     return (
       <div style={css("padding:var(--space-4) var(--space-6);")}>
         <ins
           className="adsbygoogle"
           style={{ display: "block" }}
-          data-ad-client={placement.adClient}
-          data-ad-slot={placement.adSlot}
+          data-ad-client={slot.adClient}
+          data-ad-slot={slot.adSlot}
           data-ad-format="auto"
           data-full-width-responsive="true"
         />
@@ -27,11 +27,11 @@ export default async function AdSlot({ slotKey }: { slotKey: string }) {
     );
   }
 
-  if (!placement.htmlSnippet) return null;
+  const ad = await pickAd(slotKey);
+  if (!ad) return null;
   return (
     <div style={css("padding:var(--space-4) var(--space-6);")}>
-      <div style={css("font-size:10px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-2);")}>SPONSORED</div>
-      <div dangerouslySetInnerHTML={{ __html: placement.htmlSnippet }} />
+      <TrackedAd adId={ad.id} ad={ad} />
     </div>
   );
 }
