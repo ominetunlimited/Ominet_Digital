@@ -11,6 +11,7 @@ const LINKS: { href: string; label: string; match: string }[] = [
   { href: "/writing", label: "WRITING", match: "/writing" },
   { href: "/books", label: "BOOKS", match: "/books" },
   { href: "/media", label: "MEDIA", match: "/media" },
+  { href: "/services", label: "SERVICES", match: "/services" },
   { href: "/profile", label: "PROFILE", match: "/profile" },
   { href: "/cortexa-office", label: "CORTEXA OFFICE", match: "/cortexa-office" },
   { href: "/about", label: "ABOUT", match: "/about" },
@@ -142,6 +143,7 @@ export default function Nav() {
                 <Link href="/writing" onClick={() => setMenuOpen(false)}>Writing</Link>
                 <Link href="/books" onClick={() => setMenuOpen(false)}>Books</Link>
                 <Link href="/media" onClick={() => setMenuOpen(false)}>Media</Link>
+                <Link href="/services" onClick={() => setMenuOpen(false)}>Services</Link>
               </div>
             </div>
             <div className="hr" />

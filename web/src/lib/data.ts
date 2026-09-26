@@ -182,16 +182,19 @@ export async function getAllSlugs() {
     return {
       articles: mockArticles.map((a) => a.slug),
       books: mockBooks.map((b) => b.slug),
+      services: [] as string[],
     };
   }
   const supabase = await createClient();
-  const [{ data: articleRows }, { data: bookRows }] = await Promise.all([
+  const [{ data: articleRows }, { data: bookRows }, { data: serviceRows }] = await Promise.all([
     supabase!.from("content").select("slug").eq("status", "published"),
     supabase!.from("books").select("slug"),
+    supabase!.from("services").select("slug").eq("status", "published"),
   ]);
   return {
     articles: (articleRows ?? []).map((r) => r.slug as string),
     books: (bookRows ?? []).map((r) => r.slug as string),
+    services: (serviceRows ?? []).map((r) => r.slug as string),
   };
 }
 
@@ -249,6 +252,116 @@ export async function getProducts(): Promise<Product[]> {
     .order("created_at", { ascending: false });
   if (error || !data) return [];
   return (data as ProductRow[]).map(mapProduct);
+}
+
+export type ServiceFaq = { question: string; answer: string };
+
+export type Service = {
+  id: string;
+  slug: string;
+  title: string;
+  shortDescription?: string;
+  fullDescription?: string;
+  featuredImageUrl?: string;
+  gallery: string[];
+  category?: string;
+  priceCents: number | null;
+  currency: string;
+  pricingMode: string;
+  duration?: string;
+  availability?: string;
+  locationMode: string;
+  bookingEnabled: boolean;
+  requirements?: string;
+  faq: ServiceFaq[];
+  externalBookingUrl?: string;
+  ctaLabel?: string;
+  featured: boolean;
+  seoTitle?: string;
+  seoDescription?: string;
+  ogImageUrl?: string;
+};
+
+type ServiceRow = {
+  id: string;
+  slug: string;
+  title: string;
+  short_description: string | null;
+  full_description: string | null;
+  featured_image_url: string | null;
+  gallery: string[] | null;
+  category: string | null;
+  price_cents: number | null;
+  currency: string | null;
+  pricing_mode: string;
+  duration: string | null;
+  availability: string | null;
+  location_mode: string;
+  booking_enabled: boolean;
+  requirements: string | null;
+  faq: ServiceFaq[] | null;
+  external_booking_url: string | null;
+  cta_label: string | null;
+  featured: boolean;
+  seo_title: string | null;
+  seo_description: string | null;
+  og_image_url: string | null;
+};
+
+const SERVICE_SELECT =
+  "id,slug,title,short_description,full_description,featured_image_url,gallery,category,price_cents,currency,pricing_mode,duration,availability,location_mode,booking_enabled,requirements,faq,external_booking_url,cta_label,featured,seo_title,seo_description,og_image_url";
+
+function mapService(row: ServiceRow): Service {
+  return {
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    shortDescription: row.short_description ?? undefined,
+    fullDescription: row.full_description ?? undefined,
+    featuredImageUrl: row.featured_image_url ?? undefined,
+    gallery: row.gallery ?? [],
+    category: row.category ?? undefined,
+    priceCents: row.price_cents,
+    currency: row.currency ?? "NGN",
+    pricingMode: row.pricing_mode,
+    duration: row.duration ?? undefined,
+    availability: row.availability ?? undefined,
+    locationMode: row.location_mode,
+    bookingEnabled: row.booking_enabled,
+    requirements: row.requirements ?? undefined,
+    faq: row.faq ?? [],
+    externalBookingUrl: row.external_booking_url ?? undefined,
+    ctaLabel: row.cta_label ?? undefined,
+    featured: row.featured,
+    seoTitle: row.seo_title ?? undefined,
+    seoDescription: row.seo_description ?? undefined,
+    ogImageUrl: row.og_image_url ?? undefined,
+  };
+}
+
+export async function getServices(): Promise<Service[]> {
+  if (!supabaseConfigured) return [];
+  const supabase = await createClient();
+  const { data, error } = await supabase!
+    .from("services")
+    .select(SERVICE_SELECT)
+    .eq("status", "published")
+    .order("display_order", { ascending: true });
+  if (error || !data) return [];
+  return (data as unknown as ServiceRow[]).map(mapService);
+}
+
+export async function getService(slug: string): Promise<Service | undefined> {
+  if (!supabaseConfigured) return undefined;
+  const supabase = await createClient();
+  const { data, error } = await supabase!
+    .from("services")
+    .select(SERVICE_SELECT)
+    .eq("slug", slug)
+    .eq("status", "published")
+    .maybeSingle();
+  if (error || !data) return undefined;
+  return mapService(data as unknown as ServiceRow);
 }
 
 export type AdPlacement = {
