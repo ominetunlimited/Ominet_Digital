@@ -8,6 +8,7 @@ import { css } from "@/lib/css";
 import { pageMetadata } from "@/lib/seo";
 import { getFeaturedBook, getArticles } from "@/lib/data";
 import { truncate } from "@/lib/text";
+import { ResearchProfileSection } from "@/components/ResearchProfileLinks";
 
 export const metadata = pageMetadata(
   "Omini Nfawa",
@@ -146,6 +147,8 @@ export default async function OminiNfawaPage() {
       </section>
 
       <div className="hr" />
+
+      <ResearchProfileSection placement="profile" title="RESEARCH PROFILES" />
 
       <section style={css("padding:var(--space-8) var(--space-6);display:flex;justify-content:space-between;align-items:center;gap:var(--space-6);flex-wrap:wrap;")}>
         <div style={css("flex:1 1 260px;")}>

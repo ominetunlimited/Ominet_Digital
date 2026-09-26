@@ -3,6 +3,7 @@ import Footer from "@/components/Footer";
 import PlaceholderImage from "@/components/PlaceholderImage";
 import { css } from "@/lib/css";
 import { pageMetadata } from "@/lib/seo";
+import { ResearchProfileSection } from "@/components/ResearchProfileLinks";
 
 export const metadata = pageMetadata(
   "About",
@@ -50,6 +51,8 @@ export default function AboutPage() {
           ))}
         </div>
       </section>
+
+      <ResearchProfileSection placement="profile" />
 
       <div className="hr" />
       <Footer />

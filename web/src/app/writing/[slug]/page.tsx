@@ -11,6 +11,8 @@ import NewsletterForm from "@/components/NewsletterForm";
 import Link from "next/link";
 import { css } from "@/lib/css";
 import { getArticle, getArticles, getFeaturedBook } from "@/lib/data";
+import { getResearchProfiles } from "@/lib/research";
+import { ResearchProfileSection } from "@/components/ResearchProfileLinks";
 import { SITE_URL } from "@/lib/seo";
 import { hasEntitlement, getCurrentUser } from "@/lib/entitlements";
 import { getEngagement } from "@/lib/engagement";
@@ -64,13 +66,20 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
   const bodyParagraphs = article.body ? article.body.split(/\n{2,}/) : [];
   const visibleParagraphs = unlocked ? bodyParagraphs : bodyParagraphs.slice(0, 1);
 
+  const profileLinks = await getResearchProfiles();
+  const isResearch = /research|thesis|academic|paper/i.test(article.category ?? "");
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
     headline: article.title,
     description: article.excerpt,
     datePublished: article.date,
-    author: { "@type": "Person", name: article.author || "Omini Nfawa" },
+    author: {
+      "@type": "Person",
+      name: article.author || "Omini Nfawa",
+      ...(profileLinks.length > 0 ? { sameAs: profileLinks.map((l) => l.url) } : {}),
+    },
     publisher: { "@type": "Organization", name: "Ominet Digital" },
     mainEntityOfPage: `${SITE_URL}/writing/${article.slug}`,
   };
@@ -119,6 +128,8 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
         )}
 
         <AdSlot slotKey="article_inline" />
+
+        {isResearch && <ResearchProfileSection placement="research" title="THE AUTHOR'S RESEARCH PROFILES" padded={false} />}
 
         <ShareBar url={`${SITE_URL}/writing/${article.slug}`} title={article.title} />
 

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import SocialLinks from "@/components/SocialLinks";
+import { ResearchFooterLinks } from "@/components/ResearchProfileLinks";
 
 export default function Footer() {
   return (
@@ -28,6 +29,7 @@ export default function Footer() {
             <Link href="/about">About</Link>
           </div>
         </div>
+        <ResearchFooterLinks />
         <div>
           <div style={{ fontSize: 11, letterSpacing: "0.1em", opacity: 0.6, marginBottom: "var(--space-3)" }}>ECOSYSTEM</div>
           <div style={{ display: "grid", gap: "var(--space-2)", fontSize: 13 }}>
