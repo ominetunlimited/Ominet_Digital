@@ -15,10 +15,15 @@ export default async function EditContentPage({ params }: { params: Promise<{ id
   const { data } = supabase ? await supabase.from("content").select("*").eq("id", id).maybeSingle() : { data: null };
   if (!data) notFound();
 
+  const attachment =
+    data.attachment_format && data.attachment_original_name && data.attachment_size_bytes != null
+      ? { format: data.attachment_format, originalName: data.attachment_original_name, sizeBytes: Number(data.attachment_size_bytes) }
+      : null;
+
   return (
     <div>
       <h1 style={css("font-family:var(--font-heading);font-size:28px;margin:0 0 var(--space-6);")}>Edit content</h1>
-      <ContentForm initial={data} />
+      <ContentForm initial={data} attachment={attachment} />
     </div>
   );
 }

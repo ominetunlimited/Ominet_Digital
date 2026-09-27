@@ -10,12 +10,19 @@ import FormActions from "@/components/admin/FormActions";
 import { useRouter } from "next/navigation";
 import { slugify } from "@/lib/slug";
 import { useAdminAction } from "@/lib/admin/useAdminAction";
+import ContentFilePanel, { type ContentAttachment } from "@/components/admin/ContentFilePanel";
 
 const TYPES = ["article", "essay", "research", "poem", "fiction", "review", "interview", "note"];
 const ACCESS = ["free", "paid", "members", "preview"];
 const STATUSES = ["draft", "scheduled", "published", "archived"];
 
-export default function ContentForm({ initial }: { initial?: Partial<ContentInput> & { id?: string } }) {
+export default function ContentForm({
+  initial,
+  attachment = null,
+}: {
+  initial?: Partial<ContentInput> & { id?: string };
+  attachment?: ContentAttachment | null;
+}) {
   const [values, setValues] = useState<ContentInput>({
     id: initial?.id,
     title: initial?.title ?? "",
@@ -64,6 +71,7 @@ export default function ContentForm({ initial }: { initial?: Partial<ContentInpu
 
   const submit = () => void persist();
   const previewNew = async () => ((await persist("draft", false)) ? `/writing/${slugify(values.slug || values.title)}` : null);
+  const ensureContent = async () => values.id ?? (await persist("draft", false));
 
   async function remove() {
     if (!values.id || !confirm(`Delete "${values.title}"? This can't be undone.`)) return;
@@ -167,6 +175,8 @@ export default function ContentForm({ initial }: { initial?: Partial<ContentInpu
         <textarea className="input" rows={2} value={values.seo_description} onChange={(e) => set("seo_description", e.target.value)} />
       </div>
       <ImageUploadField label="Social share image" value={values.og_image_url} onChange={(url) => set("og_image_url", url)} />
+
+      <ContentFilePanel contentId={values.id ?? null} ensureContent={ensureContent} initialAttachment={attachment} />
 
       {error && <p style={css("font-size:13px;color:var(--om-coral);margin-bottom:var(--space-3);")}>{error}</p>}
 

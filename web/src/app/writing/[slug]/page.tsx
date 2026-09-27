@@ -133,6 +133,14 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
           ))}
         </div>
 
+        {article.attachmentFormat && unlocked && article.id && (
+          <div style={css("margin:var(--space-6) 0;")}>
+            <a href={`/api/content/download?content=${article.id}`} rel="nofollow" className="btn btn-secondary">
+              Download {article.attachmentFormat === "pdf" ? "PDF" : "Word (DOCX)"}
+            </a>
+          </div>
+        )}
+
         {!unlocked && (
           <PaywallGate contentId={article.id ?? article.slug} price={article.price} userEmail={user?.email ?? null} currentPath={`/writing/${article.slug}`} />
         )}

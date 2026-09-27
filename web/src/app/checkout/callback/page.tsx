@@ -7,6 +7,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getBookDelivery, type BookDelivery } from "@/lib/books/delivery";
 import BookAccess from "@/components/BookAccess";
 
+const ATTACHMENT_LABEL: Record<string, string> = { pdf: "PDF", docx: "Word (DOCX)" };
+
 export default async function CheckoutCallbackPage({
   searchParams,
 }: {
@@ -18,6 +20,7 @@ export default async function CheckoutCallbackPage({
   let success = false;
   let message = "We couldn't find that transaction.";
   let contentSlug: string | undefined;
+  let article: { id: string; slug: string; title: string; attachmentFormat?: string | null } | undefined;
   let book: { id: string; slug: string; title: string } | undefined;
   let delivery: BookDelivery | null = null;
 
@@ -25,17 +28,26 @@ export default async function CheckoutCallbackPage({
     try {
       const result = await fulfillPaystackReference(reference);
       success = result.status === "paid" || result.alreadyFulfilled === true;
-      contentSlug = undefined;
       // A paid order for a book: show its downloads right here. The reference
       // in the URL is the buyer's receipt — verified as paid above, and
       // unguessable — so this page also works from another device.
       const bookId = (result.order as { book_id?: string | null }).book_id;
+      const contentId = (result.order as { content_id?: string | null }).content_id;
       if (success && bookId) {
         const admin = createAdminClient();
         const { data } = admin ? await admin.from("books").select("id,slug,title").eq("id", bookId).maybeSingle() : { data: null };
         if (data) {
           book = data;
           delivery = await getBookDelivery(data.id);
+        }
+      } else if (success && contentId) {
+        const admin = createAdminClient();
+        const { data } = admin
+          ? await admin.from("content").select("id,slug,title,attachment_format").eq("id", contentId).maybeSingle()
+          : { data: null };
+        if (data) {
+          article = data;
+          contentSlug = data.slug;
         }
       }
       message = success
@@ -62,6 +74,20 @@ export default async function CheckoutCallbackPage({
             <BookAccess bookId={book.id} delivery={{ ...delivery, salesMode: "direct_sale" }} owned signedIn={false} receiptRef={reference} />
             <p style={css("font-size:12px;opacity:0.6;")}>
               Bookmark this page — it is your receipt, and you can come back to it to download &ldquo;{book.title}&rdquo; again.
+            </p>
+          </div>
+        )}
+        {article && article.attachmentFormat && (
+          <div style={css("max-width:520px;margin:0 auto var(--space-6);text-align:left;")}>
+            <a
+              href={`/api/content/download?content=${article.id}${reference ? `&ref=${encodeURIComponent(reference)}` : ""}`}
+              rel="nofollow"
+              className="btn btn-primary"
+            >
+              Download {ATTACHMENT_LABEL[article.attachmentFormat] ?? article.attachmentFormat.toUpperCase()}
+            </a>
+            <p style={css("font-size:12px;opacity:0.6;margin-top:var(--space-2);")}>
+              Bookmark this page — it is your receipt, and you can come back to it to download &ldquo;{article.title}&rdquo; again.
             </p>
           </div>
         )}

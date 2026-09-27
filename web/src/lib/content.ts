@@ -25,6 +25,8 @@ export type Article = {
   videoUrl?: string;
   videoThumbnailUrl?: string;
   status?: string;
+  /** Set only when a downloadable file is attached — never the storage path itself. */
+  attachmentFormat?: "pdf" | "docx";
 };
 
 export const articles: Article[] = [
