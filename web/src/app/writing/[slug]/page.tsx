@@ -131,7 +131,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
 
         <div style={css("font-size:18px;line-height:1.8;")}>
           {visibleParagraphs.map((p, i) => (
-            <p key={i}>{p}</p>
+            <p key={i} style={css("margin:0 0 var(--space-5, 1.4em);")}>{p}</p>
           ))}
         </div>
 
@@ -176,7 +176,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                 <div className="card">
                   <div className="card-kicker">MORE FROM OMINI</div>
                   <div className="card-title">{moreFromOmini.title}</div>
-                  <p className="card-body">{moreFromOmini.excerpt}</p>
+                  <ReadMoreExcerpt text={moreFromOmini.excerpt} className="card-body" />
                 </div>
               </Link>
             )}

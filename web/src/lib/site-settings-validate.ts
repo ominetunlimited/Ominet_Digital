@@ -13,6 +13,8 @@ export type SiteSettings = {
   social: SocialLink[];
   seo: { faviconUrl: string; defaultOgImageUrl: string; googleVerification: string };
   footer: { blurb: string; copyrightName: string; privacyUrl: string; termsUrl: string };
+  homepage: { heroImageUrl: string; heroHeading: string; heroSubheading: string; showRecentWriting: boolean };
+  about: { photoUrl: string; tagline: string; intro: string; bio: string };
 };
 
 export type SectionName = keyof SiteSettings;
@@ -22,9 +24,27 @@ export const SECTION_KEYS: Record<SectionName, string> = {
   social: "site_social",
   seo: "site_seo",
   footer: "site_footer",
+  homepage: "site_homepage",
+  about: "site_about",
 };
 
 const DESCRIPTION = "A digital ecosystem for publishing, creativity, professional identity and technology, founded by Omini Nfawa.";
+
+// What the About page has always said — kept as the default here so nothing
+// on the live page changes until an admin edits it in Site settings.
+const DEFAULT_BIO = [
+  "Omini Nfawa is a Nigerian writer, researcher and media and communications specialist whose work moves between literature, research, storytelling and the everyday business of trying to make sense of Nigeria.",
+  "He studied English and Literary Studies, which probably explains why he has spent a considerable amount of time arguing with sentences, stories and ideas. Writing came naturally. Media came with it. Technology arrived later and, rather than being politely ignored, became an adventure of its own.",
+  "His work lives mainly in three places: writing, media, and digital innovation.",
+  "As a writer, Omini works across fiction, essays, literary criticism, research and social commentary. His interests often circle around power, identity, inequality, childhood, culture, society and the strange ways ordinary people find themselves inside much bigger stories.",
+  "His published and completed works include an analysis of Florence Oketona's Ashes in the Times, The Dual Edge of Religion, and An Analysis of the Representation of Violence Against the Male Child in African Fiction. The latter research also helped inspire his novel, A Child's Cry in the Savannah.",
+  "He is also working on a growing body of social and political writing, including Our Politicians Have Gone Mad Again, Things Are Getting Out of Hand, and The Slow Funeral of Nigeria's Institutions, among other works.",
+  "Media is another part of the same instinct. Omini works with video, photography, documentary storytelling, visual communication and creative production. For him, a camera is not simply a piece of equipment. It is another way of asking questions, noticing things and occasionally catching something that words would have missed.",
+  "Technology is the newer adventure. Through Ominet Digital, he explores digital publishing, websites, software, creative technology and new ways of organising ideas and professional identity. PROFILE, for example, grew from an interest in how people can build a professional identity from the work they actually do, rather than endlessly rewriting the same CV.",
+  "Ominet Digital is where these interests meet: writing, research, media, publishing, technology and creative work.",
+  "There is no neat formula behind all of it. Omini is interested in ideas, but also in making things. He can spend hours thinking about a literary theory and then get distracted by a website that needs fixing. He likes books, cameras, good arguments, useful technology and stories that leave something behind after the last page.",
+  "There is always a story behind the story. And this is where he keeps some of them.",
+].join("\n\n");
 
 /** What the site showed before settings existed — nothing changes until an admin edits something. */
 export const DEFAULT_SETTINGS: SiteSettings = {
@@ -38,6 +58,18 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   ],
   seo: { faviconUrl: "", defaultOgImageUrl: "", googleVerification: "" },
   footer: { blurb: DESCRIPTION, copyrightName: "Ominet Digital", privacyUrl: "", termsUrl: "" },
+  homepage: {
+    heroImageUrl: "",
+    heroHeading: "Writer. Researcher.\nMedia & Communications Specialist.",
+    heroSubheading: DESCRIPTION,
+    showRecentWriting: true,
+  },
+  about: {
+    photoUrl: "",
+    tagline: "Writer · Researcher · Media & Communications Specialist",
+    intro: "Creative troublemaker, occasionally.",
+    bio: DEFAULT_BIO,
+  },
 };
 
 export const PLATFORM_HOSTS: Record<SocialPlatform, string[]> = {
@@ -132,6 +164,30 @@ export function validateFooter(input: unknown): Result<SiteSettings["footer"]> {
   return { ok: true, value: { blurb, copyrightName, privacyUrl: links[0], termsUrl: links[1] } };
 }
 
+export function validateHomepage(input: unknown): Result<SiteSettings["homepage"]> {
+  const o = (input ?? {}) as Record<string, unknown>;
+  const heroImg = validateImageUrl(str(o.heroImageUrl, 500));
+  if (!heroImg.ok) return { ok: false, error: `Hero image: ${heroImg.error}` };
+  const heroHeading = str(o.heroHeading, 200);
+  if (!heroHeading) return { ok: false, error: "Enter the hero heading." };
+  const heroSubheading = str(o.heroSubheading, 400);
+  return {
+    ok: true,
+    value: { heroImageUrl: heroImg.url ?? "", heroHeading, heroSubheading, showRecentWriting: Boolean(o.showRecentWriting) },
+  };
+}
+
+export function validateAbout(input: unknown): Result<SiteSettings["about"]> {
+  const o = (input ?? {}) as Record<string, unknown>;
+  const photo = validateImageUrl(str(o.photoUrl, 500));
+  if (!photo.ok) return { ok: false, error: `Photo: ${photo.error}` };
+  const tagline = str(o.tagline, 200);
+  const intro = str(o.intro, 300);
+  const bio = str(o.bio, 8000);
+  if (!bio) return { ok: false, error: "The bio can't be empty." };
+  return { ok: true, value: { photoUrl: photo.url ?? "", tagline, intro, bio } };
+}
+
 /** Rows from the table -> full settings, falling back to defaults for anything missing or malformed. */
 export function mergeSettings(rows: { key: string; value: unknown }[]): SiteSettings {
   const by = new Map(rows.map((r) => [r.key, r.value]));
@@ -147,5 +203,7 @@ export function mergeSettings(rows: { key: string; value: unknown }[]): SiteSett
     social: pick("social", validateSocial),
     seo: pick("seo", validateSeo),
     footer: pick("footer", validateFooter),
+    homepage: pick("homepage", validateHomepage),
+    about: pick("about", validateAbout),
   };
 }

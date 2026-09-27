@@ -4,8 +4,10 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import {
   SECTION_KEYS,
+  validateAbout,
   validateContact,
   validateFooter,
+  validateHomepage,
   validateIdentity,
   validateSeo,
   validateSocial,
@@ -20,6 +22,8 @@ const VALIDATORS = {
   social: validateSocial,
   seo: validateSeo,
   footer: validateFooter,
+  homepage: validateHomepage,
+  about: validateAbout,
 } as const;
 
 /**

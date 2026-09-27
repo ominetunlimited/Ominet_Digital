@@ -41,9 +41,43 @@ export default function SiteSettingsForm({ initial }: { initial: SiteSettings })
   const [social, setSocial] = useState(initial.social);
   const [seo, setSeo] = useState(initial.seo);
   const [footer, setFooter] = useState(initial.footer);
+  const [homepage, setHomepage] = useState(initial.homepage);
+  const [about, setAbout] = useState(initial.about);
 
   return (
     <div style={css("max-width:720px;")}>
+      <Section title="Homepage" hint="The hero banner at the top of the homepage, and its Recent Writing list. Featured Book is set per-book (Books admin -> Featured), and Featured articles per-article (Content admin -> Featured)." section="homepage" data={homepage}>
+        <ImageUploadField label="Hero image (optional — leave blank to keep the default)" value={homepage.heroImageUrl} onChange={(url) => setHomepage({ ...homepage, heroImageUrl: url })} />
+        <Field label="Hero heading" hint="A line break here starts a new line in the heading.">
+          <textarea className="input" rows={2} value={homepage.heroHeading} onChange={(e) => setHomepage({ ...homepage, heroHeading: e.target.value })} />
+        </Field>
+        <Field label="Hero subheading">
+          <textarea className="input" rows={2} value={homepage.heroSubheading} onChange={(e) => setHomepage({ ...homepage, heroSubheading: e.target.value })} />
+        </Field>
+        <label className="radio" style={css("margin-top:var(--space-2);")}>
+          <input
+            type="checkbox"
+            checked={homepage.showRecentWriting}
+            onChange={(e) => setHomepage({ ...homepage, showRecentWriting: e.target.checked })}
+            style={{ position: "static", width: "auto", height: "auto", opacity: 1 }}
+          />
+          Show a &ldquo;Recent writing&rdquo; list of your latest articles in the hero
+        </label>
+      </Section>
+
+      <Section title="About page" hint="Your photo and write-up on the About page." section="about" data={about}>
+        <ImageUploadField label="Photo (optional — leave blank to keep the current one)" value={about.photoUrl} onChange={(url) => setAbout({ ...about, photoUrl: url })} />
+        <Field label="Tagline">
+          <input className="input" value={about.tagline} onChange={(e) => setAbout({ ...about, tagline: e.target.value })} />
+        </Field>
+        <Field label="Intro line (shown in italics)">
+          <input className="input" value={about.intro} onChange={(e) => setAbout({ ...about, intro: e.target.value })} />
+        </Field>
+        <Field label="Bio" hint="Paragraphs separated by a blank line.">
+          <textarea className="input" rows={14} value={about.bio} onChange={(e) => setAbout({ ...about, bio: e.target.value })} />
+        </Field>
+      </Section>
+
       <Section title="Site identity" hint="The name and description search engines and social networks show for the whole site." section="identity" data={identity}>
         <Field label="Site name" hint="Added to every page title, e.g. “Books — Your Site Name”.">
           <input className="input" value={identity.siteName} onChange={(e) => setIdentity({ ...identity, siteName: e.target.value })} />

@@ -11,8 +11,8 @@ import ReadMoreExcerpt from "@/components/ReadMoreExcerpt";
 import { css } from "@/lib/css";
 import { pageMetadata, SITE_URL, SITE_NAME } from "@/lib/seo";
 import { getFeaturedBook, getArticles } from "@/lib/data";
-import { truncate } from "@/lib/text";
 import { getPersonSchema, getOrganizationSchema, jsonLdGraph, WEBSITE_ID, ORG_ID } from "@/lib/schema";
+import { getSiteSettings } from "@/lib/site-settings";
 
 export const revalidate = 60;
 
@@ -23,9 +23,9 @@ export const generateMetadata = () => pageMetadata(
 );
 
 export default async function Home() {
-  const [featuredBook, articles, personSchema] = await Promise.all([getFeaturedBook(), getArticles(), getPersonSchema()]);
+  const [featuredBook, articles, personSchema, { homepage }] = await Promise.all([getFeaturedBook(), getArticles(), getPersonSchema(), getSiteSettings()]);
   const latestArticle = articles[0];
-  const heroArticles = articles.slice(0, 3);
+  const heroArticles = homepage.showRecentWriting ? articles.slice(0, 3) : [];
   const jsonLd = jsonLdGraph([
     { "@type": "WebSite", "@id": WEBSITE_ID, name: SITE_NAME, url: SITE_URL, publisher: { "@id": ORG_ID } },
     getOrganizationSchema(SITE_NAME),
@@ -42,8 +42,15 @@ export default async function Home() {
           <div style={css("flex:1 1 380px;background:var(--om-navy);color:#eafaf0;padding:var(--space-8);display:flex;flex-direction:column;justify-content:center;gap:var(--space-4);")}>
             <Image src="/images/ominet-digital-logo.svg" alt="Ominet Digital" width={64} height={49} priority style={css("display:block;")} />
             <div style={css("font-family:var(--font-heading);font-size:13px;letter-spacing:0.14em;color:var(--om-orange);font-weight:800;")}>OMINI NFAWA</div>
-            <h1 style={css("font-family:var(--font-heading);font-size:clamp(34px,4.5vw,48px);line-height:1.08;margin:0;color:#fff;")}>Writer. Researcher.<br />Media &amp; Communications Specialist.</h1>
-            <p style={css("font-size:16px;line-height:1.6;opacity:0.85;max-width:40ch;margin:0;")}>A digital ecosystem for publishing, professional identity and technology &mdash; built by Omini Nfawa.</p>
+            <h1 style={css("font-family:var(--font-heading);font-size:clamp(34px,4.5vw,48px);line-height:1.08;margin:0;color:#fff;")}>
+              {homepage.heroHeading.split("\n").map((line, i, arr) => (
+                <span key={i}>
+                  {line}
+                  {i < arr.length - 1 && <br />}
+                </span>
+              ))}
+            </h1>
+            <p style={css("font-size:16px;line-height:1.6;opacity:0.85;max-width:40ch;margin:0;")}>{homepage.heroSubheading}</p>
             <div style={css("display:flex;gap:var(--space-3);flex-wrap:wrap;margin-top:var(--space-2);")}>
               <Link href="/writing"><button type="button" className="btn btn-primary" style={css("border-radius:var(--radius-md);")}>Read the writing</button></Link>
               <Link href="/about"><button type="button" className="btn btn-secondary" style={css("border-radius:var(--radius-md);border-color:rgba(255,255,255,0.4);color:#fff;")}>About Omini</button></Link>
@@ -65,7 +72,7 @@ export default async function Home() {
             </div>
           </div>
           <div style={css("flex:1 1 380px;position:relative;min-height:320px;")}>
-            <Image src="/images/hero-home.jpg" alt="" fill sizes="(max-width: 900px) 100vw, 640px" style={{ objectFit: "cover" }} priority />
+            <Image src={homepage.heroImageUrl || "/images/hero-home.jpg"} alt="" fill sizes="(max-width: 900px) 100vw, 640px" style={{ objectFit: "cover" }} priority />
           </div>
         </div>
       </section>
@@ -144,7 +151,7 @@ export default async function Home() {
             <div className="card">
               <div className="card-kicker">LATEST WRITING</div>
               <div className="card-title">{latestArticle.title}</div>
-              <p className="card-body">{truncate(latestArticle.excerpt, 160)}</p>
+              <ReadMoreExcerpt text={latestArticle.excerpt} className="card-body" />
               <div className="card-meta"><span>{latestArticle.date}</span></div>
             </div>
           </Link>

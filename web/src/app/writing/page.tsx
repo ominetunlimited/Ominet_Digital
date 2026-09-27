@@ -6,6 +6,7 @@ import { getArticles } from "@/lib/data";
 import { pageMetadata } from "@/lib/seo";
 import { collectionPageSchema } from "@/lib/schema";
 import type { Article } from "@/lib/content";
+import ReadMoreExcerpt from "@/components/ReadMoreExcerpt";
 
 export const generateMetadata = () => pageMetadata(
   "Writing",
@@ -121,7 +122,7 @@ export default async function WritingPage({
                   <span className={a.access === "paid" ? "tag tag-accent" : "tag tag-outline"}>{a.access === "paid" ? "PAID" : "FREE"}</span>
                 </div>
                 <div style={css("font-family:var(--font-heading);font-size:26px;margin-bottom:var(--space-1);")}>{a.title}</div>
-                <p style={css("font-size:14px;opacity:0.7;margin:0;max-width:70ch;")}>{a.excerpt}</p>
+                <ReadMoreExcerpt text={a.excerpt} style={css("font-size:14px;opacity:0.7;margin:0;max-width:70ch;")} />
               </div>
               <div style={css("font-size:12px;opacity:0.5;text-align:right;")}>{a.readTime}</div>
             </section>
