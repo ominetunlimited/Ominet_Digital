@@ -8,7 +8,7 @@ export const maxDuration = 60;
 export default async function AdminMediaPage() {
   const supabase = await createClient();
   const { data } = supabase
-    ? await supabase.from("media_assets").select("id,url,title,kind,storage_path").order("created_at", { ascending: false })
+    ? await supabase.from("media_assets").select("id,url,title,kind,storage_path,alt_text,caption,width,height,created_at").order("created_at", { ascending: false })
     : { data: [] };
 
   return (

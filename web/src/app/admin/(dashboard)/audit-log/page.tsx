@@ -1,79 +1,12 @@
 import Link from "next/link";
 import { css } from "@/lib/css";
 import { createClient } from "@/lib/supabase/server";
+import { AREAS, describeAuditEntry, type AuditRow as Row } from "@/lib/admin/audit-format";
 
 export const metadata = { title: "Audit log — Admin", robots: { index: false, follow: false } };
 export const maxDuration = 60;
 
 const PAGE_SIZE = 50;
-
-const AREAS: Record<string, string> = {
-  auth: "Sign-in",
-  content: "Content",
-  books: "Books",
-  book_files: "Book files",
-  products: "Store products",
-  services: "Services",
-  bookings: "Bookings",
-  comments: "Comments",
-  ad_placements: "Ad placements",
-  ads: "Ads",
-  ad_campaigns: "Ad campaigns",
-  ad_advertisers: "Advertisers",
-  social_accounts: "Social",
-  research_profiles: "Research profiles",
-  selected_work: "About page",
-  site_settings: "Site settings",
-  // (each section is its own row, so the log says which section changed)
-  redirects: "Redirects",
-  media_assets: "Media",
-  profiles: "Roles & permissions",
-};
-
-const VERBS: Record<string, string> = {
-  insert: "created",
-  update: "updated",
-  delete: "deleted",
-  publish: "published",
-  unpublish: "unpublished",
-  archive: "archived",
-  status_change: "changed status of",
-  role_change: "changed the role of",
-  login: "signed in",
-  login_failed: "failed to sign in",
-  login_blocked: "was blocked from signing in",
-  logout: "signed out",
-};
-
-type Row = {
-  id: number;
-  created_at: string;
-  actor_email: string | null;
-  action: string;
-  entity_type: string;
-  entity_label: string | null;
-  metadata: Record<string, unknown> | null;
-};
-
-function describe(row: Row): { who: string; what: string; details: string } {
-  const verb = VERBS[row.action.split(".").pop() ?? ""] ?? row.action;
-  const meta = (row.metadata ?? {}) as Record<string, unknown> & { changed?: string[]; ip?: string; via?: string };
-  const isAuth = row.entity_type === "auth";
-  const who = row.actor_email || (isAuth ? row.entity_label || "unknown" : meta.via === "service_role" ? "The server" : "System");
-  const area = (AREAS[row.entity_type] ?? row.entity_type).toLowerCase();
-  const what = isAuth ? verb : `${verb} ${area}${row.entity_label ? ` “${row.entity_label}”` : ""}`;
-
-  const parts: string[] = [];
-  for (const [k, v] of Object.entries(meta)) {
-    if (v && typeof v === "object" && !Array.isArray(v) && "to" in v) {
-      const { from, to } = v as { from: unknown; to: unknown };
-      parts.push(`${k}: ${from === null || from === undefined ? "—" : String(from)} → ${to === null || to === undefined ? "—" : String(to)}`);
-    }
-  }
-  if (Array.isArray(meta.changed)) parts.push(`fields: ${meta.changed.join(", ")}`);
-  if (isAuth && meta.ip) parts.push(`from ${meta.ip}`);
-  return { who, what, details: parts.join(" · ") };
-}
 
 export default async function AuditLogPage({ searchParams }: { searchParams: Promise<{ area?: string; q?: string; page?: string }> }) {
   const params = await searchParams;
@@ -138,10 +71,9 @@ export default async function AuditLogPage({ searchParams }: { searchParams: Pro
       ) : (
         <div style={css("display:grid;gap:var(--space-2);")}>
           {rows.map((r) => {
-            const d = describe(r);
-            const warn = r.action === "auth.login_failed" || r.action === "auth.login_blocked";
+            const d = describeAuditEntry(r);
             return (
-              <div key={r.id} className="card" style={css(`gap:4px;padding:var(--space-3) var(--space-4);${warn ? "border-color:var(--om-coral);" : ""}`)}>
+              <div key={r.id} className="card" style={css(`gap:4px;padding:var(--space-3) var(--space-4);${d.warn ? "border-color:var(--om-coral);" : ""}`)}>
                 <div style={css("display:flex;justify-content:space-between;gap:var(--space-3);flex-wrap:wrap;font-size:12px;opacity:0.6;")}>
                   <span>{fmt.format(new Date(r.created_at))}</span>
                   <span>{AREAS[r.entity_type] ?? r.entity_type}</span>

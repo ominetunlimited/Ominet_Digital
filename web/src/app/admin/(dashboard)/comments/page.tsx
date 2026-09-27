@@ -107,7 +107,7 @@ export default async function AdminCommentsPage({
       ) : moderationRows.length === 0 ? (
         <p style={css("font-size:14px;opacity:0.6;")}>No comments in this view.</p>
       ) : (
-        <table className="table" style={css("width:100%;")}>
+        <table className="table table-responsive" style={css("width:100%;")}>
           <thead>
             <tr>
               <th>Comment</th>

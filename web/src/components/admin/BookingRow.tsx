@@ -60,13 +60,13 @@ export default function BookingRow({ item }: { item: BookingItem }) {
   return (
     <>
       <tr>
-        <td style={css("max-width:260px;")}>
+        <td data-label="Customer" style={css("max-width:260px;")}>
           <div style={css("font-weight:700;font-size:13px;")}>{item.name}</div>
           <div style={css("font-size:12px;opacity:0.7;word-break:break-all;")}><a href={`mailto:${item.email}`}>{item.email}</a></div>
           {item.phone && <div style={css("font-size:12px;opacity:0.7;")}>{item.phone}</div>}
         </td>
-        <td style={css("font-size:13px;")}>{item.serviceTitle}</td>
-        <td style={css("font-size:12px;")}>
+        <td data-label="Service" style={css("font-size:13px;")}>{item.serviceTitle}</td>
+        <td data-label="When" style={css("font-size:12px;")}>
           {item.confirmedDate || item.preferredDate ? (
             <div>
               {item.confirmedDate ? "Confirmed: " : "Wants: "}
@@ -77,8 +77,8 @@ export default function BookingRow({ item }: { item: BookingItem }) {
           )}
           <div style={css("opacity:0.5;")}>Sent {new Date(item.createdAt).toLocaleString()}</div>
         </td>
-        <td style={css("font-size:12px;font-weight:700;")}>{STATUS_LABEL[item.status]}</td>
-        <td>
+        <td data-label="Status" style={css("font-size:12px;font-weight:700;")}>{STATUS_LABEL[item.status]}</td>
+        <td data-label="Actions">
           <div style={css("display:flex;gap:6px;flex-wrap:wrap;")}>
             {item.status !== "confirmed" && btn("Confirm", "confirmed", "btn btn-primary")}
             {item.status === "pending" && btn("Decline", "declined")}

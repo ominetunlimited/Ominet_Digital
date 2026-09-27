@@ -21,15 +21,15 @@ export default async function AdminStorePage() {
       {products.length === 0 ? (
         <p style={css("font-size:14px;opacity:0.6;")}>No products yet.</p>
       ) : (
-        <table className="table" style={css("width:100%;")}>
+        <table className="table table-responsive" style={css("width:100%;")}>
           <thead><tr><th>Title</th><th>Access</th><th>Price</th><th>Status</th></tr></thead>
           <tbody>
             {products.map((p) => (
               <tr key={p.id}>
-                <td><Link href={`/admin/store/${p.id}`}>{p.title}</Link></td>
-                <td>{p.access}</td>
-                <td>{formatMoney(p.price_cents, p.currency)}</td>
-                <td>{p.status}</td>
+                <td data-label="Title"><Link href={`/admin/store/${p.id}`}>{p.title}</Link></td>
+                <td data-label="Access">{p.access}</td>
+                <td data-label="Price">{formatMoney(p.price_cents, p.currency)}</td>
+                <td data-label="Status">{p.status}</td>
               </tr>
             ))}
           </tbody>

@@ -41,19 +41,19 @@ export default function ServiceListRow({ item }: { item: ServiceListItem }) {
 
   return (
     <tr>
-      <td><Link href={`/admin/services/${item.id}`}>{item.title}</Link></td>
-      <td>{item.pricing_mode === "quote" ? "Quote" : formatMoney(item.price_cents, item.currency)}</td>
-      <td>
+      <td data-label="Title"><Link href={`/admin/services/${item.id}`}>{item.title}</Link></td>
+      <td data-label="Price">{item.pricing_mode === "quote" ? "Quote" : formatMoney(item.price_cents, item.currency)}</td>
+      <td data-label="Status">
         <select className="input" style={css("font-size:12px;padding:2px 6px;")} value={status} onChange={(e) => updateStatus(e.target.value)} disabled={busy}>
           <option value="draft">draft</option>
           <option value="published">published</option>
           <option value="archived">archived</option>
         </select>
       </td>
-      <td>
+      <td data-label="Featured">
         <input type="checkbox" checked={featured} onChange={toggleFeatured} disabled={busy} />
       </td>
-      <td>
+      <td data-label="Order">
         <input
           type="number"
           className="input"
@@ -64,7 +64,7 @@ export default function ServiceListRow({ item }: { item: ServiceListItem }) {
           disabled={busy}
         />
       </td>
-      <td>{error && <span style={css("font-size:11px;color:var(--om-coral);")}>{error}</span>}</td>
+      <td data-label="">{error && <span style={css("font-size:11px;color:var(--om-coral);")}>{error}</span>}</td>
     </tr>
   );
 }

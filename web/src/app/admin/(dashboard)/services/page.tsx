@@ -21,7 +21,7 @@ export default async function AdminServicesPage() {
       {services.length === 0 ? (
         <p style={css("font-size:14px;opacity:0.6;")}>No services yet — services you add here appear on the public Services page automatically.</p>
       ) : (
-        <table className="table" style={css("width:100%;")}>
+        <table className="table table-responsive" style={css("width:100%;")}>
           <thead>
             <tr><th>Title</th><th>Price</th><th>Status</th><th>Featured</th><th>Order</th><th></th></tr>
           </thead>

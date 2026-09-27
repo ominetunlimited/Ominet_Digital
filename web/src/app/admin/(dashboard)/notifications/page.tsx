@@ -65,14 +65,14 @@ export default async function AdminNotificationsPage() {
       {rows.length === 0 ? (
         <p style={css("font-size:13px;opacity:0.6;")}>Nothing logged yet.</p>
       ) : (
-        <table className="table" style={css("width:100%;")}>
+        <table className="table table-responsive" style={css("width:100%;")}>
           <thead><tr><th>When</th><th>Event</th><th>Result</th></tr></thead>
           <tbody>
             {rows.map((r) => (
               <tr key={r.id}>
-                <td style={css("font-size:12px;white-space:nowrap;")}>{new Date(r.created_at).toLocaleString()}</td>
-                <td style={css("font-size:12px;")}>{r.event_type}</td>
-                <td style={css("font-size:12px;")}>
+                <td data-label="When" style={css("font-size:12px;white-space:nowrap;")}>{new Date(r.created_at).toLocaleString()}</td>
+                <td data-label="Event" style={css("font-size:12px;")}>{r.event_type}</td>
+                <td data-label="Result" style={css("font-size:12px;")}>
                   {r.status.replace("_", " ")}
                   {r.status === "failed" && r.error ? <div style={css("color:var(--om-coral);")}>{r.error}</div> : null}
                 </td>

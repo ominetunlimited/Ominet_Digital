@@ -21,14 +21,14 @@ export default async function AdminNewsletterPage() {
       {subscribers.length === 0 ? (
         <p style={css("font-size:14px;opacity:0.6;")}>No subscribers yet.</p>
       ) : (
-        <table className="table" style={css("width:100%;max-width:480px;")}>
+        <table className="table table-responsive" style={css("width:100%;max-width:480px;")}>
           <thead><tr><th>Email</th><th>Status</th><th>Subscribed</th></tr></thead>
           <tbody>
             {subscribers.map((s) => (
               <tr key={s.email}>
-                <td>{s.email}</td>
-                <td>{s.status}</td>
-                <td>{new Date(s.subscribed_at).toLocaleDateString()}</td>
+                <td data-label="Email">{s.email}</td>
+                <td data-label="Status">{s.status}</td>
+                <td data-label="Subscribed">{new Date(s.subscribed_at).toLocaleDateString()}</td>
               </tr>
             ))}
           </tbody>

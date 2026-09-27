@@ -21,15 +21,15 @@ export default async function AdminContentListPage() {
       {items.length === 0 ? (
         <p style={css("font-size:14px;opacity:0.6;")}>Nothing here yet.</p>
       ) : (
-        <table className="table" style={css("width:100%;")}>
+        <table className="table table-responsive" style={css("width:100%;")}>
           <thead><tr><th>Title</th><th>Type</th><th>Access</th><th>Status</th></tr></thead>
           <tbody>
             {items.map((r) => (
               <tr key={r.id}>
-                <td><Link href={`/admin/content/${r.id}`}>{r.title}</Link></td>
-                <td>{r.type}</td>
-                <td><span className={r.access === "paid" ? "tag tag-accent" : "tag tag-outline"}>{r.access}</span></td>
-                <td>{r.status}</td>
+                <td data-label="Title"><Link href={`/admin/content/${r.id}`}>{r.title}</Link></td>
+                <td data-label="Type">{r.type}</td>
+                <td data-label="Access"><span className={r.access === "paid" ? "tag tag-accent" : "tag tag-outline"}>{r.access}</span></td>
+                <td data-label="Status">{r.status}</td>
               </tr>
             ))}
           </tbody>

@@ -41,6 +41,28 @@ export async function uploadMedia(formData: FormData): Promise<ActionResult> {
   return { ok: true, url: urlData.publicUrl };
 }
 
+/** Edits an asset's own metadata (title/alt text/caption) — never touches the file itself. */
+export async function updateMediaAsset(
+  id: string,
+  patch: { title: string; alt_text: string; caption: string }
+): Promise<ActionResult> {
+  const supabase = await createClient();
+  if (!supabase) return { ok: false, error: "Supabase isn't configured yet." };
+
+  const title = patch.title.trim().slice(0, 200);
+  const altText = patch.alt_text.trim().slice(0, 300);
+  const caption = patch.caption.trim().slice(0, 500);
+
+  const { error } = await supabase
+    .from("media_assets")
+    .update({ title: title || null, alt_text: altText || null, caption: caption || null })
+    .eq("id", id);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/admin/media");
+  return { ok: true };
+}
+
 export async function deleteMedia(id: string, storagePath: string): Promise<ActionResult> {
   const supabase = await createClient();
   if (!supabase) return { ok: false, error: "Supabase isn't configured yet." };

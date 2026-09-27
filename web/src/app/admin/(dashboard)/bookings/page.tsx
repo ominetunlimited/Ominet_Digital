@@ -85,7 +85,7 @@ export default async function AdminBookingsPage({ searchParams }: { searchParams
       {items.length === 0 ? (
         <p style={css("font-size:14px;opacity:0.6;")}>No bookings in this view.</p>
       ) : (
-        <table className="table" style={css("width:100%;")}>
+        <table className="table table-responsive" style={css("width:100%;")}>
           <thead>
             <tr><th>Customer</th><th>Service</th><th>When</th><th>Status</th><th>Actions</th></tr>
           </thead>

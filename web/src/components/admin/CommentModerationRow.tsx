@@ -28,17 +28,17 @@ export default function CommentModerationRow({ row }: { row: ModerationRow }) {
 
   return (
     <tr>
-      <td style={css("max-width:360px;")}>
+      <td data-label="Comment" style={css("max-width:360px;")}>
         <div style={css("font-size:13px;line-height:1.5;white-space:pre-wrap;margin-bottom:4px;")}>{row.body}</div>
         <div style={css("font-size:11px;opacity:0.5;")}>
           {row.authorName} &middot; {new Date(row.createdAt).toLocaleString()}
         </div>
       </td>
-      <td style={css("font-size:13px;")}>
+      <td data-label="On" style={css("font-size:13px;")}>
         {row.targetHref ? <a href={row.targetHref} target="_blank" rel="noreferrer">{row.targetLabel}</a> : row.targetLabel}
       </td>
-      <td style={css("font-size:12px;text-transform:capitalize;")}>{row.status}</td>
-      <td>
+      <td data-label="Status" style={css("font-size:12px;text-transform:capitalize;")}>{row.status}</td>
+      <td data-label="Actions">
         <div style={css("display:flex;gap:6px;flex-wrap:wrap;")}>
           {row.status !== "approved" && (
             <button type="button" className="btn btn-primary" style={css("font-size:11px;padding:3px 8px;")} onClick={() => setStatus("approved")} disabled={busy}>

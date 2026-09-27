@@ -21,16 +21,16 @@ export default async function AdminBooksListPage() {
       {items.length === 0 ? (
         <p style={css("font-size:14px;opacity:0.6;")}>No books yet.</p>
       ) : (
-        <table className="table" style={css("width:100%;")}>
+        <table className="table table-responsive" style={css("width:100%;")}>
           <thead><tr><th>Title</th><th>Kind</th><th>Year</th><th>Status</th><th>Featured</th></tr></thead>
           <tbody>
             {items.map((r) => (
               <tr key={r.id}>
-                <td><Link href={`/admin/books/${r.id}`}>{r.title}</Link></td>
-                <td>{r.kind}</td>
-                <td>{r.year}</td>
-                <td>{r.status}</td>
-                <td>{r.featured ? "★" : ""}</td>
+                <td data-label="Title"><Link href={`/admin/books/${r.id}`}>{r.title}</Link></td>
+                <td data-label="Kind">{r.kind}</td>
+                <td data-label="Year">{r.year}</td>
+                <td data-label="Status">{r.status}</td>
+                <td data-label="Featured">{r.featured ? "★" : ""}</td>
               </tr>
             ))}
           </tbody>

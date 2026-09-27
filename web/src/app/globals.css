@@ -237,6 +237,7 @@ textarea.input { min-height: 90px; resize: vertical; }
   width: min(440px, 100%); display: flex; flex-direction: column; gap: var(--space-3);
   padding: var(--space-4); border-radius: var(--radius-lg);
   background: var(--color-surface); box-shadow: var(--shadow-lg);
+  max-height: calc(100vh - var(--space-8)); overflow-y: auto;
 }
 .dialog-title {
   font-family: var(--font-heading); font-weight: var(--font-heading-weight);
@@ -317,3 +318,143 @@ textarea.input { min-height: 90px; resize: vertical; }
 a { color: var(--color-text); text-decoration: none; }
 a:hover { color: var(--color-accent-700); }
 html, body { background: var(--color-bg); }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Admin Centre shell — everything below is scoped under .admin-shell so it
+   cannot affect the public site, even if a class name were ever reused there.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.admin-shell {
+  --admin-sidebar-w: 240px;
+  --admin-topbar-h: 52px;
+  display: flex;
+  min-height: 100vh;
+  background: var(--color-bg);
+  position: relative;
+}
+
+.admin-sidebar {
+  width: var(--admin-sidebar-w);
+  flex-shrink: 0;
+  border-right: 2px solid var(--color-divider);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  background: var(--color-bg);
+}
+.admin-sidebar-brand {
+  display: flex; align-items: center; gap: var(--space-2);
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight, 700); font-size: 14px;
+  letter-spacing: 0.02em;
+  padding: 0 var(--space-2);
+  margin-bottom: var(--space-4);
+}
+.admin-nav-scroll { flex: 1; overflow-y: auto; margin: 0 calc(var(--space-2) * -1); padding: 0 var(--space-2); }
+.admin-nav-group { margin-bottom: var(--space-4); }
+.admin-nav-group-label {
+  font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  opacity: 0.45; padding: 0 var(--space-2); margin: 0 0 var(--space-1);
+}
+.admin-nav-link {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px var(--space-2); border-radius: var(--radius-sm);
+  font-size: 13.5px; color: var(--color-text); text-decoration: none;
+  min-height: 38px;
+}
+.admin-nav-link:hover { background: color-mix(in srgb, var(--color-text) 6%, transparent); }
+.admin-nav-link[aria-current="page"] { background: var(--color-accent); color: var(--color-bg); }
+.admin-nav-badge {
+  margin-left: auto; background: var(--om-coral); color: #fff; font-size: 10px; font-weight: 700;
+  min-width: 18px; height: 18px; border-radius: 999px; display: inline-flex;
+  align-items: center; justify-content: center; padding: 0 5px; flex-shrink: 0;
+}
+.admin-nav-link[aria-current="page"] .admin-nav-badge { background: var(--color-bg); color: var(--color-accent); }
+
+.admin-topbar {
+  display: none;
+  position: sticky; top: 0; z-index: 40;
+  align-items: center; gap: var(--space-2);
+  height: var(--admin-topbar-h);
+  padding: 0 var(--space-3);
+  padding-top: env(safe-area-inset-top);
+  background: var(--color-bg);
+  border-bottom: 2px solid var(--color-divider);
+}
+.admin-topbar-title { font-family: var(--font-heading); font-weight: 700; font-size: 14px; margin-right: auto; }
+.admin-hamburger {
+  width: 40px; height: 40px; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-sm); background: none; border: none; color: var(--color-text); cursor: pointer;
+}
+.admin-hamburger:hover { background: color-mix(in srgb, var(--color-text) 8%, transparent); }
+
+.admin-drawer-backdrop { display: none; }
+
+.admin-main-col { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.admin-main { flex: 1; min-width: 0; padding: var(--space-6) var(--space-8); }
+
+/* — quick-add menu — */
+.admin-quickadd { position: relative; }
+.admin-quickadd-panel {
+  position: absolute; right: 0; top: calc(100% + 6px); z-index: 46;
+  width: 200px; padding: var(--space-2);
+  background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md); display: grid; gap: 2px;
+}
+.admin-quickadd-panel a {
+  display: block; padding: 8px var(--space-2); border-radius: var(--radius-sm); font-size: 13.5px; min-height: 38px; line-height: 22px;
+}
+.admin-quickadd-panel a:hover { background: color-mix(in srgb, var(--color-text) 8%, transparent); }
+
+/* — mobile: sidebar becomes an off-canvas drawer — */
+@media (max-width: 900px) {
+  .admin-topbar { display: flex; }
+  .admin-sidebar {
+    position: fixed; inset: 0 auto 0 0; z-index: 50;
+    transform: translateX(-100%);
+    transition: transform 0.22s ease;
+    box-shadow: var(--shadow-lg);
+    width: min(var(--admin-sidebar-w), 84vw);
+    padding-top: calc(var(--space-4) + env(safe-area-inset-top));
+    padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom));
+  }
+  .admin-shell.drawer-open .admin-sidebar { transform: translateX(0); }
+  .admin-shell.drawer-open .admin-drawer-backdrop {
+    display: block; position: fixed; inset: 0; z-index: 45;
+    background: color-mix(in srgb, var(--color-neutral-900) 55%, transparent);
+  }
+  .admin-main { padding: var(--space-4); }
+}
+
+/* — touch-friendly minimums inside the admin, mobile only (ghost/icon buttons kept compact) — */
+@media (max-width: 900px) {
+  .admin-shell .btn:not(.btn-ghost):not(.btn-icon) { min-height: 40px; }
+  .admin-shell input.input, .admin-shell select.input, .admin-shell textarea.input { font-size: 16px; }
+}
+
+/* — responsive tables: become stacked cards below 720px, admin only — */
+@media (max-width: 720px) {
+  .admin-shell .table-responsive { border: none; }
+  .admin-shell .table-responsive thead { display: none; }
+  .admin-shell .table-responsive, .admin-shell .table-responsive tbody, .admin-shell .table-responsive tr { display: block; width: 100%; }
+  .admin-shell .table-responsive tr {
+    border: 1px solid var(--color-divider); border-radius: var(--radius-md);
+    margin-bottom: var(--space-3); padding: var(--space-2) var(--space-3);
+  }
+  .admin-shell .table-responsive td {
+    display: flex; justify-content: space-between; align-items: center; gap: var(--space-3);
+    text-align: right; border-bottom: 1px solid color-mix(in srgb, var(--color-divider) 60%, transparent);
+    padding: var(--space-2) 0;
+  }
+  .admin-shell .table-responsive td:last-child { border-bottom: 0; }
+  .admin-shell .table-responsive td:empty { display: none; }
+  .admin-shell .table-responsive td::before {
+    content: attr(data-label); font-size: 11px; opacity: 0.55; text-align: left; margin-right: var(--space-3); flex-shrink: 0;
+  }
+  .admin-shell .table-responsive td[data-label=""]::before,
+  .admin-shell .table-responsive td:not([data-label])::before { content: none; }
+}
