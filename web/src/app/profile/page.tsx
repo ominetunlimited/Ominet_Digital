@@ -1,13 +1,19 @@
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
+import ComingSoon from "@/components/ComingSoon";
 import { css } from "@/lib/css";
 import { pageMetadata } from "@/lib/seo";
+import { getSiteSettings } from "@/lib/site-settings";
 
-export const generateMetadata = () => pageMetadata(
-  "PROFILE",
-  "A verified record of activity, attribution and identity — carried between opportunities instead of rebuilt for each one.",
-  "/profile"
-);
+export async function generateMetadata() {
+  const meta = await pageMetadata(
+    "PROFILE",
+    "A verified record of activity, attribution and identity — carried between opportunities instead of rebuilt for each one.",
+    "/profile"
+  );
+  const { ecosystem } = await getSiteSettings();
+  return ecosystem.profileVisible ? meta : { ...meta, robots: { index: false, follow: false } };
+}
 
 const PROFILE_APP_URL = "https://profile-app-sand.vercel.app/";
 
@@ -20,7 +26,9 @@ const steps = [
   { n: "06", title: "Opportunity", body: "Shared where it matters." },
 ];
 
-export default function ProfilePage() {
+export default async function ProfilePage() {
+  const { ecosystem } = await getSiteSettings();
+  if (!ecosystem.profileVisible) return <ComingSoon label="PROFILE" message={ecosystem.profileMessage} />;
   return (
     <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);")}>
       <Nav />

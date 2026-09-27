@@ -6,6 +6,7 @@ import {
   SECTION_KEYS,
   validateAbout,
   validateContact,
+  validateEcosystem,
   validateFooter,
   validateHomepage,
   validateIdentity,
@@ -24,6 +25,7 @@ const VALIDATORS = {
   footer: validateFooter,
   homepage: validateHomepage,
   about: validateAbout,
+  ecosystem: validateEcosystem,
 } as const;
 
 /**

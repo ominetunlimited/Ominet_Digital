@@ -24,7 +24,7 @@ export const generateMetadata = () => pageMetadata(
 );
 
 export default async function Home() {
-  const [featuredBook, articles, personSchema, { homepage }] = await Promise.all([getFeaturedBook(), getArticles(), getPersonSchema(), getSiteSettings()]);
+  const [featuredBook, articles, personSchema, { homepage, ecosystem }] = await Promise.all([getFeaturedBook(), getArticles(), getPersonSchema(), getSiteSettings()]);
   const latestArticle = articles[0];
   const heroArticles = homepage.showRecentWriting ? articles.slice(0, 3) : [];
   const jsonLd = jsonLdGraph([
@@ -61,7 +61,7 @@ export default async function Home() {
                 <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.6;margin-bottom:var(--space-2);")}>RECENT WRITING</div>
                 <div style={css("display:grid;gap:6px;")}>
                   {heroArticles.map((a) => (
-                    <Link key={a.slug} href={`/writing/${a.slug}`} style={css("font-size:14px;opacity:0.9;")}>
+                    <Link key={a.slug} href={`/writing/${a.slug}`} style={css("font-size:14px;opacity:0.9;color:#eafaf0;")}>
                       {a.title} &rarr;
                     </Link>
                   ))}
@@ -93,13 +93,15 @@ export default async function Home() {
             href="/omini-nfawa"
             cta="Explore Omini Nfawa"
           />
-          <EcosystemItem
-            kicker="PROFESSIONAL IDENTITY"
-            title="PROFILE"
-            description="A professional identity built from verified activity."
-            href="/profile"
-            cta="Explore Profile"
-          />
+          {ecosystem.profileVisible && (
+            <EcosystemItem
+              kicker="PROFESSIONAL IDENTITY"
+              title="PROFILE"
+              description="A professional identity built from verified activity."
+              href="/profile"
+              cta="Explore Profile"
+            />
+          )}
           <EcosystemItem
             kicker="VIDEO · PHOTOGRAPHY"
             title="Media"
@@ -107,13 +109,15 @@ export default async function Home() {
             href="/media"
             cta="Watch & view"
           />
-          <EcosystemItem
-            kicker="EMERGING PRODUCT"
-            title="Cortexa Office"
-            description="An emerging Ominet Digital product and office."
-            href="/cortexa-office"
-            cta="Learn more"
-          />
+          {ecosystem.cortexaVisible && (
+            <EcosystemItem
+              kicker="EMERGING PRODUCT"
+              title="Cortexa Office"
+              description="An emerging Ominet Digital product and office."
+              href="/cortexa-office"
+              cta="Learn more"
+            />
+          )}
         </div>
       </section>
 
@@ -160,26 +164,32 @@ export default async function Home() {
         </section>
       )}
 
-      <div className="hr" />
+      {ecosystem.profileVisible && (
+        <>
+          <div className="hr" />
+          <section style={css("padding:var(--space-8) var(--space-6);background:var(--om-navy);color:#eafaf0;")}>
+            <div style={css("max-width:640px;")}>
+              <div style={css("font-family:var(--font-heading);font-size:14px;font-weight:800;letter-spacing:0.08em;color:var(--om-orange);margin-bottom:var(--space-3);")}>PROFILE</div>
+              <h2 style={css("font-family:var(--font-heading);font-size:32px;margin:0 0 var(--space-3);color:#fff;")}>Your professional identity should be more than a CV.</h2>
+              <p style={css("font-size:16px;line-height:1.7;opacity:0.85;margin:0 0 var(--space-4);")}>Activity, verification and attribution &mdash; built into one identity you carry between opportunities.</p>
+              <Link href="/profile"><button type="button" className="btn btn-primary" style={css("border-radius:var(--radius-md);")}>Explore Profile</button></Link>
+            </div>
+          </section>
+        </>
+      )}
 
-      <section style={css("padding:var(--space-8) var(--space-6);background:var(--om-navy);color:#eafaf0;")}>
-        <div style={css("max-width:640px;")}>
-          <div style={css("font-family:var(--font-heading);font-size:14px;font-weight:800;letter-spacing:0.08em;color:var(--om-orange);margin-bottom:var(--space-3);")}>PROFILE</div>
-          <h2 style={css("font-family:var(--font-heading);font-size:32px;margin:0 0 var(--space-3);color:#fff;")}>Your professional identity should be more than a CV.</h2>
-          <p style={css("font-size:16px;line-height:1.7;opacity:0.85;margin:0 0 var(--space-4);")}>Activity, verification and attribution &mdash; built into one identity you carry between opportunities.</p>
-          <Link href="/profile"><button type="button" className="btn btn-primary" style={css("border-radius:var(--radius-md);")}>Explore Profile</button></Link>
-        </div>
-      </section>
-
-      <div className="hr" />
-
-      <section style={css("padding:var(--space-8) var(--space-6);")}>
-        <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>CORTEXA OFFICE</div>
-        <div style={css("display:flex;justify-content:space-between;align-items:center;gap:var(--space-6);flex-wrap:wrap;")}>
-          <div style={css("font-family:var(--font-heading);font-size:26px;max-width:44ch;")}>An emerging office and product within Ominet Digital.</div>
-          <Link href="/cortexa-office"><button type="button" className="btn btn-secondary">Learn more</button></Link>
-        </div>
-      </section>
+      {ecosystem.cortexaVisible && (
+        <>
+          <div className="hr" />
+          <section style={css("padding:var(--space-8) var(--space-6);")}>
+            <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>CORTEXA OFFICE</div>
+            <div style={css("display:flex;justify-content:space-between;align-items:center;gap:var(--space-6);flex-wrap:wrap;")}>
+              <div style={css("font-family:var(--font-heading);font-size:26px;max-width:44ch;")}>An emerging office and product within Ominet Digital.</div>
+              <Link href="/cortexa-office"><button type="button" className="btn btn-secondary">Learn more</button></Link>
+            </div>
+          </section>
+        </>
+      )}
 
       <div className="hr" />
 

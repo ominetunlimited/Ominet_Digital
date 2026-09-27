@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getSiteSettings } from "@/lib/site-settings";
+import { ogImage } from "@/lib/og-image";
 
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 /** Built-in fallback name; the live name comes from Admin → Site settings. */
@@ -14,7 +15,7 @@ export async function pageMetadata(title: string, description: string, path: str
   const { identity, seo } = await getSiteSettings();
   const home = path === "/";
   const shownTitle = home ? identity.siteName : `${title} — ${identity.siteName}`;
-  const images = seo.defaultOgImageUrl ? [seo.defaultOgImageUrl] : undefined;
+  const images = [ogImage(seo.defaultOgImageUrl)];
   return {
     title: home ? { absolute: identity.siteName } : title,
     description: home ? identity.description : description,

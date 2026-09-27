@@ -1,17 +1,25 @@
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
+import ComingSoon from "@/components/ComingSoon";
 import { css } from "@/lib/css";
 import { pageMetadata } from "@/lib/seo";
+import { getSiteSettings } from "@/lib/site-settings";
 
-export const generateMetadata = () => pageMetadata(
-  "Cortexa Office",
-  "An emerging product and office within the Ominet Digital ecosystem.",
-  "/cortexa-office"
-);
+export async function generateMetadata() {
+  const meta = await pageMetadata(
+    "Cortexa Office",
+    "An emerging product and office within the Ominet Digital ecosystem.",
+    "/cortexa-office"
+  );
+  const { ecosystem } = await getSiteSettings();
+  return ecosystem.cortexaVisible ? meta : { ...meta, robots: { index: false, follow: false } };
+}
 
 const CORTEXA_URL = "https://cortexa-office.vercel.app/";
 
-export default function CortexaOfficePage() {
+export default async function CortexaOfficePage() {
+  const { ecosystem } = await getSiteSettings();
+  if (!ecosystem.cortexaVisible) return <ComingSoon label="CORTEXA OFFICE" message={ecosystem.cortexaMessage} />;
   return (
     <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>
       <Nav />

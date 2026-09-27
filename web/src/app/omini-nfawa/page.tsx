@@ -9,6 +9,7 @@ import { pageMetadata } from "@/lib/seo";
 import { getFeaturedBook, getArticles } from "@/lib/data";
 import { truncate } from "@/lib/text";
 import { ResearchProfileSection } from "@/components/ResearchProfileLinks";
+import { getSiteSettings } from "@/lib/site-settings";
 
 export const generateMetadata = () => pageMetadata(
   "Omini Nfawa",
@@ -18,7 +19,7 @@ export const generateMetadata = () => pageMetadata(
 export const revalidate = 60;
 
 export default async function OminiNfawaPage() {
-  const [featuredBook, articles] = await Promise.all([getFeaturedBook(), getArticles()]);
+  const [featuredBook, articles, { ecosystem }] = await Promise.all([getFeaturedBook(), getArticles(), getSiteSettings()]);
   const featuredArticle = articles[0];
   const secondArticle = articles[1];
   return (
@@ -131,20 +132,23 @@ export default async function OminiNfawaPage() {
         </div>
       </section>
 
-      <div className="hr" />
-
-      <section style={css("padding:var(--space-8) var(--space-6);position:relative;overflow:hidden;")}>
-        <svg width="360" height="360" viewBox="0 0 360 360" style={css("position:absolute;right:-80px;top:-80px;pointer-events:none;")} aria-hidden="true">
-          <circle cx="180" cy="180" r="179" fill="none" stroke="var(--color-accent)" strokeWidth="1" opacity="0.25" />
-          <circle cx="180" cy="180" r="120" fill="none" stroke="var(--color-accent)" strokeWidth="1" opacity="0.18" />
-        </svg>
-        <div style={css("max-width:640px;position:relative;")}>
-          <div style={css("font-family:var(--font-heading);font-size:14px;letter-spacing:0.08em;font-weight:700;margin-bottom:var(--space-3);")}>PROFILE</div>
-          <h2 style={css("font-family:var(--font-heading);font-size:32px;margin:0 0 var(--space-3);")}>Your professional identity should be more than a CV.</h2>
-          <p style={css("font-size:16px;line-height:1.7;opacity:0.75;margin:0 0 var(--space-4);")}>Activity, verification and attribution &mdash; built into one identity you carry between opportunities.</p>
-          <Link href="/profile"><button type="button" className="btn btn-primary">Explore Profile</button></Link>
-        </div>
-      </section>
+      {ecosystem.profileVisible && (
+        <>
+          <div className="hr" />
+          <section style={css("padding:var(--space-8) var(--space-6);position:relative;overflow:hidden;")}>
+            <svg width="360" height="360" viewBox="0 0 360 360" style={css("position:absolute;right:-80px;top:-80px;pointer-events:none;")} aria-hidden="true">
+              <circle cx="180" cy="180" r="179" fill="none" stroke="var(--color-accent)" strokeWidth="1" opacity="0.25" />
+              <circle cx="180" cy="180" r="120" fill="none" stroke="var(--color-accent)" strokeWidth="1" opacity="0.18" />
+            </svg>
+            <div style={css("max-width:640px;position:relative;")}>
+              <div style={css("font-family:var(--font-heading);font-size:14px;letter-spacing:0.08em;font-weight:700;margin-bottom:var(--space-3);")}>PROFILE</div>
+              <h2 style={css("font-family:var(--font-heading);font-size:32px;margin:0 0 var(--space-3);")}>Your professional identity should be more than a CV.</h2>
+              <p style={css("font-size:16px;line-height:1.7;opacity:0.75;margin:0 0 var(--space-4);")}>Activity, verification and attribution &mdash; built into one identity you carry between opportunities.</p>
+              <Link href="/profile"><button type="button" className="btn btn-primary">Explore Profile</button></Link>
+            </div>
+          </section>
+        </>
+      )}
 
       <div className="hr" />
 

@@ -43,6 +43,7 @@ export default function SiteSettingsForm({ initial }: { initial: SiteSettings })
   const [footer, setFooter] = useState(initial.footer);
   const [homepage, setHomepage] = useState(initial.homepage);
   const [about, setAbout] = useState(initial.about);
+  const [ecosystem, setEcosystem] = useState(initial.ecosystem);
 
   return (
     <div style={css("max-width:720px;")}>
@@ -76,6 +77,42 @@ export default function SiteSettingsForm({ initial }: { initial: SiteSettings })
         <Field label="Bio" hint="Paragraphs separated by a blank line.">
           <textarea className="input" rows={14} value={about.bio} onChange={(e) => setAbout({ ...about, bio: e.target.value })} />
         </Field>
+      </Section>
+
+      <Section
+        title="Ecosystem pages"
+        hint="PROFILE and Cortexa Office are separate products still under development. While hidden: the page shows a short coming-soon message instead of its real content, it's removed from the nav and footer, and it's excluded from search engines. Direct links still resolve to that coming-soon page — nothing is password-protected."
+        section="ecosystem"
+        data={ecosystem}
+      >
+        <label className="radio">
+          <input
+            type="checkbox"
+            checked={ecosystem.profileVisible}
+            onChange={(e) => setEcosystem({ ...ecosystem, profileVisible: e.target.checked })}
+            style={{ position: "static", width: "auto", height: "auto", opacity: 1 }}
+          />
+          PROFILE is ready — show it publicly
+        </label>
+        {!ecosystem.profileVisible && (
+          <Field label="Coming-soon message for PROFILE">
+            <input className="input" value={ecosystem.profileMessage} onChange={(e) => setEcosystem({ ...ecosystem, profileMessage: e.target.value })} />
+          </Field>
+        )}
+        <label className="radio" style={css("margin-top:var(--space-3);")}>
+          <input
+            type="checkbox"
+            checked={ecosystem.cortexaVisible}
+            onChange={(e) => setEcosystem({ ...ecosystem, cortexaVisible: e.target.checked })}
+            style={{ position: "static", width: "auto", height: "auto", opacity: 1 }}
+          />
+          Cortexa Office is ready — show it publicly
+        </label>
+        {!ecosystem.cortexaVisible && (
+          <Field label="Coming-soon message for Cortexa Office">
+            <input className="input" value={ecosystem.cortexaMessage} onChange={(e) => setEcosystem({ ...ecosystem, cortexaMessage: e.target.value })} />
+          </Field>
+        )}
       </Section>
 
       <Section title="Site identity" hint="The name and description search engines and social networks show for the whole site." section="identity" data={identity}>

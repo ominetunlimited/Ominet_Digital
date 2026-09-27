@@ -15,6 +15,7 @@ import { getArticle, getArticles, getFeaturedBook } from "@/lib/data";
 import { ResearchProfileSection } from "@/components/ResearchProfileLinks";
 import { getPersonSchema, getOrganizationSchema, breadcrumbSchema, jsonLdGraph } from "@/lib/schema";
 import { SITE_URL } from "@/lib/seo";
+import { ogImage } from "@/lib/og-image";
 import { getSiteSettings } from "@/lib/site-settings";
 import { hasEntitlement, getCurrentUser } from "@/lib/entitlements";
 import { getEngagement } from "@/lib/engagement";
@@ -33,24 +34,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const title = article.seoTitle || `${article.title} — ${identity.siteName}`;
   const description = article.seoDescription || article.excerpt;
   const url = `${SITE_URL}/writing/${article.slug}`;
+  const image = ogImage(article.ogImageUrl || article.featuredImageUrl);
   return {
     title: { absolute: title },
     description,
     alternates: { canonical: url },
     ...(article.status && article.status !== "published" ? { robots: { index: false, follow: false } } : {}),
-    openGraph: {
-      title,
-      description,
-      url,
-      type: "article",
-      images: article.ogImageUrl || article.featuredImageUrl ? [article.ogImageUrl || article.featuredImageUrl!] : undefined,
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: article.ogImageUrl || article.featuredImageUrl ? [article.ogImageUrl || article.featuredImageUrl!] : undefined,
-    },
+    openGraph: { title, description, url, type: "article", images: [image] },
+    twitter: { card: "summary_large_image", title, description, images: [image] },
   };
 }
 

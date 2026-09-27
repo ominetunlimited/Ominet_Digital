@@ -6,7 +6,7 @@ import { ResearchFooterLinks } from "@/components/ResearchProfileLinks";
 import { getSiteSettings } from "@/lib/site-settings";
 
 export default async function Footer() {
-  const { footer, contact, identity } = await getSiteSettings();
+  const { footer, contact, identity, ecosystem } = await getSiteSettings();
   return (
     <footer style={{ borderTop: "none", padding: "var(--space-8) var(--space-6) var(--space-6)", background: "var(--om-navy)", color: "#eafaf0" }}>
       <style>{`
@@ -39,8 +39,8 @@ export default async function Footer() {
         <div>
           <div style={{ fontSize: 11, letterSpacing: "0.1em", opacity: 0.6, marginBottom: "var(--space-3)" }}>ECOSYSTEM</div>
           <div style={{ display: "grid", gap: "var(--space-2)", fontSize: 13 }}>
-            <Link href="/profile">PROFILE</Link>
-            <Link href="/cortexa-office">Cortexa Office</Link>
+            {ecosystem.profileVisible && <Link href="/profile">PROFILE</Link>}
+            {ecosystem.cortexaVisible && <Link href="/cortexa-office">Cortexa Office</Link>}
             <Link href="/store">Store</Link>
             <Link href="/ominet-digital">Studio &amp; services</Link>
           </div>
@@ -61,7 +61,11 @@ export default async function Footer() {
       <div className="hr" style={{ maxWidth: 1200, margin: "var(--space-6) auto", background: "rgba(255,255,255,0.15)" }} />
       <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "var(--space-2)", maxWidth: 1200, margin: "0 auto", fontSize: 12, opacity: 0.6 }}>
         <span>&copy; {new Date().getFullYear()} {footer.copyrightName}. All rights reserved.</span>
-        <span>Omini Nfawa &middot; PROFILE &middot; Cortexa Office</span>
+        <span>
+          Omini Nfawa
+          {ecosystem.profileVisible && <> &middot; PROFILE</>}
+          {ecosystem.cortexaVisible && <> &middot; Cortexa Office</>}
+        </span>
       </div>
     </footer>
   );

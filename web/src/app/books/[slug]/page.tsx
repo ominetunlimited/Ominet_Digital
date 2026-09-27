@@ -10,6 +10,7 @@ import TrackedLink from "@/components/TrackedLink";
 import { css } from "@/lib/css";
 import { getBook } from "@/lib/data";
 import { SITE_URL } from "@/lib/seo";
+import { ogImage } from "@/lib/og-image";
 import { getSiteSettings } from "@/lib/site-settings";
 import { getPersonSchema, getOrganizationSchema, breadcrumbSchema, jsonLdGraph } from "@/lib/schema";
 import { getCurrentUser, hasBookEntitlement } from "@/lib/entitlements";
@@ -32,14 +33,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const title = book.seoTitle || `${book.title} — ${identity.siteName}`;
   const description = book.seoDescription || (book.excerpt ? truncate(book.excerpt, 200) : `${book.title} by ${book.author || "Omini Nfawa"}`);
   const url = `${SITE_URL}/books/${book.slug}`;
-  const image = book.ogImageUrl || book.coverImageUrl;
+  const image = ogImage(book.ogImageUrl || book.coverImageUrl);
   return {
     title: { absolute: title },
     description,
     alternates: { canonical: url },
     ...(book.status && book.status !== "published" ? { robots: { index: false, follow: false } } : {}),
-    openGraph: { title, description, url, type: "book", ...(image ? { images: [image] } : {}) },
-    twitter: { card: "summary_large_image", title, description, ...(image ? { images: [image] } : {}) },
+    openGraph: { title, description, url, type: "book", images: [image] },
+    twitter: { card: "summary_large_image", title, description, images: [image] },
   };
 }
 

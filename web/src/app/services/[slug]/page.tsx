@@ -11,6 +11,7 @@ import RelatedSection from "@/components/RelatedSection";
 import { css } from "@/lib/css";
 import { getService } from "@/lib/data";
 import { SITE_URL } from "@/lib/seo";
+import { ogImage } from "@/lib/og-image";
 import { getSiteSettings } from "@/lib/site-settings";
 import { formatMoney } from "@/lib/money";
 import { getOrganizationSchema, breadcrumbSchema, jsonLdGraph } from "@/lib/schema";
@@ -25,14 +26,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const title = service.seoTitle || `${service.title} — ${identity.siteName}`;
   const description = service.seoDescription || service.shortDescription || `${service.title} — a service from ${identity.siteName}.`;
   const url = `${SITE_URL}/services/${service.slug}`;
-  const image = service.ogImageUrl || service.featuredImageUrl;
+  const image = ogImage(service.ogImageUrl || service.featuredImageUrl);
   return {
     title: { absolute: title },
     description,
     alternates: { canonical: url },
     ...(service.status && service.status !== "published" ? { robots: { index: false, follow: false } } : {}),
-    openGraph: { title, description, url, type: "website", images: image ? [image] : undefined },
-    twitter: { card: "summary_large_image", title, description, images: image ? [image] : undefined },
+    openGraph: { title, description, url, type: "website", images: [image] },
+    twitter: { card: "summary_large_image", title, description, images: [image] },
   };
 }
 

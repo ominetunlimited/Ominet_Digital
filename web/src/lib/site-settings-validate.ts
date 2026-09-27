@@ -15,6 +15,7 @@ export type SiteSettings = {
   footer: { blurb: string; copyrightName: string; privacyUrl: string; termsUrl: string };
   homepage: { heroImageUrl: string; heroHeading: string; heroSubheading: string; showRecentWriting: boolean };
   about: { photoUrl: string; tagline: string; intro: string; bio: string };
+  ecosystem: { profileVisible: boolean; profileMessage: string; cortexaVisible: boolean; cortexaMessage: string };
 };
 
 export type SectionName = keyof SiteSettings;
@@ -26,6 +27,7 @@ export const SECTION_KEYS: Record<SectionName, string> = {
   footer: "site_footer",
   homepage: "site_homepage",
   about: "site_about",
+  ecosystem: "site_ecosystem",
 };
 
 const DESCRIPTION = "A digital ecosystem for publishing, creativity, professional identity and technology, founded by Omini Nfawa.";
@@ -69,6 +71,16 @@ export const DEFAULT_SETTINGS: SiteSettings = {
     tagline: "Writer · Researcher · Media & Communications Specialist",
     intro: "Creative troublemaker, occasionally.",
     bio: DEFAULT_BIO,
+  },
+  // Both start hidden (unlike every other section's defaults, which
+  // preserve what the site already showed) — PROFILE and Cortexa Office are
+  // still under development and were asked to be protected immediately.
+  // Flip visible on when each is actually ready to be shown publicly.
+  ecosystem: {
+    profileVisible: false,
+    profileMessage: "PROFILE is being built. Check back soon.",
+    cortexaVisible: false,
+    cortexaMessage: "Cortexa Office is being built. Check back soon.",
   },
 };
 
@@ -190,6 +202,19 @@ export function validateAbout(input: unknown): Result<SiteSettings["about"]> {
   return { ok: true, value: { photoUrl: photo.url ?? "", tagline, intro, bio } };
 }
 
+export function validateEcosystem(input: unknown): Result<SiteSettings["ecosystem"]> {
+  const o = (input ?? {}) as Record<string, unknown>;
+  return {
+    ok: true,
+    value: {
+      profileVisible: Boolean(o.profileVisible),
+      profileMessage: str(o.profileMessage, 300) || DEFAULT_SETTINGS.ecosystem.profileMessage,
+      cortexaVisible: Boolean(o.cortexaVisible),
+      cortexaMessage: str(o.cortexaMessage, 300) || DEFAULT_SETTINGS.ecosystem.cortexaMessage,
+    },
+  };
+}
+
 /** Rows from the table -> full settings, falling back to defaults for anything missing or malformed. */
 export function mergeSettings(rows: { key: string; value: unknown }[]): SiteSettings {
   const by = new Map(rows.map((r) => [r.key, r.value]));
@@ -207,5 +232,6 @@ export function mergeSettings(rows: { key: string; value: unknown }[]): SiteSett
     footer: pick("footer", validateFooter),
     homepage: pick("homepage", validateHomepage),
     about: pick("about", validateAbout),
+    ecosystem: pick("ecosystem", validateEcosystem),
   };
 }
