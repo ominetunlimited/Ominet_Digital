@@ -25,6 +25,9 @@ export type ContentInput = {
   featured_image_url: string;
   video_url: string;
   video_thumbnail_url: string;
+  featured: boolean;
+  external_url: string;
+  external_label: string;
 };
 
 export type ActionResult = { ok: true; id?: string } | { ok: false; error: string };
@@ -64,6 +67,9 @@ export async function saveContent(input: ContentInput): Promise<ActionResult> {
     featured_image_url: input.featured_image_url || null,
     video_url: input.video_url || null,
     video_thumbnail_url: input.video_thumbnail_url || null,
+    featured: input.featured ?? false,
+    external_url: input.external_url || null,
+    external_label: input.external_label || null,
   };
 
   let { data, error } = input.id
@@ -73,13 +79,17 @@ export async function saveContent(input: ContentInput): Promise<ActionResult> {
   // PGRST204 = PostgREST couldn't find that column in its schema cache
   // (its own pre-flight check on a write payload, distinct from 42703 —
   // the raw Postgres "undefined column" error a select() gets). Either way
-  // it means video_url/video_thumbnail_url (0003_video_fields.sql) may not
+  // it means video_url/video_thumbnail_url (0003_video_fields.sql) or
+  // featured/external_url/external_label (0022_content_extras.sql) may not
   // be applied to this project yet. Retry without them so the rest of the
-  // save still goes through; the video fields just won't persist until
-  // that migration runs.
+  // save still goes through; those fields just won't persist until the
+  // relevant migration runs.
   if (error?.code === "42703" || error?.code === "PGRST204") {
     delete row.video_url;
     delete row.video_thumbnail_url;
+    delete row.featured;
+    delete row.external_url;
+    delete row.external_label;
     ({ data, error } = input.id
       ? await supabase.from("content").update(row).eq("id", input.id).select("id,slug").single()
       : await supabase.from("content").insert(row).select("id,slug").single());

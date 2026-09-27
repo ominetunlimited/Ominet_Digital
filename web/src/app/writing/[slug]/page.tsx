@@ -20,6 +20,7 @@ import { hasEntitlement, getCurrentUser } from "@/lib/entitlements";
 import { getEngagement } from "@/lib/engagement";
 import LikeButton from "@/components/LikeButton";
 import CommentSection from "@/components/CommentSection";
+import ReadMoreExcerpt from "@/components/ReadMoreExcerpt";
 
 export const revalidate = 60;
 
@@ -84,6 +85,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
       author: personSchema,
       publisher: getOrganizationSchema(siteIdentity.siteName),
       mainEntityOfPage: `${SITE_URL}/writing/${article.slug}`,
+      ...(article.externalUrl ? { sameAs: [article.externalUrl] } : {}),
     },
     personSchema,
     breadcrumbSchema([
@@ -133,11 +135,18 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
           ))}
         </div>
 
-        {article.attachmentFormat && unlocked && article.id && (
-          <div style={css("margin:var(--space-6) 0;")}>
-            <a href={`/api/content/download?content=${article.id}`} rel="nofollow" className="btn btn-secondary">
-              Download {article.attachmentFormat === "pdf" ? "PDF" : "Word (DOCX)"}
-            </a>
+        {((article.attachmentFormat && unlocked && article.id) || article.externalUrl) && (
+          <div style={css("margin:var(--space-6) 0;display:flex;gap:var(--space-3);flex-wrap:wrap;")}>
+            {article.attachmentFormat && unlocked && article.id && (
+              <a href={`/api/content/download?content=${article.id}`} rel="nofollow" className="btn btn-secondary">
+                Download {article.attachmentFormat === "pdf" ? "PDF" : "Word (DOCX)"}
+              </a>
+            )}
+            {article.externalUrl && (
+              <a href={article.externalUrl} target="_blank" rel="noopener noreferrer" className="btn btn-secondary">
+                Read on {article.externalLabel || "ResearchGate"} &#8599;
+              </a>
+            )}
           </div>
         )}
 
@@ -158,7 +167,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                 <div className="card">
                   <div className="card-kicker">FEATURED BOOK</div>
                   <div className="card-title">{featuredBook.title}</div>
-                  <p className="card-body">{featuredBook.excerpt}</p>
+                  <ReadMoreExcerpt text={featuredBook.excerpt} className="card-body" />
                 </div>
               </Link>
             )}

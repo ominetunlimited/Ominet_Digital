@@ -5,6 +5,7 @@ import { css } from "@/lib/css";
 import { getArticles } from "@/lib/data";
 import { pageMetadata } from "@/lib/seo";
 import { collectionPageSchema } from "@/lib/schema";
+import type { Article } from "@/lib/content";
 
 export const generateMetadata = () => pageMetadata(
   "Writing",
@@ -13,9 +14,48 @@ export const generateMetadata = () => pageMetadata(
 );
 export const revalidate = 60;
 
-export default async function WritingPage() {
-  const articles = await getArticles();
+const CATEGORIES = [
+  { label: "Articles", value: "ARTICLE" },
+  { label: "Essays", value: "ESSAY" },
+  { label: "Research", value: "RESEARCH" },
+  { label: "Fiction", value: "FICTION" },
+  { label: "Poetry", value: "POEM" },
+  { label: "Reviews", value: "REVIEW" },
+  { label: "Interviews", value: "INTERVIEW" },
+];
+
+const SORTS = [
+  { label: "Newest", value: "newest" },
+  { label: "Featured", value: "featured" },
+  { label: "A–Z", value: "az" },
+];
+
+function sortArticles(articles: Article[], sort: string): Article[] {
+  if (sort === "featured") return [...articles].sort((a, b) => Number(b.featured ?? false) - Number(a.featured ?? false));
+  if (sort === "az") return [...articles].sort((a, b) => a.title.localeCompare(b.title));
+  return articles; // "newest" — getArticles() already orders by published_at desc
+}
+
+export default async function WritingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string; sort?: string }>;
+}) {
+  const { category, sort = "newest" } = await searchParams;
+  const allArticles = await getArticles();
+  const articles = sortArticles(category ? allArticles.filter((a) => a.category === category) : allArticles, sort);
   const jsonLd = collectionPageSchema("Writing", "/writing", articles.map((a) => a.title));
+
+  function withParams(next: { category?: string; sort?: string }) {
+    const params = new URLSearchParams();
+    const nextCategory = next.category !== undefined ? next.category : category;
+    const nextSort = next.sort !== undefined ? next.sort : sort;
+    if (nextCategory) params.set("category", nextCategory);
+    if (nextSort && nextSort !== "newest") params.set("sort", nextSort);
+    const qs = params.toString();
+    return qs ? `/writing?${qs}` : "/writing";
+  }
+
   return (
     <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ "@context": "https://schema.org", ...jsonLd }) }} />
@@ -38,26 +78,37 @@ export default async function WritingPage() {
 
       <section style={css("padding:var(--space-4) var(--space-6);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--space-4);")}>
         <div style={css("display:flex;gap:var(--space-2);flex-wrap:wrap;")}>
-          <span className="tag tag-accent">All</span>
-          <span className="tag tag-outline">Articles</span>
-          <span className="tag tag-outline">Essays</span>
-          <span className="tag tag-outline">Research</span>
-          <span className="tag tag-outline">Fiction</span>
-          <span className="tag tag-outline">Poetry</span>
-          <span className="tag tag-outline">Reviews</span>
-          <span className="tag tag-outline">Interviews</span>
+          <Link href={withParams({ category: "" })} className={category ? "tag tag-outline" : "tag tag-accent"}>All</Link>
+          {CATEGORIES.map((c) => (
+            <Link
+              key={c.value}
+              href={withParams({ category: category === c.value ? "" : c.value })}
+              className={category === c.value ? "tag tag-accent" : "tag tag-outline"}
+            >
+              {c.label}
+            </Link>
+          ))}
         </div>
         <div style={css("font-size:13px;opacity:0.6;display:flex;gap:var(--space-2);align-items:center;")}>
           <span>Sort:</span>
-          <a href="#" style={css("opacity:1;")}>Newest</a>
-          <span>&middot;</span>
-          <a href="#">Featured</a>
-          <span>&middot;</span>
-          <a href="#">A&ndash;Z</a>
+          {SORTS.map((s, i) => (
+            <span key={s.value} style={css("display:flex;gap:var(--space-2);align-items:center;")}>
+              {i > 0 && <span>&middot;</span>}
+              <Link href={withParams({ sort: s.value })} style={css(sort === s.value ? "opacity:1;font-weight:600;" : "opacity:0.7;")}>
+                {s.label}
+              </Link>
+            </span>
+          ))}
         </div>
       </section>
 
       <div className="hr" />
+
+      {articles.length === 0 && (
+        <section style={css("padding:var(--space-8) var(--space-6);")}>
+          <p style={css("opacity:0.6;")}>Nothing here yet for that filter.</p>
+        </section>
+      )}
 
       {articles.map((a) => (
         <div key={a.slug}>

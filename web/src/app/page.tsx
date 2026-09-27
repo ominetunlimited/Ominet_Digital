@@ -2,13 +2,15 @@ import Link from "next/link";
 import Image from "next/image";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
+import PlaceholderImage from "@/components/PlaceholderImage";
 import EcosystemItem from "@/components/EcosystemItem";
 import AdSlot from "@/components/AdSlot";
 import NewsletterForm from "@/components/NewsletterForm";
 import SocialLinks from "@/components/SocialLinks";
+import ReadMoreExcerpt from "@/components/ReadMoreExcerpt";
 import { css } from "@/lib/css";
 import { pageMetadata, SITE_URL, SITE_NAME } from "@/lib/seo";
-import { getFeaturedBook, getLatestArticle } from "@/lib/data";
+import { getFeaturedBook, getArticles } from "@/lib/data";
 import { truncate } from "@/lib/text";
 import { getPersonSchema, getOrganizationSchema, jsonLdGraph, WEBSITE_ID, ORG_ID } from "@/lib/schema";
 
@@ -21,7 +23,9 @@ export const generateMetadata = () => pageMetadata(
 );
 
 export default async function Home() {
-  const [featuredBook, latestArticle, personSchema] = await Promise.all([getFeaturedBook(), getLatestArticle(), getPersonSchema()]);
+  const [featuredBook, articles, personSchema] = await Promise.all([getFeaturedBook(), getArticles(), getPersonSchema()]);
+  const latestArticle = articles[0];
+  const heroArticles = articles.slice(0, 3);
   const jsonLd = jsonLdGraph([
     { "@type": "WebSite", "@id": WEBSITE_ID, name: SITE_NAME, url: SITE_URL, publisher: { "@id": ORG_ID } },
     getOrganizationSchema(SITE_NAME),
@@ -44,23 +48,24 @@ export default async function Home() {
               <Link href="/writing"><button type="button" className="btn btn-primary" style={css("border-radius:var(--radius-md);")}>Read the writing</button></Link>
               <Link href="/about"><button type="button" className="btn btn-secondary" style={css("border-radius:var(--radius-md);border-color:rgba(255,255,255,0.4);color:#fff;")}>About Omini</button></Link>
             </div>
+            {heroArticles.length > 0 && (
+              <div style={css("margin-top:var(--space-3);")}>
+                <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.6;margin-bottom:var(--space-2);")}>RECENT WRITING</div>
+                <div style={css("display:grid;gap:6px;")}>
+                  {heroArticles.map((a) => (
+                    <Link key={a.slug} href={`/writing/${a.slug}`} style={css("font-size:14px;opacity:0.9;")}>
+                      {a.title} &rarr;
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
             <div style={css("margin-top:var(--space-2);opacity:0.85;")}>
               <SocialLinks />
             </div>
           </div>
-          <div style={css("flex:1 1 380px;position:relative;min-height:320px;display:flex;align-items:flex-end;")}>
-            {featuredBook?.coverImageUrl ? (
-              <>
-                <Image src={featuredBook.coverImageUrl} alt="" fill sizes="(max-width: 900px) 100vw, 640px" style={{ objectFit: "cover" }} priority />
-                <div style={css("position:relative;z-index:1;width:100%;padding:var(--space-6);background:linear-gradient(to top, rgba(2,51,55,0.92), rgba(2,51,55,0));")}>
-                  <div style={css("font-size:11px;letter-spacing:0.12em;color:var(--om-orange);font-weight:800;margin-bottom:var(--space-2);")}>FEATURED BOOK</div>
-                  <div style={css("font-family:var(--font-heading);font-size:clamp(22px,3vw,30px);color:#fff;margin-bottom:var(--space-3);max-width:20ch;")}>{featuredBook.title}</div>
-                  <Link href={`/books/${featuredBook.slug}`}><button type="button" className="btn btn-primary" style={css("border-radius:var(--radius-md);")}>View the book</button></Link>
-                </div>
-              </>
-            ) : (
-              <Image src="/images/hero-home.jpg" alt="" fill sizes="(max-width: 900px) 100vw, 640px" style={{ objectFit: "cover" }} priority />
-            )}
+          <div style={css("flex:1 1 380px;position:relative;min-height:320px;")}>
+            <Image src="/images/hero-home.jpg" alt="" fill sizes="(max-width: 900px) 100vw, 640px" style={{ objectFit: "cover" }} priority />
           </div>
         </div>
       </section>
@@ -104,6 +109,32 @@ export default async function Home() {
       </section>
 
       <AdSlot slotKey="home_middle" />
+
+      <div className="hr" />
+
+      {featuredBook && (
+        <section style={css("padding:var(--space-8) var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;gap:var(--space-8);")}>
+          <div style={css("aspect-ratio:1/1;position:relative;flex:1 1 240px;max-width:320px;border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-md);")}>
+            {featuredBook.coverImageUrl ? (
+              <Image src={featuredBook.coverImageUrl} alt="" fill sizes="(max-width: 700px) 90vw, 320px" style={{ objectFit: "cover" }} />
+            ) : (
+              <PlaceholderImage label="Book cover" />
+            )}
+          </div>
+          <div style={css("flex:2 1 380px;display:flex;flex-direction:column;justify-content:center;")}>
+            <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>FEATURED BOOK &middot; OMINI NFAWA</div>
+            <h2 style={css("font-family:var(--font-heading);font-size:36px;margin:0 0 var(--space-2);")}>{featuredBook.title}</h2>
+            <ReadMoreExcerpt
+              text={featuredBook.excerpt}
+              style={css("font-size:16px;line-height:1.7;opacity:0.75;max-width:52ch;margin:0 0 var(--space-4);")}
+            />
+            <div style={css("display:flex;gap:var(--space-3);flex-wrap:wrap;")}>
+              <Link href={`/books/${featuredBook.slug}`}><button type="button" className="btn btn-primary">View book</button></Link>
+              <Link href={`/books/${featuredBook.slug}`}>Where to buy &rarr;</Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       <div className="hr" />
 

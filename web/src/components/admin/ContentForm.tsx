@@ -43,6 +43,9 @@ export default function ContentForm({
     featured_image_url: initial?.featured_image_url ?? "",
     video_url: initial?.video_url ?? "",
     video_thumbnail_url: initial?.video_thumbnail_url ?? "",
+    featured: initial?.featured ?? false,
+    external_url: initial?.external_url ?? "",
+    external_label: initial?.external_label ?? "",
   });
   const [slugTouched, setSlugTouched] = useState(Boolean(initial?.slug));
   const [savedSlug, setSavedSlug] = useState(initial?.slug ?? "");
@@ -132,6 +135,22 @@ export default function ContentForm({
       <div className="field" style={css("margin-bottom:var(--space-4);")}>
         <label>Read time (minutes)</label>
         <input className="input" type="number" value={values.read_minutes ?? ""} onChange={(e) => set("read_minutes", e.target.value ? Number(e.target.value) : null)} />
+      </div>
+
+      <label className="radio" style={css("margin-bottom:var(--space-4);")}>
+        <input type="checkbox" checked={values.featured} onChange={(e) => set("featured", e.target.checked)} style={{ position: "static", width: "auto", height: "auto", opacity: 1 }} />
+        Featured (shown first when sorted that way on Writing)
+      </label>
+
+      <div style={css("display:flex;gap:var(--space-4);margin-bottom:var(--space-4);")}>
+        <div className="field" style={css("flex:2;")}>
+          <label>Also published elsewhere (optional — e.g. a ResearchGate link)</label>
+          <input className="input" value={values.external_url} onChange={(e) => set("external_url", e.target.value)} placeholder="https://www.researchgate.net/publication/…" />
+        </div>
+        <div className="field" style={css("flex:1;")}>
+          <label>Link label (optional)</label>
+          <input className="input" value={values.external_label} onChange={(e) => set("external_label", e.target.value)} placeholder="ResearchGate" />
+        </div>
       </div>
 
       <VideoField

@@ -46,6 +46,9 @@ type ContentRow = {
   video_url?: string | null;
   video_thumbnail_url?: string | null;
   attachment_format?: string | null;
+  featured?: boolean | null;
+  external_url?: string | null;
+  external_label?: string | null;
 };
 
 function mapArticle(row: ContentRow): Article {
@@ -70,6 +73,9 @@ function mapArticle(row: ContentRow): Article {
     videoUrl: row.video_url ?? undefined,
     videoThumbnailUrl: row.video_thumbnail_url ?? undefined,
     attachmentFormat: row.attachment_format === "pdf" || row.attachment_format === "docx" ? row.attachment_format : undefined,
+    featured: row.featured ?? false,
+    externalUrl: row.external_url ?? undefined,
+    externalLabel: row.external_label ?? undefined,
   };
 }
 
@@ -78,18 +84,19 @@ export async function getArticles(): Promise<Article[]> {
   const supabase = await createClient();
   let { data, error } = await supabase!
     .from("content")
-    .select("id,slug,title,dek,excerpt,type,access,price_cents,currency,published_at,read_minutes,attachment_format")
+    .select("id,slug,title,dek,excerpt,type,access,price_cents,currency,published_at,read_minutes,attachment_format,featured,external_url,external_label")
     .eq("status", "published")
     .order("published_at", { ascending: false });
   // 42703 = undefined column — attachment_format (0021_content_attachments.sql)
-  // may not be applied to this project yet. Retry without it.
+  // or featured/external_url/external_label (0022_content_extras.sql) may not
+  // be applied to this project yet. Retry without them.
   if (error?.code === "42703") {
     const fallback = await supabase!
       .from("content")
       .select("id,slug,title,dek,excerpt,type,access,price_cents,currency,published_at,read_minutes")
       .eq("status", "published")
       .order("published_at", { ascending: false });
-    data = fallback.data?.map((r) => ({ ...r, attachment_format: null })) ?? null;
+    data = fallback.data?.map((r) => ({ ...r, attachment_format: null, featured: null, external_url: null, external_label: null })) ?? null;
     error = fallback.error;
   }
   if (error || !data) return mockArticles;
@@ -106,13 +113,14 @@ export async function getArticle(slug: string): Promise<Article | undefined> {
   const supabase = await createClient();
   let { data, error } = await supabase!
     .from("content")
-    .select("id,slug,title,dek,excerpt,type,status,access,price_cents,currency,published_at,read_minutes,body,seo_title,seo_description,og_image_url,featured_image_url,video_url,video_thumbnail_url,attachment_format")
+    .select("id,slug,title,dek,excerpt,type,status,access,price_cents,currency,published_at,read_minutes,body,seo_title,seo_description,og_image_url,featured_image_url,video_url,video_thumbnail_url,attachment_format,featured,external_url,external_label")
     .eq("slug", slug)
     .maybeSingle();
   // 42703 = undefined column — the video_url/video_thumbnail_url migration
-  // (0003_video_fields.sql) or attachment_format (0021_content_attachments.sql)
-  // may not be applied to this project yet. Retry without those columns so
-  // the rest of the article still loads.
+  // (0003_video_fields.sql), attachment_format (0021_content_attachments.sql),
+  // or featured/external_url/external_label (0022_content_extras.sql) may not
+  // be applied to this project yet. Retry without those columns so the rest
+  // of the article still loads.
   if (error?.code === "42703") {
     ({ data, error } = await supabase!
       .from("content")

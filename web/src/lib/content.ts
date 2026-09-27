@@ -27,6 +27,10 @@ export type Article = {
   status?: string;
   /** Set only when a downloadable file is attached — never the storage path itself. */
   attachmentFormat?: "pdf" | "docx";
+  featured?: boolean;
+  /** An external copy of this piece (ResearchGate, Academia.edu, a journal site…). */
+  externalUrl?: string;
+  externalLabel?: string;
 };
 
 export const articles: Article[] = [
