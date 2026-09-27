@@ -12,7 +12,7 @@ import { ResearchProfileSection } from "@/components/ResearchProfileLinks";
 
 export const generateMetadata = () => pageMetadata(
   "Omini Nfawa",
-  "Essays, research and fiction, alongside books, film and photography from Omini Nfawa.",
+  "Essays, research and fiction, alongside media and digital work from Omini Nfawa — writer, researcher and media and communications specialist.",
   "/omini-nfawa"
 );
 export const revalidate = 60;
@@ -38,9 +38,9 @@ export default async function OminiNfawaPage() {
         </svg>
         <div style={css("position:relative;max-width:840px;")}>
           <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>OMINI NFAWA WITHIN OMINET DIGITAL</div>
-          <div style={css("font-family:var(--font-body);font-size:12px;letter-spacing:0.14em;opacity:0.55;margin-bottom:var(--space-4);")}>WRITER &middot; RESEARCHER &middot; CREATIVE &middot; FILMMAKER &middot; EDUCATOR</div>
+          <div style={css("font-family:var(--font-body);font-size:12px;letter-spacing:0.14em;opacity:0.55;margin-bottom:var(--space-4);")}>WRITER &middot; RESEARCHER &middot; MEDIA &amp; COMMUNICATIONS SPECIALIST</div>
           <h1 style={css("font-family:var(--font-heading);font-size:clamp(48px,7vw,96px);line-height:0.98;font-weight:700;margin:0 0 var(--space-4);letter-spacing:-0.01em;")}>Omini Nfawa</h1>
-          <p style={css("font-size:20px;line-height:1.5;max-width:56ch;opacity:0.8;margin:0 0 var(--space-6);")}>Essays, research and fiction, alongside books, film and photography &mdash; and the studio and platform built to carry them further.</p>
+          <p style={css("font-size:20px;line-height:1.5;max-width:56ch;opacity:0.8;margin:0 0 var(--space-6);")}>Essays, research and fiction, alongside media and digital work &mdash; and the studio and platform built to carry them further.</p>
           <div style={css("display:flex;gap:var(--space-3);flex-wrap:wrap;")}>
             <Link href="/writing"><button type="button" className="btn btn-primary">Read the latest writing</button></Link>
             <Link href="/books"><button type="button" className="btn btn-secondary">Browse books</button></Link>

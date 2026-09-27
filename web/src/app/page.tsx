@@ -74,7 +74,7 @@ export default async function Home() {
         <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-4);")}>THE ECOSYSTEM</div>
         <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--space-6);")}>
           <EcosystemItem
-            kicker="WRITER · RESEARCHER · CREATIVE"
+            kicker="WRITER · RESEARCHER · MEDIA & COMMUNICATIONS"
             title="Omini Nfawa"
             description="Books, essays, fiction, research, film and photography from the ecosystem's founder."
             href="/omini-nfawa"
