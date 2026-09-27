@@ -11,6 +11,7 @@ import { css } from "@/lib/css";
 import { getBook } from "@/lib/data";
 import { SITE_URL } from "@/lib/seo";
 import { getSiteSettings } from "@/lib/site-settings";
+import { getPersonSchema, getOrganizationSchema, breadcrumbSchema, jsonLdGraph } from "@/lib/schema";
 import { getCurrentUser, hasBookEntitlement } from "@/lib/entitlements";
 import { getBookDelivery } from "@/lib/books/delivery";
 import BookAccess from "@/components/BookAccess";
@@ -62,15 +63,27 @@ export default async function BookDetailPage({ params }: { params: Promise<{ slu
     hasBookEntitlement(book.id),
   ]);
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Book",
-    name: book.title,
-    author: { "@type": "Person", name: "Omini Nfawa" },
-    datePublished: book.year,
-    bookFormat: book.formats?.[0] ? `https://schema.org/${book.formats[0] === "Ebook" ? "EBook" : book.formats[0]}` : undefined,
-    description: book.excerpt,
-  };
+  const { identity } = await getSiteSettings();
+  const personSchema = await getPersonSchema(book.author || "Omini Nfawa");
+  const jsonLd = jsonLdGraph([
+    {
+      "@type": "Book",
+      "@id": `${SITE_URL}/books/${book.slug}#book`,
+      name: book.title,
+      author: personSchema,
+      publisher: getOrganizationSchema(identity.siteName),
+      datePublished: book.year,
+      bookFormat: book.formats?.[0] ? `https://schema.org/${book.formats[0] === "Ebook" ? "EBook" : book.formats[0]}` : undefined,
+      description: book.excerpt,
+      url: `${SITE_URL}/books/${book.slug}`,
+    },
+    personSchema,
+    breadcrumbSchema([
+      { name: "Home", path: "/" },
+      { name: "Books", path: "/books" },
+      { name: book.title, path: `/books/${book.slug}` },
+    ]),
+  ]);
 
   return (
     <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>

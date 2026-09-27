@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import { css } from "@/lib/css";
 import { getArticles } from "@/lib/data";
 import { pageMetadata } from "@/lib/seo";
+import { collectionPageSchema } from "@/lib/schema";
 
 export const generateMetadata = () => pageMetadata(
   "Writing",
@@ -14,8 +15,10 @@ export const revalidate = 60;
 
 export default async function WritingPage() {
   const articles = await getArticles();
+  const jsonLd = collectionPageSchema("Writing", "/writing", articles.map((a) => a.title));
   return (
     <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ "@context": "https://schema.org", ...jsonLd }) }} />
       <Nav />
       <svg width="480" height="480" viewBox="0 0 480 480" style={css("position:absolute;right:-140px;top:20px;pointer-events:none;")} aria-hidden="true">
         <circle cx="240" cy="240" r="239" fill="none" stroke="var(--color-accent)" strokeWidth="1" opacity="0.16" />

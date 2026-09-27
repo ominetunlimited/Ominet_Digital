@@ -5,6 +5,7 @@ import { css } from "@/lib/css";
 import { pageMetadata } from "@/lib/seo";
 import { ResearchProfileSection } from "@/components/ResearchProfileLinks";
 import { getSelectedWork } from "@/lib/selected-work";
+import { getPersonSchema, breadcrumbSchema, jsonLdGraph } from "@/lib/schema";
 
 const TAGLINE = "Writer · Researcher · Media & Communications Specialist";
 
@@ -29,9 +30,14 @@ const BIO = [
 ];
 
 export default async function AboutPage() {
-  const work = await getSelectedWork();
+  const [work, personSchema] = await Promise.all([getSelectedWork(), getPersonSchema()]);
+  const jsonLd = jsonLdGraph([
+    personSchema,
+    breadcrumbSchema([{ name: "Home", path: "/" }, { name: "About", path: "/about" }]),
+  ]);
   return (
     <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Nav />
       <svg width="300" height="300" viewBox="0 0 300 300" style={css("position:absolute;right:-90px;top:20px;pointer-events:none;")} aria-hidden="true">
         <circle cx="150" cy="150" r="149" fill="none" stroke="var(--color-accent)" strokeWidth="1" opacity="0.18" />

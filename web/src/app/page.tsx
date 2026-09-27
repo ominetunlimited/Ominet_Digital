@@ -2,7 +2,6 @@ import Link from "next/link";
 import Image from "next/image";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
-import PlaceholderImage from "@/components/PlaceholderImage";
 import EcosystemItem from "@/components/EcosystemItem";
 import AdSlot from "@/components/AdSlot";
 import NewsletterForm from "@/components/NewsletterForm";
@@ -11,6 +10,7 @@ import { css } from "@/lib/css";
 import { pageMetadata, SITE_URL, SITE_NAME } from "@/lib/seo";
 import { getFeaturedBook, getLatestArticle } from "@/lib/data";
 import { truncate } from "@/lib/text";
+import { getPersonSchema, getOrganizationSchema, jsonLdGraph, WEBSITE_ID, ORG_ID } from "@/lib/schema";
 
 export const revalidate = 60;
 
@@ -20,16 +20,13 @@ export const generateMetadata = () => pageMetadata(
   "/"
 );
 
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  name: SITE_NAME,
-  url: SITE_URL,
-  publisher: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
-};
-
 export default async function Home() {
-  const [featuredBook, latestArticle] = await Promise.all([getFeaturedBook(), getLatestArticle()]);
+  const [featuredBook, latestArticle, personSchema] = await Promise.all([getFeaturedBook(), getLatestArticle(), getPersonSchema()]);
+  const jsonLd = jsonLdGraph([
+    { "@type": "WebSite", "@id": WEBSITE_ID, name: SITE_NAME, url: SITE_URL, publisher: { "@id": ORG_ID } },
+    getOrganizationSchema(SITE_NAME),
+    personSchema,
+  ]);
 
   return (
     <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;")}>
@@ -40,28 +37,30 @@ export default async function Home() {
         <div style={css("max-width:1280px;margin:0 auto;border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-lg);display:flex;flex-wrap:wrap;min-height:520px;")}>
           <div style={css("flex:1 1 380px;background:var(--om-navy);color:#eafaf0;padding:var(--space-8);display:flex;flex-direction:column;justify-content:center;gap:var(--space-4);")}>
             <Image src="/images/ominet-digital-logo.svg" alt="Ominet Digital" width={64} height={49} priority style={css("display:block;")} />
-            <div style={css("font-family:var(--font-heading);font-size:13px;letter-spacing:0.14em;color:var(--om-orange);font-weight:800;")}>OMINET DIGITAL</div>
-            <h1 style={css("font-family:var(--font-heading);font-size:clamp(38px,5vw,56px);line-height:1.05;margin:0;color:#fff;")}>Ideas. Stories.<br />Creative Work.</h1>
+            <div style={css("font-family:var(--font-heading);font-size:13px;letter-spacing:0.14em;color:var(--om-orange);font-weight:800;")}>OMINI NFAWA</div>
+            <h1 style={css("font-family:var(--font-heading);font-size:clamp(34px,4.5vw,48px);line-height:1.08;margin:0;color:#fff;")}>Writer. Researcher.<br />Media &amp; Communications Specialist.</h1>
             <p style={css("font-size:16px;line-height:1.6;opacity:0.85;max-width:40ch;margin:0;")}>A digital ecosystem for publishing, professional identity and technology &mdash; built by Omini Nfawa.</p>
-            <div style={css("display:flex;gap:var(--space-2);margin-top:var(--space-2);")}>
-              <input type="text" className="input" placeholder="Search the ecosystem" style={css("flex:1;border-radius:var(--radius-md);border:none;")} />
-              <button type="button" className="btn btn-primary" style={css("border-radius:var(--radius-md);")} aria-label="Search">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-              </button>
+            <div style={css("display:flex;gap:var(--space-3);flex-wrap:wrap;margin-top:var(--space-2);")}>
+              <Link href="/writing"><button type="button" className="btn btn-primary" style={css("border-radius:var(--radius-md);")}>Read the writing</button></Link>
+              <Link href="/about"><button type="button" className="btn btn-secondary" style={css("border-radius:var(--radius-md);border-color:rgba(255,255,255,0.4);color:#fff;")}>About Omini</button></Link>
             </div>
             <div style={css("margin-top:var(--space-2);opacity:0.85;")}>
               <SocialLinks />
             </div>
           </div>
-          <div style={css("flex:1 1 380px;position:relative;min-height:320px;")}>
-            <Image
-              src="/images/hero-home.jpg"
-              alt="A student working at a laptop, taking notes by hand"
-              fill
-              sizes="(max-width: 900px) 100vw, 640px"
-              style={{ objectFit: "cover" }}
-              priority
-            />
+          <div style={css("flex:1 1 380px;position:relative;min-height:320px;display:flex;align-items:flex-end;")}>
+            {featuredBook?.coverImageUrl ? (
+              <>
+                <Image src={featuredBook.coverImageUrl} alt="" fill sizes="(max-width: 900px) 100vw, 640px" style={{ objectFit: "cover" }} priority />
+                <div style={css("position:relative;z-index:1;width:100%;padding:var(--space-6);background:linear-gradient(to top, rgba(2,51,55,0.92), rgba(2,51,55,0));")}>
+                  <div style={css("font-size:11px;letter-spacing:0.12em;color:var(--om-orange);font-weight:800;margin-bottom:var(--space-2);")}>FEATURED BOOK</div>
+                  <div style={css("font-family:var(--font-heading);font-size:clamp(22px,3vw,30px);color:#fff;margin-bottom:var(--space-3);max-width:20ch;")}>{featuredBook.title}</div>
+                  <Link href={`/books/${featuredBook.slug}`}><button type="button" className="btn btn-primary" style={css("border-radius:var(--radius-md);")}>View the book</button></Link>
+                </div>
+              </>
+            ) : (
+              <Image src="/images/hero-home.jpg" alt="" fill sizes="(max-width: 900px) 100vw, 640px" style={{ objectFit: "cover" }} priority />
+            )}
           </div>
         </div>
       </section>
@@ -105,29 +104,6 @@ export default async function Home() {
       </section>
 
       <AdSlot slotKey="home_middle" />
-
-      <div className="hr" />
-
-      {featuredBook && (
-        <section style={css("padding:var(--space-8) var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;gap:var(--space-8);")}>
-          <div style={css("aspect-ratio:1/1;position:relative;flex:1 1 240px;max-width:320px;border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-md);")}>
-            {featuredBook.coverImageUrl ? (
-              <Image src={featuredBook.coverImageUrl} alt="" fill sizes="(max-width: 700px) 90vw, 320px" style={{ objectFit: "cover" }} />
-            ) : (
-              <PlaceholderImage label="Book cover" />
-            )}
-          </div>
-          <div style={css("flex:2 1 380px;display:flex;flex-direction:column;justify-content:center;")}>
-            <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>FEATURED BOOK &middot; OMINI NFAWA</div>
-            <h2 style={css("font-family:var(--font-heading);font-size:36px;margin:0 0 var(--space-2);")}>{featuredBook.title}</h2>
-            <p style={css("font-size:16px;line-height:1.7;opacity:0.75;max-width:52ch;margin:0 0 var(--space-4);")}>{truncate(featuredBook.excerpt)}</p>
-            <div style={css("display:flex;gap:var(--space-3);flex-wrap:wrap;")}>
-              <Link href={`/books/${featuredBook.slug}`}><button type="button" className="btn btn-primary">View book</button></Link>
-              <Link href={`/books/${featuredBook.slug}`}>Where to buy &rarr;</Link>
-            </div>
-          </div>
-        </section>
-      )}
 
       <div className="hr" />
 

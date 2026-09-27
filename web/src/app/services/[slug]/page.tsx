@@ -12,6 +12,7 @@ import { getService } from "@/lib/data";
 import { SITE_URL } from "@/lib/seo";
 import { getSiteSettings } from "@/lib/site-settings";
 import { formatMoney } from "@/lib/money";
+import { getOrganizationSchema, breadcrumbSchema, jsonLdGraph } from "@/lib/schema";
 
 export const revalidate = 60;
 
@@ -48,14 +49,22 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
   const { identity: siteIdentity, contact } = await getSiteSettings();
   const ctaLabel = service.ctaLabel || (service.pricingMode === "quote" ? "Request a quote" : "Book this service");
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Service",
-    name: service.title,
-    description: service.shortDescription,
-    provider: { "@type": "Organization", name: siteIdentity.siteName },
-    areaServed: service.locationMode === "remote" ? "Remote" : undefined,
-  };
+  const jsonLd = jsonLdGraph([
+    {
+      "@type": "Service",
+      "@id": `${SITE_URL}/services/${service.slug}#service`,
+      name: service.title,
+      description: service.shortDescription,
+      provider: getOrganizationSchema(siteIdentity.siteName),
+      areaServed: service.locationMode === "remote" ? "Remote" : undefined,
+      url: `${SITE_URL}/services/${service.slug}`,
+    },
+    breadcrumbSchema([
+      { name: "Home", path: "/" },
+      { name: "Services", path: "/services" },
+      { name: service.title, path: `/services/${service.slug}` },
+    ]),
+  ]);
 
   return (
     <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>

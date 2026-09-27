@@ -12,8 +12,8 @@ import NewsletterForm from "@/components/NewsletterForm";
 import Link from "next/link";
 import { css } from "@/lib/css";
 import { getArticle, getArticles, getFeaturedBook } from "@/lib/data";
-import { getResearchProfiles } from "@/lib/research";
 import { ResearchProfileSection } from "@/components/ResearchProfileLinks";
+import { getPersonSchema, getOrganizationSchema, breadcrumbSchema, jsonLdGraph } from "@/lib/schema";
 import { SITE_URL } from "@/lib/seo";
 import { getSiteSettings } from "@/lib/site-settings";
 import { hasEntitlement, getCurrentUser } from "@/lib/entitlements";
@@ -70,24 +70,28 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
   const bodyParagraphs = article.body ? article.body.split(/\n{2,}/) : [];
   const visibleParagraphs = unlocked ? bodyParagraphs : bodyParagraphs.slice(0, 1);
 
-  const profileLinks = await getResearchProfiles();
   const { identity: siteIdentity } = await getSiteSettings();
   const isResearch = /research|thesis|academic|paper/i.test(article.category ?? "");
+  const personSchema = await getPersonSchema(article.author || "Omini Nfawa");
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    headline: article.title,
-    description: article.excerpt,
-    datePublished: article.date,
-    author: {
-      "@type": "Person",
-      name: article.author || "Omini Nfawa",
-      ...(profileLinks.length > 0 ? { sameAs: profileLinks.map((l) => l.url) } : {}),
+  const jsonLd = jsonLdGraph([
+    {
+      "@type": isResearch ? "ScholarlyArticle" : "Article",
+      "@id": `${SITE_URL}/writing/${article.slug}#article`,
+      headline: article.title,
+      description: article.excerpt,
+      datePublished: article.date,
+      author: personSchema,
+      publisher: getOrganizationSchema(siteIdentity.siteName),
+      mainEntityOfPage: `${SITE_URL}/writing/${article.slug}`,
     },
-    publisher: { "@type": "Organization", name: siteIdentity.siteName },
-    mainEntityOfPage: `${SITE_URL}/writing/${article.slug}`,
-  };
+    personSchema,
+    breadcrumbSchema([
+      { name: "Home", path: "/" },
+      { name: "Writing", path: "/writing" },
+      { name: article.title, path: `/writing/${article.slug}` },
+    ]),
+  ]);
 
   return (
     <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>

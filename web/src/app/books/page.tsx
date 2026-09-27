@@ -8,6 +8,7 @@ import { css } from "@/lib/css";
 import { getBooks } from "@/lib/data";
 import { pageMetadata } from "@/lib/seo";
 import { truncate } from "@/lib/text";
+import { collectionPageSchema } from "@/lib/schema";
 
 function BookCover({ url, label, sizes }: { url?: string; label: string; sizes: string }) {
   if (!url) return <PlaceholderImage label={label} />;
@@ -24,9 +25,11 @@ export const revalidate = 60;
 export default async function BooksPage() {
   const { published, upcoming: upcomingBooks } = await getBooks();
   const featured = published.find((b) => b.featured) ?? published[0];
+  const jsonLd = collectionPageSchema("Books", "/books", [...published, ...upcomingBooks].map((b) => b.title));
 
   return (
     <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ "@context": "https://schema.org", ...jsonLd }) }} />
       <Nav />
       <svg width="150" height="150" viewBox="0 0 150 150" style={css("position:absolute;right:32px;top:24px;pointer-events:none;")} aria-hidden="true">
         <g fill="var(--color-accent)" opacity="0.18">
