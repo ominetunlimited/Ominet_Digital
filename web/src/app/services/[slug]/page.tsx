@@ -7,6 +7,7 @@ import PlaceholderImage from "@/components/PlaceholderImage";
 import ShareBar from "@/components/ShareBar";
 import TrackedLink from "@/components/TrackedLink";
 import BookingForm from "@/components/BookingForm";
+import RelatedSection from "@/components/RelatedSection";
 import { css } from "@/lib/css";
 import { getService } from "@/lib/data";
 import { SITE_URL } from "@/lib/seo";
@@ -147,6 +148,8 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
       )}
 
       <div className="hr" />
+      <RelatedSection type="service" id={service.id} />
+
       <Footer />
     </div>
   );

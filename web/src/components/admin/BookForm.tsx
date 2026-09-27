@@ -12,6 +12,7 @@ import MoneyInput from "@/components/admin/MoneyInput";
 import ListInput from "@/components/admin/ListInput";
 import BookFilesPanel from "@/components/admin/BookFilesPanel";
 import type { BookFileRecord } from "@/lib/admin/book-file-actions";
+import RelatedItemsPanel from "@/components/admin/RelatedItemsPanel";
 
 const STATUSES = ["draft", "scheduled", "published", "archived"];
 
@@ -262,6 +263,8 @@ export default function BookForm({
         onUsePageCount={(n, src) => setValues((v) => ({ ...v, page_count: n, page_count_source: src }))}
         onUseCover={(url) => set("cover_image_url", url)}
       />
+
+      <RelatedItemsPanel sourceType="book" sourceId={values.id ?? null} />
 
       {error && <p style={css("font-size:13px;color:var(--om-coral);margin-bottom:var(--space-3);")}>{error}</p>}
 

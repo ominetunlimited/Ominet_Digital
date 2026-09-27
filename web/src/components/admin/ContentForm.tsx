@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { slugify } from "@/lib/slug";
 import { useAdminAction } from "@/lib/admin/useAdminAction";
 import ContentFilePanel, { type ContentAttachment } from "@/components/admin/ContentFilePanel";
+import RelatedItemsPanel from "@/components/admin/RelatedItemsPanel";
 
 const TYPES = ["article", "essay", "research", "poem", "fiction", "review", "interview", "note"];
 const ACCESS = ["free", "paid", "members", "preview"];
@@ -196,6 +197,8 @@ export default function ContentForm({
       <ImageUploadField label="Social share image" value={values.og_image_url} onChange={(url) => set("og_image_url", url)} />
 
       <ContentFilePanel contentId={values.id ?? null} ensureContent={ensureContent} initialAttachment={attachment} />
+
+      <RelatedItemsPanel sourceType="content" sourceId={values.id ?? null} />
 
       {error && <p style={css("font-size:13px;color:var(--om-coral);margin-bottom:var(--space-3);")}>{error}</p>}
 

@@ -16,6 +16,7 @@ import { getCurrentUser, hasBookEntitlement } from "@/lib/entitlements";
 import { getBookDelivery } from "@/lib/books/delivery";
 import BookAccess from "@/components/BookAccess";
 import AdSlot from "@/components/AdSlot";
+import RelatedSection from "@/components/RelatedSection";
 import { truncate } from "@/lib/text";
 import { getEngagement } from "@/lib/engagement";
 import LikeButton from "@/components/LikeButton";
@@ -179,6 +180,7 @@ export default async function BookDetailPage({ params }: { params: Promise<{ slu
       </section>
 
       <div className="hr" />
+      <RelatedSection type="book" id={book.id} />
 
       <Footer />
     </div>

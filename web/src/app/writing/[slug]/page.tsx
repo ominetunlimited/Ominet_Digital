@@ -21,6 +21,7 @@ import { getEngagement } from "@/lib/engagement";
 import LikeButton from "@/components/LikeButton";
 import CommentSection from "@/components/CommentSection";
 import ReadMoreExcerpt from "@/components/ReadMoreExcerpt";
+import RelatedSection from "@/components/RelatedSection";
 
 export const revalidate = 60;
 
@@ -198,6 +199,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
       </article>
 
       <div className="hr" />
+      <RelatedSection type="content" id={article.id} />
 
       <section style={css("padding:var(--space-8) var(--space-6);display:flex;justify-content:space-between;align-items:center;gap:var(--space-6);flex-wrap:wrap;")}>
         <div style={css("flex:1 1 260px;")}>

@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import ImageUploadField from "@/components/admin/ImageUploadField";
 import MoneyInput from "@/components/admin/MoneyInput";
 import { slugify } from "@/lib/slug";
+import RelatedItemsPanel from "@/components/admin/RelatedItemsPanel";
 
 const PRICING_MODES = [
   { value: "fixed", label: "Fixed price" },
@@ -231,6 +232,8 @@ export default function ServiceForm({ initial }: { initial?: Partial<ServiceInpu
         <textarea className="input" rows={2} value={values.seo_description} onChange={(e) => set("seo_description", e.target.value)} />
       </div>
       <ImageUploadField label="Social share image" value={values.og_image_url} onChange={(url) => set("og_image_url", url)} />
+
+      <RelatedItemsPanel sourceType="service" sourceId={values.id ?? null} />
 
       {error && <p style={css("font-size:13px;color:var(--om-coral);margin-bottom:var(--space-3);")}>{error}</p>}
 
