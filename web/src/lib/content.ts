@@ -12,6 +12,7 @@ export type Article = {
   excerpt: string;
   dek?: string;
   category: string;
+  subcategory?: string;
   access: Access;
   price?: string;
   date: string;

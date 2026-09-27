@@ -27,7 +27,7 @@ try {
 `;
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const { social, identity } = await getSiteSettings();
+  const { social, identity, contact } = await getSiteSettings();
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -44,7 +44,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body>
         <Analytics />
         {/* Only links that are switched on are handed to the browser — hidden ones never appear in the page source. */}
-        <SiteSettingsProvider value={{ social: social.filter((s) => s.enabled && s.url), siteName: identity.siteName }}>{children}</SiteSettingsProvider>
+        <SiteSettingsProvider value={{ social: social.filter((s) => s.enabled && s.url), siteName: identity.siteName, whatsapp: contact.whatsapp }}>{children}</SiteSettingsProvider>
       </body>
     </html>
   );

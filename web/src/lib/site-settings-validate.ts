@@ -9,7 +9,7 @@ export type SocialLink = { platform: SocialPlatform; label: string; url: string;
 
 export type SiteSettings = {
   identity: { siteName: string; description: string };
-  contact: { supportEmail: string; bookingEmail: string; phone: string };
+  contact: { supportEmail: string; bookingEmail: string; phone: string; whatsapp: string };
   social: SocialLink[];
   seo: { faviconUrl: string; defaultOgImageUrl: string; googleVerification: string };
   footer: { blurb: string; copyrightName: string; privacyUrl: string; termsUrl: string };
@@ -49,7 +49,7 @@ const DEFAULT_BIO = [
 /** What the site showed before settings existed — nothing changes until an admin edits something. */
 export const DEFAULT_SETTINGS: SiteSettings = {
   identity: { siteName: "Ominet Digital", description: DESCRIPTION },
-  contact: { supportEmail: "ominetmedia@gmail.com", bookingEmail: "ominetmedia@gmail.com", phone: "" },
+  contact: { supportEmail: "ominetmedia@gmail.com", bookingEmail: "ominetmedia@gmail.com", phone: "", whatsapp: "" },
   social: [
     { platform: "facebook", label: "Facebook", url: "https://www.facebook.com/OminetUnlimited", enabled: true },
     { platform: "instagram", label: "Instagram", url: "https://www.instagram.com/ominetunlimited/", enabled: true },
@@ -98,10 +98,12 @@ export function validateContact(input: unknown): Result<SiteSettings["contact"]>
   const supportEmail = str(o.supportEmail, 200);
   const bookingEmail = str(o.bookingEmail, 200);
   const phone = str(o.phone, 60);
+  const whatsapp = str(o.whatsapp, 60);
   if (!EMAIL_RE.test(supportEmail)) return { ok: false, error: "Enter a valid support email." };
   if (!EMAIL_RE.test(bookingEmail)) return { ok: false, error: "Enter a valid booking email." };
   if (phone && !/^[+\d][\d\s().-]{4,38}$/.test(phone)) return { ok: false, error: "That phone number doesn't look right." };
-  return { ok: true, value: { supportEmail, bookingEmail, phone } };
+  if (whatsapp && !/^[+\d][\d\s().-]{4,38}$/.test(whatsapp)) return { ok: false, error: "That WhatsApp number doesn't look right — include the country code, e.g. +234…" };
+  return { ok: true, value: { supportEmail, bookingEmail, phone, whatsapp } };
 }
 
 export function validateSocial(input: unknown): Result<SiteSettings["social"]> {

@@ -108,6 +108,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
       <article style={css("max-width:720px;margin:0 auto;padding:var(--space-8) var(--space-6);")}>
         <div style={css("display:flex;gap:var(--space-3);align-items:center;font-size:12px;opacity:0.6;margin-bottom:var(--space-4);")}>
           <span className="tag tag-neutral">{article.category}</span>
+          {article.subcategory && <span className="tag tag-outline">{article.subcategory}</span>}
           <span>{article.date}</span>
           <span>&middot;</span>
           <span>{article.readTime} read</span>

@@ -10,6 +10,7 @@ export type ContentInput = {
   title: string;
   slug: string;
   type: string;
+  subcategory: string;
   dek: string;
   excerpt: string;
   body: string;
@@ -52,6 +53,7 @@ export async function saveContent(input: ContentInput): Promise<ActionResult> {
     title: input.title,
     slug,
     type: input.type,
+    subcategory: input.subcategory || null,
     dek: input.dek || null,
     excerpt: input.excerpt || null,
     body: input.body || null,
@@ -90,6 +92,7 @@ export async function saveContent(input: ContentInput): Promise<ActionResult> {
     delete row.featured;
     delete row.external_url;
     delete row.external_label;
+    delete row.subcategory;
     ({ data, error } = input.id
       ? await supabase.from("content").update(row).eq("id", input.id).select("id,slug").single()
       : await supabase.from("content").insert(row).select("id,slug").single());

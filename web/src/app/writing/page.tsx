@@ -119,6 +119,7 @@ export default async function WritingPage({
               <div>
                 <div style={css("display:flex;gap:var(--space-2);align-items:center;margin-bottom:var(--space-2);")}>
                   <span className="tag tag-neutral">{a.category}</span>
+                  {a.subcategory && <span className="tag tag-outline">{a.subcategory}</span>}
                   <span className={a.access === "paid" ? "tag tag-accent" : "tag tag-outline"}>{a.access === "paid" ? "PAID" : "FREE"}</span>
                 </div>
                 <div style={css("font-family:var(--font-heading);font-size:26px;margin-bottom:var(--space-1);")}>{a.title}</div>

@@ -1,8 +1,10 @@
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import PlaceholderImage from "@/components/PlaceholderImage";
+import WhatsAppButton from "@/components/WhatsAppButton";
 import { css } from "@/lib/css";
 import { pageMetadata } from "@/lib/seo";
+import { getSiteSettings } from "@/lib/site-settings";
 
 export const generateMetadata = () => pageMetadata(
   "Studio & Services",
@@ -25,7 +27,8 @@ const projects = [
   { title: "Archive Migration Platform", meta: "Web · 2025" },
 ];
 
-export default function OminetDigitalPage() {
+export default async function OminetDigitalPage() {
+  const { contact } = await getSiteSettings();
   return (
     <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);")}>
       <Nav />
@@ -60,13 +63,14 @@ export default function OminetDigitalPage() {
 
       <section style={css("padding:var(--space-8) var(--space-6);")}>
         <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-4);")}>PROJECTS</div>
+        {/* Example work, not linked pages yet — plain tiles, not clickable, so nothing pretends to lead anywhere. */}
         <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:var(--space-6);")}>
           {projects.map((p) => (
-            <a href="#" key={p.title}>
+            <div key={p.title}>
               <div style={css("aspect-ratio:4/3;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-3);")}><PlaceholderImage label="Project" /></div>
               <div style={css("font-family:var(--font-heading);font-size:18px;")}>{p.title}</div>
               <div style={css("font-size:12px;opacity:0.55;")}>{p.meta}</div>
-            </a>
+            </div>
           ))}
         </div>
       </section>
@@ -78,7 +82,12 @@ export default function OminetDigitalPage() {
           <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-2);")}>CONTACT</div>
           <div style={css("font-family:var(--font-heading);font-size:26px;")}>Start a project.</div>
         </div>
-        <button type="button" className="btn btn-secondary" style={css("border-color:var(--om-blue);color:var(--om-blue);")}>Get in touch</button>
+        <div style={css("display:flex;gap:var(--space-3);align-items:center;")}>
+          <WhatsAppButton color="var(--om-blue)" label="WhatsApp" />
+          <a href={`mailto:${contact.supportEmail}?subject=${encodeURIComponent("Starting a project")}`}>
+            <button type="button" className="btn btn-secondary" style={css("border-color:var(--om-blue);color:var(--om-blue);")}>Get in touch</button>
+          </a>
+        </div>
       </section>
 
       <div className="hr" />

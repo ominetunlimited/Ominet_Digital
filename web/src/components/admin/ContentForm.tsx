@@ -17,6 +17,18 @@ const TYPES = ["article", "essay", "research", "poem", "fiction", "review", "int
 const ACCESS = ["free", "paid", "members", "preview"];
 const STATUSES = ["draft", "scheduled", "published", "archived"];
 
+// What each Type can be narrowed down to. Not every type has one (a plain
+// "note" doesn't need it) — those get no second dropdown at all.
+const SUBCATEGORIES: Record<string, string[]> = {
+  article: ["Opinion", "News", "Feature", "Commentary", "Analysis"],
+  essay: ["Personal essay", "Critical essay", "Literary essay", "Social commentary", "Memoir"],
+  research: ["Journal article", "Thesis / Dissertation", "Conference paper", "Book chapter", "Festschrift contribution", "Literature review"],
+  fiction: ["Novel", "Novella", "Short story", "Play / Drama", "Flash fiction", "Script / Screenplay"],
+  poem: ["Sonnet", "Free verse", "Spoken word", "Narrative poem", "Poetry collection"],
+  review: ["Book review", "Film review", "Media review", "Performance review"],
+  interview: ["Q&A", "Profile interview", "Panel / Roundtable"],
+};
+
 export default function ContentForm({
   initial,
   attachment = null,
@@ -29,6 +41,7 @@ export default function ContentForm({
     title: initial?.title ?? "",
     slug: initial?.slug ?? "",
     type: initial?.type ?? "article",
+    subcategory: initial?.subcategory ?? "",
     dek: initial?.dek ?? "",
     excerpt: initial?.excerpt ?? "",
     body: initial?.body ?? "",
@@ -104,14 +117,31 @@ export default function ContentForm({
           onBlur={(e) => set("slug", slugify(e.target.value))}
         />
       </div>
-      <div style={css("display:flex;gap:var(--space-4);margin-bottom:var(--space-4);")}>
-        <div className="field" style={css("flex:1;")}>
+      <div style={css("display:flex;gap:var(--space-4);margin-bottom:var(--space-4);flex-wrap:wrap;")}>
+        <div className="field" style={css("flex:1;min-width:140px;")}>
           <label>Type</label>
-          <select className="input" value={values.type} onChange={(e) => set("type", e.target.value)}>
+          <select
+            className="input"
+            value={values.type}
+            onChange={(e) => {
+              const type = e.target.value;
+              set("type", type);
+              if (!(SUBCATEGORIES[type] ?? []).includes(values.subcategory)) set("subcategory", "");
+            }}
+          >
             {TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
           </select>
         </div>
-        <div className="field" style={css("flex:1;")}>
+        {SUBCATEGORIES[values.type] && (
+          <div className="field" style={css("flex:1;min-width:160px;")}>
+            <label>Subcategory</label>
+            <select className="input" value={values.subcategory} onChange={(e) => set("subcategory", e.target.value)}>
+              <option value="">&mdash; General &mdash;</option>
+              {SUBCATEGORIES[values.type].map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+        )}
+        <div className="field" style={css("flex:1;min-width:140px;")}>
           <label>Status</label>
           <select className="input" value={values.status} onChange={(e) => set("status", e.target.value)}>
             {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}

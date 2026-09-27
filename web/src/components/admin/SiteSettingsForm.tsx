@@ -104,6 +104,9 @@ export default function SiteSettingsForm({ initial }: { initial: SiteSettings })
         <Field label="Phone (optional)">
           <input className="input" value={contact.phone} onChange={(e) => setContact({ ...contact, phone: e.target.value })} placeholder="+234 …" />
         </Field>
+        <Field label="WhatsApp number (optional)" hint="Leave blank until your WhatsApp Business is set up — the icon only appears once this is filled in. Include the country code.">
+          <input className="input" value={contact.whatsapp} onChange={(e) => setContact({ ...contact, whatsapp: e.target.value })} placeholder="+234 …" />
+        </Field>
       </Section>
 
       <Section title="Social links" hint="Icons in the top bar, hero and footer. Each link must be a real profile on that network. Untick to hide one." section="social" data={social}>

@@ -7,6 +7,7 @@ import EcosystemItem from "@/components/EcosystemItem";
 import AdSlot from "@/components/AdSlot";
 import NewsletterForm from "@/components/NewsletterForm";
 import SocialLinks from "@/components/SocialLinks";
+import WhatsAppButton from "@/components/WhatsAppButton";
 import ReadMoreExcerpt from "@/components/ReadMoreExcerpt";
 import { css } from "@/lib/css";
 import { pageMetadata, SITE_URL, SITE_NAME } from "@/lib/seo";
@@ -67,8 +68,9 @@ export default async function Home() {
                 </div>
               </div>
             )}
-            <div style={css("margin-top:var(--space-2);opacity:0.85;")}>
+            <div style={css("margin-top:var(--space-2);opacity:0.85;display:flex;align-items:center;gap:var(--space-3);")}>
               <SocialLinks />
+              <WhatsAppButton />
             </div>
           </div>
           <div style={css("flex:1 1 380px;position:relative;min-height:320px;")}>

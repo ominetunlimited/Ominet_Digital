@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import SocialLinks from "@/components/SocialLinks";
+import WhatsAppButton from "@/components/WhatsAppButton";
 import { ResearchFooterLinks } from "@/components/ResearchProfileLinks";
 import { getSiteSettings } from "@/lib/site-settings";
 
@@ -19,7 +20,10 @@ export default async function Footer() {
             {identity.siteName.toUpperCase()}
           </div>
           {footer.blurb && <p style={{ fontSize: 13, opacity: 0.75, maxWidth: "36ch", margin: "0 0 var(--space-4)" }}>{footer.blurb}</p>}
-          <SocialLinks />
+          <div style={{ display: "flex", alignItems: "center", gap: "var(--space-3)" }}>
+            <SocialLinks />
+            <WhatsAppButton />
+          </div>
         </div>
         <div>
           <div style={{ fontSize: 11, letterSpacing: "0.1em", opacity: 0.6, marginBottom: "var(--space-3)" }}>OMINI NFAWA</div>
@@ -47,6 +51,7 @@ export default async function Footer() {
             <Link href="/search">Search</Link>
             <Link href="/omini-nfawa#newsletter">Newsletter</Link>
             <a href={`mailto:${contact.supportEmail}`}>Contact</a>
+            <WhatsAppButton label="WhatsApp" />
             <a href="https://selar.com/showlove/ominet" target="_blank" rel="noopener noreferrer">Support on Selar</a>
             {footer.privacyUrl && <a href={footer.privacyUrl}>Privacy policy</a>}
             {footer.termsUrl && <a href={footer.termsUrl}>Terms</a>}
