@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getOrCreateAnonKey } from "@/lib/anon-key";
 import { queueAlert, adminLink } from "@/lib/notify/telegram";
+import { getSiteSettings } from "@/lib/site-settings";
 
 export type Target = { contentId?: string; bookId?: string };
 export type ActionResult = { ok: true } | { ok: false; error: string };
@@ -45,7 +46,7 @@ export async function toggleLike(target: Target, path: string): Promise<ActionRe
   return { ok: true, liked: true };
 }
 
-export async function postComment(target: Target, body: string, path: string): Promise<ActionResult & { message?: string }> {
+export async function postComment(target: Target, body: string, path: string, guestName?: string): Promise<ActionResult & { message?: string }> {
   const supabase = await createClient();
   if (!supabase) return { ok: false, error: "Sign-in isn't configured yet." };
   const trimmed = body.trim();
@@ -55,11 +56,22 @@ export async function postComment(target: Target, body: string, path: string): P
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { ok: false, error: "Sign in first to comment." };
+
+  const row: Record<string, unknown> = { body: trimmed, ...targetColumn(target) };
+  if (user) {
+    row.user_id = user.id;
+  } else {
+    const { comments } = await getSiteSettings();
+    if (comments.requireSignIn) return { ok: false, error: "Sign in first to comment." };
+    const name = (guestName ?? "").trim().slice(0, 60);
+    if (!name) return { ok: false, error: "Enter a name first." };
+    row.anon_key = await getOrCreateAnonKey();
+    row.guest_name = name;
+  }
 
   // status defaults to 'pending' — every comment is moderated before it's
   // visible to anyone but its own author (see 0006_comment_moderation.sql).
-  const { error } = await supabase.from("comments").insert({ user_id: user.id, body: trimmed, ...targetColumn(target) });
+  const { error } = await supabase.from("comments").insert(row);
   if (error) return { ok: false, error: error.message };
   revalidatePath(path);
   queueAlert("comment", "New comment awaiting moderation", [`On: ${path}`], { link: adminLink("/admin/comments") });

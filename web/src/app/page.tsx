@@ -25,7 +25,9 @@ export const generateMetadata = () => pageMetadata(
 
 export default async function Home() {
   const [featuredBook, articles, personSchema, { homepage }] = await Promise.all([getFeaturedBook(), getArticles(), getPersonSchema(), getSiteSettings()]);
-  const latestArticle = articles[0];
+  // A staff pick (Content admin -> Featured) wins; otherwise the newest
+  // published piece, same as before.
+  const latestArticle = articles.find((a) => a.featured) ?? articles[0];
   const heroArticles = homepage.showRecentWriting ? articles.slice(0, 3) : [];
   const jsonLd = jsonLdGraph([
     { "@type": "WebSite", "@id": WEBSITE_ID, name: SITE_NAME, url: SITE_URL, publisher: { "@id": ORG_ID } },
@@ -151,7 +153,7 @@ export default async function Home() {
         <section style={css("padding:var(--space-8) var(--space-6);display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--space-6);")}>
           <Link href={`/writing/${latestArticle.slug}`} style={css("display:block;")}>
             <div className="card">
-              <div className="card-kicker">LATEST WRITING</div>
+              <div className="card-kicker">{latestArticle.featured ? "FEATURED WRITING" : "LATEST WRITING"}</div>
               <div className="card-title">{latestArticle.title}</div>
               <ReadMoreExcerpt text={latestArticle.excerpt} className="card-body" />
               <div className="card-meta"><span>{latestArticle.date}</span></div>

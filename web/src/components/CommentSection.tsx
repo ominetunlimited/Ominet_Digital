@@ -87,26 +87,35 @@ export default function CommentSection({
   comments,
   signedIn,
   currentPath,
+  requireSignIn = true,
 }: {
   target: Target;
   comments: Comment[];
   signedIn: boolean;
   currentPath: string;
+  /** Admin -> Site settings -> Comments. When false, a guest can comment with just a name. */
+  requireSignIn?: boolean;
 }) {
   const [list, setList] = useState(comments);
   const [body, setBody] = useState("");
+  const [guestName, setGuestName] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
   const visibleCount = list.filter((c) => c.status === "approved").length;
+  const guestAllowed = !requireSignIn;
 
   async function submit() {
     if (!body.trim()) return;
+    if (!signedIn && guestAllowed && !guestName.trim()) {
+      setError("Enter a name first.");
+      return;
+    }
     setBusy(true);
     setError(null);
     setNotice(null);
-    const result = await postComment(target, body, currentPath);
+    const result = await postComment(target, body, currentPath, guestAllowed ? guestName : undefined);
     setBusy(false);
     if (!result.ok) {
       setError(result.error);
@@ -115,7 +124,7 @@ export default function CommentSection({
     // Optimistic local append — the server has the real row; a full refresh
     // (next navigation) will pick up the authoritative list via revalidatePath.
     setList((l) => [
-      { id: `local-${Date.now()}`, body: body.trim(), createdAt: new Date().toISOString(), authorName: "You", isOwn: true, reactionCount: 0, reactedByMe: false, status: "pending" },
+      { id: `local-${Date.now()}`, body: body.trim(), createdAt: new Date().toISOString(), authorName: signedIn ? "You" : guestName.trim() || "Guest", isOwn: true, reactionCount: 0, reactedByMe: false, status: "pending" },
       ...l,
     ]);
     setNotice(result.message ?? "Posted.");
@@ -128,8 +137,17 @@ export default function CommentSection({
         {visibleCount} COMMENT{visibleCount === 1 ? "" : "S"}
       </div>
 
-      {signedIn ? (
+      {signedIn || guestAllowed ? (
         <div style={css("margin-bottom:var(--space-4);")}>
+          {!signedIn && (
+            <input
+              className="input"
+              placeholder="Your name"
+              value={guestName}
+              onChange={(e) => setGuestName(e.target.value)}
+              style={css("margin-bottom:var(--space-2);max-width:260px;")}
+            />
+          )}
           <textarea
             className="input"
             rows={3}
@@ -141,6 +159,11 @@ export default function CommentSection({
           <button type="button" className="btn btn-primary" onClick={submit} disabled={busy || !body.trim()}>
             {busy ? "Posting…" : "Post comment"}
           </button>
+          {!signedIn && (
+            <div style={css("margin-top:var(--space-2);")}>
+              <ReaderSignIn currentPath={currentPath} prompt="Commenting as a guest. Have an account?" />
+            </div>
+          )}
           {error && <p style={css("font-size:12px;color:var(--om-coral);margin-top:var(--space-2);")}>{error}</p>}
           {notice && !error && <p style={css("font-size:12px;opacity:0.6;margin-top:var(--space-2);")}>{notice}</p>}
         </div>

@@ -12,6 +12,7 @@ import { slugify } from "@/lib/slug";
 import { useAdminAction } from "@/lib/admin/useAdminAction";
 import ContentFilePanel, { type ContentAttachment } from "@/components/admin/ContentFilePanel";
 import RelatedItemsPanel from "@/components/admin/RelatedItemsPanel";
+import RichTextEditor from "@/components/admin/RichTextEditor";
 
 const TYPES = ["article", "essay", "research", "poem", "fiction", "review", "interview", "note"];
 const ACCESS = ["free", "paid", "members", "preview"];
@@ -161,7 +162,7 @@ export default function ContentForm({
       </div>
       <div className="field" style={css("margin-bottom:var(--space-4);")}>
         <label>Body</label>
-        <textarea className="input" rows={10} value={values.body} onChange={(e) => set("body", e.target.value)} placeholder="Paragraphs separated by a blank line." />
+        <RichTextEditor value={values.body} onChange={(html) => set("body", html)} placeholder="Write the piece…" />
       </div>
       <div className="field" style={css("margin-bottom:var(--space-4);")}>
         <label>Read time (minutes)</label>
@@ -170,7 +171,7 @@ export default function ContentForm({
 
       <label className="radio" style={css("margin-bottom:var(--space-4);")}>
         <input type="checkbox" checked={values.featured} onChange={(e) => set("featured", e.target.checked)} style={{ position: "static", width: "auto", height: "auto", opacity: 1 }} />
-        Featured (shown first when sorted that way on Writing)
+        Featured (shown on the homepage, and first when sorted that way on Writing)
       </label>
 
       <div style={css("display:flex;gap:var(--space-4);margin-bottom:var(--space-4);")}>

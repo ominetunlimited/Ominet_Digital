@@ -55,7 +55,7 @@ export async function getEngagement(target: Target): Promise<Engagement> {
         : Promise.resolve({ data: null }),
     supabase
       .from("comments")
-      .select("id,body,created_at,user_id,status,profiles!comments_user_id_fkey(display_name),comment_reactions(user_id)")
+      .select("id,body,created_at,user_id,anon_key,guest_name,status,profiles!comments_user_id_fkey(display_name),comment_reactions(user_id)")
       .eq(col, val)
       // RLS already restricts rows to approved + the viewer's own +
       // staff, but 'deleted' is a soft-moderation state that should never
@@ -69,7 +69,9 @@ export async function getEngagement(target: Target): Promise<Engagement> {
     id: string;
     body: string;
     created_at: string;
-    user_id: string;
+    user_id: string | null;
+    anon_key: string | null;
+    guest_name: string | null;
     status: CommentStatus;
     profiles: { display_name: string | null } | { display_name: string | null }[] | null;
     comment_reactions: { user_id: string }[] | null;
@@ -82,8 +84,8 @@ export async function getEngagement(target: Target): Promise<Engagement> {
       id: c.id,
       body: c.body,
       createdAt: c.created_at,
-      authorName: displayName(profile?.display_name),
-      isOwn: user?.id === c.user_id,
+      authorName: c.user_id ? displayName(profile?.display_name) : (c.guest_name?.trim() || "Guest"),
+      isOwn: user ? user.id === c.user_id : Boolean(anonKey) && c.anon_key === anonKey,
       reactionCount: reactions.length,
       reactedByMe: user ? reactions.some((r) => r.user_id === user.id) : false,
       status: c.status,

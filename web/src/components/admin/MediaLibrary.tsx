@@ -17,6 +17,10 @@ export type Asset = {
   width: number | null;
   height: number | null;
   created_at: string;
+  attribution: string | null;
+  allow_download: boolean;
+  show_on_studio: boolean;
+  display_order: number;
 };
 
 const KIND_FILTERS = [
@@ -43,12 +47,20 @@ function EditPanel({ asset, onClose, onSaved, onDeleted }: { asset: Asset; onClo
   const [title, setTitle] = useState(asset.title ?? "");
   const [alt, setAlt] = useState(asset.alt_text ?? "");
   const [caption, setCaption] = useState(asset.caption ?? "");
+  const [attribution, setAttribution] = useState(asset.attribution ?? "");
+  const [allowDownload, setAllowDownload] = useState(asset.allow_download);
+  const [showOnStudio, setShowOnStudio] = useState(asset.show_on_studio);
+  const [displayOrder, setDisplayOrder] = useState(asset.display_order);
   const { busy, saved, error, run } = useAdminAction();
   const del = useAdminAction();
 
   async function save() {
-    const result = await run(() => updateMediaAsset(asset.id, { title, alt_text: alt, caption }));
-    if (result?.ok) onSaved({ ...asset, title: title || null, alt_text: alt || null, caption: caption || null });
+    const result = await run(() =>
+      updateMediaAsset(asset.id, { title, alt_text: alt, caption, attribution, allow_download: allowDownload, show_on_studio: showOnStudio, display_order: displayOrder })
+    );
+    if (result?.ok) {
+      onSaved({ ...asset, title: title || null, alt_text: alt || null, caption: caption || null, attribution: attribution || null, allow_download: allowDownload, show_on_studio: showOnStudio, display_order: displayOrder });
+    }
   }
   async function remove() {
     if (!confirm(`Delete "${asset.title ?? "this file"}"? This can't be undone.`)) return;
@@ -95,6 +107,30 @@ function EditPanel({ asset, onClose, onSaved, onDeleted }: { asset: Asset; onClo
           <label>Caption</label>
           <textarea className="input" rows={2} value={caption} onChange={(e) => setCaption(e.target.value)} />
         </div>
+
+        {(asset.kind === "image" || asset.kind === "video" || asset.kind === "audio") && (
+          <>
+            <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin:var(--space-3) 0 var(--space-2);")}>STUDIO PAGE</div>
+            <div className="field">
+              <label>Attribution (optional — e.g. &ldquo;Photo by Omini Nfawa&rdquo;)</label>
+              <input className="input" value={attribution} onChange={(e) => setAttribution(e.target.value)} />
+            </div>
+            <label className="radio">
+              <input type="checkbox" checked={showOnStudio} onChange={(e) => setShowOnStudio(e.target.checked)} style={{ position: "static", width: "auto", height: "auto", opacity: 1 }} />
+              Show on the Studio page (/ominet-digital)
+            </label>
+            <label className="radio" style={css("margin-top:var(--space-2);")}>
+              <input type="checkbox" checked={allowDownload} onChange={(e) => setAllowDownload(e.target.checked)} style={{ position: "static", width: "auto", height: "auto", opacity: 1 }} />
+              Visitors can download this file
+            </label>
+            {showOnStudio && (
+              <div className="field" style={css("max-width:140px;")}>
+                <label>Order (lower first)</label>
+                <input className="input" type="number" value={displayOrder} onChange={(e) => setDisplayOrder(Number(e.target.value) || 0)} />
+              </div>
+            )}
+          </>
+        )}
 
         {error && <p style={css("font-size:13px;color:var(--om-coral);margin:0;")}>{error}</p>}
         {del.error && <p style={css("font-size:13px;color:var(--om-coral);margin:0;")}>{del.error}</p>}

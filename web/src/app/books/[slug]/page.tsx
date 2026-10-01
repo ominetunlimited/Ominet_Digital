@@ -65,7 +65,7 @@ export default async function BookDetailPage({ params }: { params: Promise<{ slu
     hasBookEntitlement(book.id),
   ]);
 
-  const { identity } = await getSiteSettings();
+  const { identity, comments: commentSettings } = await getSiteSettings();
   const personSchema = await getPersonSchema(book.author || "Omini Nfawa");
   const jsonLd = jsonLdGraph([
     {
@@ -175,7 +175,7 @@ export default async function BookDetailPage({ params }: { params: Promise<{ slu
               currentPath={currentPath}
             />
             <div className="hr" style={css("margin:var(--space-6) 0;")} />
-            <CommentSection target={{ bookId: book.id }} comments={engagement.comments} signedIn={Boolean(user)} currentPath={currentPath} />
+            <CommentSection target={{ bookId: book.id }} comments={engagement.comments} signedIn={Boolean(user)} currentPath={currentPath} requireSignIn={commentSettings.requireSignIn} />
           </>
         )}
       </section>

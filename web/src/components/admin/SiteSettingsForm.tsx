@@ -44,6 +44,7 @@ export default function SiteSettingsForm({ initial }: { initial: SiteSettings })
   const [homepage, setHomepage] = useState(initial.homepage);
   const [about, setAbout] = useState(initial.about);
   const [ecosystem, setEcosystem] = useState(initial.ecosystem);
+  const [comments, setComments] = useState(initial.comments);
 
   return (
     <div style={css("max-width:720px;")}>
@@ -81,7 +82,7 @@ export default function SiteSettingsForm({ initial }: { initial: SiteSettings })
 
       <Section
         title="Ecosystem pages"
-        hint="PROFILE and Cortexa Office are separate products still under development. While hidden: the page shows a short coming-soon message instead of its real content, it's removed from the nav and footer, and it's excluded from search engines. Direct links still resolve to that coming-soon page — nothing is password-protected."
+        hint="PROFILE and Cortexa Office are separate products still under development. They stay visible everywhere on the site (homepage, nav, footer); while hidden here, visiting the page itself shows a short coming-soon message instead of its real content, and it's excluded from search engines — nothing is password-protected. More apps/sites beyond these two go in Admin -> Website -> Ecosystem apps."
         section="ecosystem"
         data={ecosystem}
       >
@@ -113,6 +114,21 @@ export default function SiteSettingsForm({ initial }: { initial: SiteSettings })
             <input className="input" value={ecosystem.cortexaMessage} onChange={(e) => setEcosystem({ ...ecosystem, cortexaMessage: e.target.value })} />
           </Field>
         )}
+      </Section>
+
+      <Section title="Comments" hint="Whether a reader needs an account to comment on an article or book." section="comments" data={comments}>
+        <label className="radio">
+          <input
+            type="checkbox"
+            checked={comments.requireSignIn}
+            onChange={(e) => setComments({ ...comments, requireSignIn: e.target.checked })}
+            style={{ position: "static", width: "auto", height: "auto", opacity: 1 }}
+          />
+          Require sign-in to comment
+        </label>
+        <p style={css("font-size:12px;opacity:0.6;margin:var(--space-2) 0 0;")}>
+          Unticked: anyone can comment with just a name, no account. Every comment is still held for moderation either way (Admin -&gt; Comments).
+        </p>
       </Section>
 
       <Section title="Site identity" hint="The name and description search engines and social networks show for the whole site." section="identity" data={identity}>

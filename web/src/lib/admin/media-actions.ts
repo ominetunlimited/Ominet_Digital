@@ -41,10 +41,10 @@ export async function uploadMedia(formData: FormData): Promise<ActionResult> {
   return { ok: true, url: urlData.publicUrl };
 }
 
-/** Edits an asset's own metadata (title/alt text/caption) — never touches the file itself. */
+/** Edits an asset's own metadata (title/alt text/caption/Studio display) — never touches the file itself. */
 export async function updateMediaAsset(
   id: string,
-  patch: { title: string; alt_text: string; caption: string }
+  patch: { title: string; alt_text: string; caption: string; attribution: string; allow_download: boolean; show_on_studio: boolean; display_order: number }
 ): Promise<ActionResult> {
   const supabase = await createClient();
   if (!supabase) return { ok: false, error: "Supabase isn't configured yet." };
@@ -52,14 +52,24 @@ export async function updateMediaAsset(
   const title = patch.title.trim().slice(0, 200);
   const altText = patch.alt_text.trim().slice(0, 300);
   const caption = patch.caption.trim().slice(0, 500);
+  const attribution = patch.attribution.trim().slice(0, 200);
 
   const { error } = await supabase
     .from("media_assets")
-    .update({ title: title || null, alt_text: altText || null, caption: caption || null })
+    .update({
+      title: title || null,
+      alt_text: altText || null,
+      caption: caption || null,
+      attribution: attribution || null,
+      allow_download: patch.allow_download,
+      show_on_studio: patch.show_on_studio,
+      display_order: Number.isFinite(patch.display_order) ? patch.display_order : 0,
+    })
     .eq("id", id);
   if (error) return { ok: false, error: error.message };
 
   revalidatePath("/admin/media");
+  revalidatePath("/ominet-digital");
   return { ok: true };
 }
 

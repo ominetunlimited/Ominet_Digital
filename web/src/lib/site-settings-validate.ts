@@ -16,6 +16,7 @@ export type SiteSettings = {
   homepage: { heroImageUrl: string; heroHeading: string; heroSubheading: string; showRecentWriting: boolean };
   about: { photoUrl: string; tagline: string; intro: string; bio: string };
   ecosystem: { profileVisible: boolean; profileMessage: string; cortexaVisible: boolean; cortexaMessage: string };
+  comments: { requireSignIn: boolean };
 };
 
 export type SectionName = keyof SiteSettings;
@@ -28,6 +29,7 @@ export const SECTION_KEYS: Record<SectionName, string> = {
   homepage: "site_homepage",
   about: "site_about",
   ecosystem: "site_ecosystem",
+  comments: "site_comments",
 };
 
 const DESCRIPTION = "A digital ecosystem for publishing, creativity, professional identity and technology, founded by Omini Nfawa.";
@@ -82,6 +84,8 @@ export const DEFAULT_SETTINGS: SiteSettings = {
     cortexaVisible: false,
     cortexaMessage: "Cortexa Office is being built. Check back soon.",
   },
+  // Matches the behavior before this setting existed — sign-in was required.
+  comments: { requireSignIn: true },
 };
 
 export const PLATFORM_HOSTS: Record<SocialPlatform, string[]> = {
@@ -215,6 +219,11 @@ export function validateEcosystem(input: unknown): Result<SiteSettings["ecosyste
   };
 }
 
+export function validateComments(input: unknown): Result<SiteSettings["comments"]> {
+  const o = (input ?? {}) as Record<string, unknown>;
+  return { ok: true, value: { requireSignIn: Boolean(o.requireSignIn) } };
+}
+
 /** Rows from the table -> full settings, falling back to defaults for anything missing or malformed. */
 export function mergeSettings(rows: { key: string; value: unknown }[]): SiteSettings {
   const by = new Map(rows.map((r) => [r.key, r.value]));
@@ -233,5 +242,6 @@ export function mergeSettings(rows: { key: string; value: unknown }[]): SiteSett
     homepage: pick("homepage", validateHomepage),
     about: pick("about", validateAbout),
     ecosystem: pick("ecosystem", validateEcosystem),
+    comments: pick("comments", validateComments),
   };
 }

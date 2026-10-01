@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import {
   SECTION_KEYS,
   validateAbout,
+  validateComments,
   validateContact,
   validateEcosystem,
   validateFooter,
@@ -26,6 +27,7 @@ const VALIDATORS = {
   homepage: validateHomepage,
   about: validateAbout,
   ecosystem: validateEcosystem,
+  comments: validateComments,
 } as const;
 
 /**

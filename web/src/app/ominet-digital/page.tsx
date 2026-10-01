@@ -1,10 +1,24 @@
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
-import PlaceholderImage from "@/components/PlaceholderImage";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { css } from "@/lib/css";
 import { pageMetadata } from "@/lib/seo";
 import { getSiteSettings } from "@/lib/site-settings";
+import { createClient } from "@/lib/supabase/server";
+
+type StudioItem = { id: string; url: string; kind: string; title: string | null; caption: string | null; attribution: string | null; allow_download: boolean };
+
+async function getStudioGallery(): Promise<StudioItem[]> {
+  const supabase = await createClient();
+  if (!supabase) return [];
+  const { data } = await supabase
+    .from("media_assets")
+    .select("id,url,kind,title,caption,attribution,allow_download")
+    .eq("show_on_studio", true)
+    .order("display_order", { ascending: true })
+    .order("created_at", { ascending: false });
+  return data ?? [];
+}
 
 export const generateMetadata = () => pageMetadata(
   "Studio & Services",
@@ -21,14 +35,8 @@ const services = [
   { title: "Creative Direction", body: "Concept through execution." },
 ];
 
-const projects = [
-  { title: "Delta Towns Documentary", meta: "Film · 2026" },
-  { title: "Continental Review — Rebrand", meta: "Identity · 2025" },
-  { title: "Archive Migration Platform", meta: "Web · 2025" },
-];
-
 export default async function OminetDigitalPage() {
-  const { contact } = await getSiteSettings();
+  const [{ contact }, gallery] = await Promise.all([getSiteSettings(), getStudioGallery()]);
   return (
     <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);")}>
       <Nav />
@@ -59,21 +67,40 @@ export default async function OminetDigitalPage() {
         </div>
       </section>
 
-      <div className="hr" />
-
-      <section style={css("padding:var(--space-8) var(--space-6);")}>
-        <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-4);")}>PROJECTS</div>
-        {/* Example work, not linked pages yet — plain tiles, not clickable, so nothing pretends to lead anywhere. */}
-        <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:var(--space-6);")}>
-          {projects.map((p) => (
-            <div key={p.title}>
-              <div style={css("aspect-ratio:4/3;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-3);")}><PlaceholderImage label="Project" /></div>
-              <div style={css("font-family:var(--font-heading);font-size:18px;")}>{p.title}</div>
-              <div style={css("font-size:12px;opacity:0.55;")}>{p.meta}</div>
+      {gallery.length > 0 && (
+        <>
+          <div className="hr" />
+          <section style={css("padding:var(--space-8) var(--space-6);")}>
+            <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-4);")}>GALLERY</div>
+            <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:var(--space-6);")}>
+              {gallery.map((g) => (
+                <div key={g.id}>
+                  <div style={css("aspect-ratio:4/3;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-3);background:var(--color-neutral-100);")}>
+                    {g.kind === "image" ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={g.url} alt={g.title ?? ""} style={css("width:100%;height:100%;object-fit:cover;display:block;")} />
+                    ) : g.kind === "video" ? (
+                      <video src={g.url} controls controlsList={g.allow_download ? undefined : "nodownload"} style={css("width:100%;height:100%;object-fit:cover;display:block;")} />
+                    ) : (
+                      <div style={css("width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:var(--space-4);")}>
+                        <audio src={g.url} controls controlsList={g.allow_download ? undefined : "nodownload"} style={css("width:100%;")} />
+                      </div>
+                    )}
+                  </div>
+                  {g.title && <div style={css("font-family:var(--font-heading);font-size:18px;")}>{g.title}</div>}
+                  {g.caption && <p style={css("font-size:13px;opacity:0.7;margin:var(--space-1) 0 0;")}>{g.caption}</p>}
+                  <div style={css("display:flex;justify-content:space-between;align-items:center;gap:var(--space-2);margin-top:var(--space-1);")}>
+                    {g.attribution && <span style={css("font-size:12px;opacity:0.55;")}>{g.attribution}</span>}
+                    {g.allow_download && (
+                      <a href={g.url} download className="btn btn-ghost" style={css("font-size:12px;padding:2px 6px;margin-left:auto;")}>Download</a>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </section>
+          </section>
+        </>
+      )}
 
       <div className="hr" />
 

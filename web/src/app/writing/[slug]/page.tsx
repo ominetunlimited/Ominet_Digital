@@ -60,10 +60,12 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
   const currentPath = `/writing/${article.slug}`;
   const moreFromOmini = otherArticles.find((a) => a.slug !== article.slug);
 
-  const bodyParagraphs = article.body ? article.body.split(/\n{2,}/) : [];
-  const visibleParagraphs = unlocked ? bodyParagraphs : bodyParagraphs.slice(0, 1);
+  // Body is rich HTML from the admin editor (RichTextEditor). A locked
+  // (paid, not-yet-unlocked) article shows no body at all rather than a
+  // truncated slice of arbitrary HTML — the dek/excerpt above already
+  // serves as its teaser, and PaywallGate follows immediately after.
 
-  const { identity: siteIdentity } = await getSiteSettings();
+  const { identity: siteIdentity, comments: commentSettings } = await getSiteSettings();
   const isResearch = /research|thesis|academic|paper/i.test(article.category ?? "");
   const personSchema = await getPersonSchema(article.author || "Omini Nfawa");
 
@@ -122,11 +124,9 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
           </div>
         )}
 
-        <div style={css("font-size:18px;line-height:1.8;")}>
-          {visibleParagraphs.map((p, i) => (
-            <p key={i} style={css("margin:0 0 var(--space-5, 1.4em);")}>{p}</p>
-          ))}
-        </div>
+        {unlocked && article.body && (
+          <div className="rte-body" style={css("font-size:18px;line-height:1.8;")} dangerouslySetInnerHTML={{ __html: article.body }} />
+        )}
 
         {((article.attachmentFormat && unlocked && article.id) || article.externalUrl) && (
           <div style={css("margin:var(--space-6) 0;display:flex;gap:var(--space-3);flex-wrap:wrap;")}>
@@ -185,7 +185,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
               currentPath={currentPath}
             />
             <div className="hr" style={css("margin:var(--space-6) 0;")} />
-            <CommentSection target={{ contentId: article.id }} comments={engagement.comments} signedIn={Boolean(user)} currentPath={currentPath} />
+            <CommentSection target={{ contentId: article.id }} comments={engagement.comments} signedIn={Boolean(user)} currentPath={currentPath} requireSignIn={commentSettings.requireSignIn} />
           </>
         )}
       </article>
