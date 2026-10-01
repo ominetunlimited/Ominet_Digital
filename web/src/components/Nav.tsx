@@ -5,9 +5,8 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import SocialLinks from "@/components/SocialLinks";
-import { useSiteSettings } from "@/components/SiteSettingsProvider";
 
-const BASE_LINKS: { href: string; label: string; match: string }[] = [
+const LINKS: { href: string; label: string; match: string }[] = [
   { href: "/omini-nfawa", label: "OMINI NFAWA", match: "/omini-nfawa" },
   { href: "/writing", label: "WRITING", match: "/writing" },
   { href: "/books", label: "BOOKS", match: "/books" },
@@ -21,12 +20,6 @@ const BASE_LINKS: { href: string; label: string; match: string }[] = [
 export default function Nav() {
   const pathname = usePathname();
   const router = useRouter();
-  const { profileVisible, cortexaVisible } = useSiteSettings();
-  // Still-under-development ecosystem pages stay unlinked until switched on
-  // in Admin -> Site settings -> Ecosystem pages (their own coming-soon page
-  // still resolves at the URL — this just stops anything on the site from
-  // pointing there).
-  const LINKS = BASE_LINKS.filter((l) => (l.href === "/profile" ? profileVisible : l.href === "/cortexa-office" ? cortexaVisible : true));
   const [menuOpen, setMenuOpen] = useState(false);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const openButtonRef = useRef<HTMLButtonElement>(null);
@@ -157,8 +150,8 @@ export default function Nav() {
             <div>
               <div style={{ fontSize: 11, fontFamily: "var(--font-body)", letterSpacing: "0.1em", opacity: 0.5, marginBottom: "var(--space-2)" }}>ECOSYSTEM</div>
               <div style={{ display: "grid", gap: "var(--space-3)" }}>
-                {profileVisible && <Link href="/profile" onClick={() => setMenuOpen(false)}>PROFILE</Link>}
-                {cortexaVisible && <Link href="/cortexa-office" onClick={() => setMenuOpen(false)}>Cortexa Office</Link>}
+                <Link href="/profile" onClick={() => setMenuOpen(false)}>PROFILE</Link>
+                <Link href="/cortexa-office" onClick={() => setMenuOpen(false)}>Cortexa Office</Link>
                 <Link href="/store" onClick={() => setMenuOpen(false)}>Store</Link>
               </div>
             </div>

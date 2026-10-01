@@ -39,6 +39,7 @@ export const NAV_GROUPS: NavGroup[] = [
     label: "Website",
     items: [
       { href: "/admin/about-work", label: "About page" },
+      { href: "/admin/ecosystem", label: "Ecosystem apps" },
       { href: "/admin/redirects", label: "Redirects" },
       { href: "/admin/settings", label: "Site settings" },
     ],
