@@ -6,12 +6,16 @@ import Footer from "@/components/Footer";
 import { css } from "@/lib/css";
 import type { Article, Book } from "@/lib/content";
 
+const FILTERS = ["All", "Writing", "Books"] as const;
+type Filter = (typeof FILTERS)[number];
+
 export default function SearchPage() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<{ articles: Article[]; books: Book[] } | null>(null);
   // The query `results` actually answers — lets loading be derived instead
   // of tracked as its own state set synchronously inside the effect.
   const [resultsQuery, setResultsQuery] = useState<string | null>(null);
+  const [filter, setFilter] = useState<Filter>("All");
 
   useEffect(() => {
     const q = query.trim();
@@ -29,8 +33,11 @@ export default function SearchPage() {
 
   const hasQuery = query.trim().length > 0;
   const loading = hasQuery && resultsQuery !== query.trim();
-  const total = (results?.articles.length ?? 0) + (results?.books.length ?? 0);
-  const noResults = hasQuery && !loading && total === 0;
+  const shownArticles = filter === "Books" ? [] : (results?.articles ?? []);
+  const shownBooks = filter === "Writing" ? [] : (results?.books ?? []);
+  const total = shownArticles.length + shownBooks.length;
+  const noResults = hasQuery && !loading && (results?.articles.length ?? 0) + (results?.books.length ?? 0) === 0;
+  const noMatchForFilter = hasQuery && !loading && !noResults && total === 0;
 
   return (
     <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>
@@ -43,11 +50,16 @@ export default function SearchPage() {
       </svg>
 
       <section style={css("padding:var(--space-8) var(--space-6) var(--space-4);")}>
+        <h1 style={css("font-family:var(--font-heading);font-size:28px;margin:0 0 var(--space-4);")}>Search</h1>
         <div style={css("display:flex;gap:var(--space-3);max-width:640px;")}>
+          <label htmlFor="site-search-input" style={css("position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;")}>
+            Search articles and books
+          </label>
           <input
+            id="site-search-input"
             type="search"
             className="input"
-            placeholder="Search articles, books, media…"
+            placeholder="Search articles, books…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             autoFocus
@@ -55,28 +67,37 @@ export default function SearchPage() {
           />
         </div>
         <div style={css("display:flex;gap:var(--space-2);flex-wrap:wrap;margin-top:var(--space-4);")}>
-          <span className="tag tag-accent">All</span>
-          <span className="tag tag-outline">Writing</span>
-          <span className="tag tag-outline">Books</span>
-          <span className="tag tag-outline">Media</span>
-          <span className="tag tag-outline">PROFILE</span>
-          <span className="tag tag-outline">Ominet Digital</span>
+          {FILTERS.map((f) => {
+            const active = f === filter;
+            return (
+              <button
+                key={f}
+                type="button"
+                className={active ? "tag tag-accent" : "tag tag-outline"}
+                style={{ background: active ? undefined : "none", border: active ? "none" : "1px solid var(--color-accent)", font: "inherit", fontSize: 11, cursor: "pointer" }}
+                onClick={() => setFilter(f)}
+                aria-pressed={active}
+              >
+                {f}
+              </button>
+            );
+          })}
         </div>
       </section>
 
       <div className="hr" />
 
-      {hasQuery && !noResults && results && total > 0 && (
+      {hasQuery && !loading && total > 0 && (
         <section style={css("padding:var(--space-6);")}>
           <div style={css("font-size:13px;opacity:0.6;margin-bottom:var(--space-4);")}>{total} result{total === 1 ? "" : "s"} for &ldquo;{query}&rdquo;</div>
           <div style={css("display:grid;gap:var(--space-4);")}>
-            {results.articles.map((a) => (
+            {shownArticles.map((a) => (
               <a key={a.slug} href={`/writing/${a.slug}`} style={css("display:flex;gap:var(--space-4);flex-wrap:wrap;")}>
                 <span className="tag tag-neutral" style={css("flex-shrink:0;")}>{a.category}</span>
                 <div><div style={css("font-family:var(--font-heading);font-size:18px;")}>{a.title}</div><div style={css("font-size:13px;opacity:0.6;")}>{a.date}</div></div>
               </a>
             ))}
-            {results.books.map((b) => (
+            {shownBooks.map((b) => (
               <a key={b.slug} href={`/books/${b.slug}`} style={css("display:flex;gap:var(--space-4);flex-wrap:wrap;")}>
                 <span className="tag tag-neutral" style={css("flex-shrink:0;")}>BOOK</span>
                 <div><div style={css("font-family:var(--font-heading);font-size:18px;")}>{b.title}</div><div style={css("font-size:13px;opacity:0.6;")}>{b.kind} &middot; {b.year}</div></div>
@@ -85,10 +106,14 @@ export default function SearchPage() {
           </div>
         </section>
       )}
-      {noResults && (
+      {(noResults || noMatchForFilter) && (
         <section style={css("padding:var(--space-8) var(--space-6);text-align:center;")}>
-          <div style={css("font-family:var(--font-heading);font-size:22px;margin-bottom:var(--space-2);")}>No results for &ldquo;{query}&rdquo;</div>
-          <p style={css("font-size:14px;opacity:0.6;")}>Try a different word, or browse Writing and Books directly.</p>
+          <div style={css("font-family:var(--font-heading);font-size:22px;margin-bottom:var(--space-2);")}>
+            {noMatchForFilter ? `No ${filter.toLowerCase()} results for “${query}”` : `No results for “${query}”`}
+          </div>
+          <p style={css("font-size:14px;opacity:0.6;")}>
+            {noMatchForFilter ? "Try All, or a different word." : "Try a different word, or browse Writing and Books directly."}
+          </p>
         </section>
       )}
 

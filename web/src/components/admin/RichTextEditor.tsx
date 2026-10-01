@@ -16,6 +16,7 @@ function Btn({ onClick, active, children, title }: { onClick: () => void; active
     <button
       type="button"
       title={title}
+      aria-label={title}
       onMouseDown={(e) => e.preventDefault()} // keep the editor's text selection from collapsing before the command runs
       onClick={onClick}
       className={active ? "btn btn-primary" : "btn btn-secondary"}
@@ -66,6 +67,7 @@ export default function RichTextEditor({ value, onChange, placeholder }: { value
           style={css("width:auto;min-height:0;padding:4px 6px;font-size:13px;")}
           defaultValue="Default"
           title="Font"
+          aria-label="Font"
           onChange={(e) => exec("fontName", e.target.value === "Default" ? "inherit" : e.target.value)}
         >
           {FONTS.map((f) => <option key={f} value={f}>{f}</option>)}
@@ -75,6 +77,7 @@ export default function RichTextEditor({ value, onChange, placeholder }: { value
           style={css("width:auto;min-height:0;padding:4px 6px;font-size:13px;")}
           defaultValue="3"
           title="Size"
+          aria-label="Font size"
           onChange={(e) => exec("fontSize", e.target.value)}
         >
           {SIZES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
@@ -82,6 +85,7 @@ export default function RichTextEditor({ value, onChange, placeholder }: { value
         <input
           type="color"
           title="Text colour"
+          aria-label="Text colour"
           defaultValue="#023337"
           style={css("width:28px;height:28px;padding:0;border:1px solid var(--color-divider);border-radius:var(--radius-sm);cursor:pointer;")}
           onChange={(e) => exec("foreColor", e.target.value)}
@@ -94,12 +98,19 @@ export default function RichTextEditor({ value, onChange, placeholder }: { value
         contentEditable
         spellCheck
         suppressContentEditableWarning
+        role="textbox"
+        aria-multiline="true"
+        aria-label="Body"
         data-placeholder={placeholder}
-        className="rte-body"
-        style={css("min-height:260px;padding:var(--space-3);border:1px solid var(--color-divider);border-radius:0 0 var(--radius-md) var(--radius-md);font-size:16px;line-height:1.7;outline:none;")}
+        className="rte-body rte-editable"
+        style={css("min-height:260px;padding:var(--space-3);border:1px solid var(--color-divider);border-radius:0 0 var(--radius-md) var(--radius-md);font-size:16px;line-height:1.7;")}
         onInput={(e) => onChange(e.currentTarget.innerHTML)}
       />
-      <style>{`.rte-body:empty:before{content:attr(data-placeholder);opacity:0.4;}`}</style>
+      <style>{`
+        .rte-body:empty:before{content:attr(data-placeholder);opacity:0.4;}
+        .rte-editable{outline:none;}
+        .rte-editable:focus-visible{outline:2px solid var(--color-accent);outline-offset:-2px;}
+      `}</style>
     </div>
   );
 }

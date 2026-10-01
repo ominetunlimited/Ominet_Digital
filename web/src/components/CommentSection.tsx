@@ -142,6 +142,7 @@ export default function CommentSection({
           {!signedIn && (
             <input
               className="input"
+              aria-label="Your name"
               placeholder="Your name"
               value={guestName}
               onChange={(e) => setGuestName(e.target.value)}
@@ -151,6 +152,7 @@ export default function CommentSection({
           <textarea
             className="input"
             rows={3}
+            aria-label="Add a comment"
             placeholder="Add a comment…"
             value={body}
             onChange={(e) => setBody(e.target.value)}
