@@ -53,7 +53,7 @@ const DEFAULT_BIO = [
 /** What the site showed before settings existed — nothing changes until an admin edits something. */
 export const DEFAULT_SETTINGS: SiteSettings = {
   identity: { siteName: "Ominet Digital", description: DESCRIPTION },
-  contact: { supportEmail: "ominetmedia@gmail.com", bookingEmail: "ominetmedia@gmail.com", phone: "", whatsapp: "" },
+  contact: { supportEmail: "info@ominetdigital.com.ng", bookingEmail: "ominetmedia@gmail.com", phone: "", whatsapp: "" },
   social: [
     { platform: "facebook", label: "Facebook", url: "https://www.facebook.com/OminetUnlimited", enabled: true },
     { platform: "instagram", label: "Instagram", url: "https://www.instagram.com/ominetunlimited/", enabled: true },

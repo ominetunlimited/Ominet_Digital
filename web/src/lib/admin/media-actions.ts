@@ -41,10 +41,19 @@ export async function uploadMedia(formData: FormData): Promise<ActionResult> {
   return { ok: true, url: urlData.publicUrl };
 }
 
-/** Edits an asset's own metadata (title/alt text/caption/Studio display) — never touches the file itself. */
+/** Edits an asset's own metadata (title/alt text/caption/Studio+Photography display) — never touches the file itself. */
 export async function updateMediaAsset(
   id: string,
-  patch: { title: string; alt_text: string; caption: string; attribution: string; allow_download: boolean; show_on_studio: boolean; display_order: number }
+  patch: {
+    title: string;
+    alt_text: string;
+    caption: string;
+    attribution: string;
+    allow_download: boolean;
+    show_on_studio: boolean;
+    show_on_photography: boolean;
+    display_order: number;
+  }
 ): Promise<ActionResult> {
   const supabase = await createClient();
   if (!supabase) return { ok: false, error: "Supabase isn't configured yet." };
@@ -54,22 +63,29 @@ export async function updateMediaAsset(
   const caption = patch.caption.trim().slice(0, 500);
   const attribution = patch.attribution.trim().slice(0, 200);
 
-  const { error } = await supabase
-    .from("media_assets")
-    .update({
-      title: title || null,
-      alt_text: altText || null,
-      caption: caption || null,
-      attribution: attribution || null,
-      allow_download: patch.allow_download,
-      show_on_studio: patch.show_on_studio,
-      display_order: Number.isFinite(patch.display_order) ? patch.display_order : 0,
-    })
-    .eq("id", id);
+  const row: Record<string, unknown> = {
+    title: title || null,
+    alt_text: altText || null,
+    caption: caption || null,
+    attribution: attribution || null,
+    allow_download: patch.allow_download,
+    show_on_studio: patch.show_on_studio,
+    show_on_photography: patch.show_on_photography,
+    display_order: Number.isFinite(patch.display_order) ? patch.display_order : 0,
+  };
+
+  let { error } = await supabase.from("media_assets").update(row).eq("id", id);
+  // 42703 = undefined column — show_on_photography (0027) may not be
+  // applied to this project yet. Retry without it so the rest still saves.
+  if (error?.code === "42703") {
+    delete row.show_on_photography;
+    ({ error } = await supabase.from("media_assets").update(row).eq("id", id));
+  }
   if (error) return { ok: false, error: error.message };
 
   revalidatePath("/admin/media");
   revalidatePath("/ominet-digital");
+  revalidatePath("/media");
   return { ok: true };
 }
 

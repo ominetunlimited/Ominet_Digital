@@ -421,12 +421,22 @@ export type VideoPost = { slug: string; title: string; videoUrl: string; videoTh
 export async function getMediaPhotos(limit = 8): Promise<MediaImage[]> {
   if (!supabaseConfigured) return [];
   const supabase = await createClient();
-  const { data, error } = await supabase!
+  let { data, error } = await supabase!
     .from("media_assets")
     .select("id,url,title,alt_text,caption")
     .eq("kind", "image")
+    .eq("show_on_photography", true)
+    .order("display_order", { ascending: true })
     .order("created_at", { ascending: false })
     .limit(limit);
+  // 42703 = undefined column — show_on_photography (0027) may not be
+  // applied to this project yet. Until it is, show nothing here rather
+  // than every image in the library (covers, the logo, etc.) — that's
+  // the whole point of the column, so there's no safe fallback query.
+  if (error?.code === "42703") {
+    data = [];
+    error = null;
+  }
   if (error || !data) return [];
   return data.map((r) => ({ id: r.id, url: r.url, title: r.title, altText: r.alt_text, caption: r.caption }));
 }
