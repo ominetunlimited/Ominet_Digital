@@ -416,7 +416,30 @@ export async function getService(slug: string): Promise<Service | undefined> {
 }
 
 export type MediaImage = { id: string; url: string; title: string | null; altText: string | null; caption: string | null };
+export type HeroSlide = { id: string; url: string; altText: string | null; attribution: string | null; attributionUrl: string | null };
 export type VideoPost = { slug: string; title: string; videoUrl: string; videoThumbnailUrl?: string; readMinutes: number | null };
+
+export async function getHeroSlides(limit = 8): Promise<HeroSlide[]> {
+  if (!supabaseConfigured) return [];
+  const supabase = await createClient();
+  let { data, error } = await supabase!
+    .from("media_assets")
+    .select("id,url,alt_text,attribution,attribution_url")
+    .eq("kind", "image")
+    .eq("show_on_hero", true)
+    .order("display_order", { ascending: true })
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  // 42703/PGRST204 = undefined column — show_on_hero/attribution_url (0029)
+  // may not be applied to this project yet. Until then, show nothing here
+  // rather than every image in the library — same reasoning as getMediaPhotos.
+  if (error?.code === "42703" || error?.code === "PGRST204") {
+    data = [];
+    error = null;
+  }
+  if (error || !data) return [];
+  return data.map((r) => ({ id: r.id, url: r.url, altText: r.alt_text, attribution: r.attribution, attributionUrl: r.attribution_url }));
+}
 
 export async function getMediaPhotos(limit = 8): Promise<MediaImage[]> {
   if (!supabaseConfigured) return [];
@@ -429,11 +452,11 @@ export async function getMediaPhotos(limit = 8): Promise<MediaImage[]> {
     .order("display_order", { ascending: true })
     .order("created_at", { ascending: false })
     .limit(limit);
-  // 42703 = undefined column — show_on_photography (0027) may not be
-  // applied to this project yet. Until it is, show nothing here rather
+  // 42703/PGRST204 = undefined column — show_on_photography (0027) may not
+  // be applied to this project yet. Until it is, show nothing here rather
   // than every image in the library (covers, the logo, etc.) — that's
   // the whole point of the column, so there's no safe fallback query.
-  if (error?.code === "42703") {
+  if (error?.code === "42703" || error?.code === "PGRST204") {
     data = [];
     error = null;
   }

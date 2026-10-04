@@ -61,7 +61,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
     { platform: "linkedin", label: "LinkedIn", url: "https://www.linkedin.com/in/ominet", enabled: true },
   ],
   seo: { faviconUrl: "", defaultOgImageUrl: "", googleVerification: "" },
-  footer: { blurb: DESCRIPTION, copyrightName: "Ominet Digital", privacyUrl: "", termsUrl: "" },
+  footer: { blurb: DESCRIPTION, copyrightName: "Ominet Digital", privacyUrl: "/privacy", termsUrl: "" },
   homepage: {
     heroImageUrl: "",
     heroHeading: "Writer. Researcher.\nMedia & Communications Specialist.",

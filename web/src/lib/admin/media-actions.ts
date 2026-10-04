@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { validateDestination } from "@/lib/ad-validate";
 
 export type ActionResult = { ok: true; url?: string } | { ok: false; error: string };
 
@@ -49,9 +50,11 @@ export async function updateMediaAsset(
     alt_text: string;
     caption: string;
     attribution: string;
+    attribution_url: string;
     allow_download: boolean;
     show_on_studio: boolean;
     show_on_photography: boolean;
+    show_on_hero: boolean;
     display_order: number;
   }
 ): Promise<ActionResult> {
@@ -62,22 +65,39 @@ export async function updateMediaAsset(
   const altText = patch.alt_text.trim().slice(0, 300);
   const caption = patch.caption.trim().slice(0, 500);
   const attribution = patch.attribution.trim().slice(0, 200);
+  const attributionUrlText = patch.attribution_url.trim();
+  let attributionUrl: string | null = null;
+  if (attributionUrlText) {
+    const checked = validateDestination(attributionUrlText);
+    if (!checked.ok || checked.url.startsWith("/")) return { ok: false, error: `Attribution link: ${checked.ok ? "enter the full https:// address." : checked.error}` };
+    attributionUrl = checked.url;
+  }
 
   const row: Record<string, unknown> = {
     title: title || null,
     alt_text: altText || null,
     caption: caption || null,
     attribution: attribution || null,
+    attribution_url: attributionUrl,
     allow_download: patch.allow_download,
     show_on_studio: patch.show_on_studio,
     show_on_photography: patch.show_on_photography,
+    show_on_hero: patch.show_on_hero,
     display_order: Number.isFinite(patch.display_order) ? patch.display_order : 0,
   };
 
   let { error } = await supabase.from("media_assets").update(row).eq("id", id);
-  // 42703 = undefined column — show_on_photography (0027) may not be
-  // applied to this project yet. Retry without it so the rest still saves.
-  if (error?.code === "42703") {
+  // PGRST204 = PostgREST couldn't find that column in its schema cache (its
+  // own pre-flight check on a write payload); 42703 is the raw Postgres
+  // "undefined column" error. show_on_photography (0027) or
+  // show_on_hero/attribution_url (0029) may not be applied to this project
+  // yet — retry progressively without them so the rest still saves.
+  if (error?.code === "42703" || error?.code === "PGRST204") {
+    delete row.show_on_hero;
+    delete row.attribution_url;
+    ({ error } = await supabase.from("media_assets").update(row).eq("id", id));
+  }
+  if (error?.code === "42703" || error?.code === "PGRST204") {
     delete row.show_on_photography;
     ({ error } = await supabase.from("media_assets").update(row).eq("id", id));
   }
@@ -86,6 +106,7 @@ export async function updateMediaAsset(
   revalidatePath("/admin/media");
   revalidatePath("/ominet-digital");
   revalidatePath("/media");
+  revalidatePath("/");
   return { ok: true };
 }
 

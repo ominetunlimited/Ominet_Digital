@@ -18,9 +18,11 @@ export type Asset = {
   height: number | null;
   created_at: string;
   attribution: string | null;
+  attribution_url: string | null;
   allow_download: boolean;
   show_on_studio: boolean;
   show_on_photography: boolean;
+  show_on_hero: boolean;
   display_order: number;
 };
 
@@ -49,9 +51,11 @@ function EditPanel({ asset, onClose, onSaved, onDeleted }: { asset: Asset; onClo
   const [alt, setAlt] = useState(asset.alt_text ?? "");
   const [caption, setCaption] = useState(asset.caption ?? "");
   const [attribution, setAttribution] = useState(asset.attribution ?? "");
+  const [attributionUrl, setAttributionUrl] = useState(asset.attribution_url ?? "");
   const [allowDownload, setAllowDownload] = useState(asset.allow_download);
   const [showOnStudio, setShowOnStudio] = useState(asset.show_on_studio);
   const [showOnPhotography, setShowOnPhotography] = useState(asset.show_on_photography);
+  const [showOnHero, setShowOnHero] = useState(asset.show_on_hero);
   const [displayOrder, setDisplayOrder] = useState(asset.display_order);
   const { busy, saved, error, run } = useAdminAction();
   const del = useAdminAction();
@@ -63,9 +67,11 @@ function EditPanel({ asset, onClose, onSaved, onDeleted }: { asset: Asset; onClo
         alt_text: alt,
         caption,
         attribution,
+        attribution_url: attributionUrl,
         allow_download: allowDownload,
         show_on_studio: showOnStudio,
         show_on_photography: showOnPhotography,
+        show_on_hero: showOnHero,
         display_order: displayOrder,
       })
     );
@@ -76,9 +82,11 @@ function EditPanel({ asset, onClose, onSaved, onDeleted }: { asset: Asset; onClo
         alt_text: alt || null,
         caption: caption || null,
         attribution: attribution || null,
+        attribution_url: attributionUrl || null,
         allow_download: allowDownload,
         show_on_studio: showOnStudio,
         show_on_photography: showOnPhotography,
+        show_on_hero: showOnHero,
         display_order: displayOrder,
       });
     }
@@ -140,21 +148,31 @@ function EditPanel({ asset, onClose, onSaved, onDeleted }: { asset: Asset; onClo
               <label>Attribution (optional — e.g. &ldquo;Photo by Omini Nfawa&rdquo;)</label>
               <input className="input" value={attribution} onChange={(e) => setAttribution(e.target.value)} />
             </div>
+            <div className="field">
+              <label>Attribution link (optional — the page you credited, e.g. the photographer&apos;s profile)</label>
+              <input className="input" type="url" placeholder="https://…" value={attributionUrl} onChange={(e) => setAttributionUrl(e.target.value)} />
+            </div>
             <label className="radio">
               <input type="checkbox" checked={showOnStudio} onChange={(e) => setShowOnStudio(e.target.checked)} style={{ position: "static", width: "auto", height: "auto", opacity: 1 }} />
               Show on the Studio page (/ominet-digital)
             </label>
             {asset.kind === "image" && (
-              <label className="radio" style={css("margin-top:var(--space-2);")}>
-                <input type="checkbox" checked={showOnPhotography} onChange={(e) => setShowOnPhotography(e.target.checked)} style={{ position: "static", width: "auto", height: "auto", opacity: 1 }} />
-                Show in Photography (/media)
-              </label>
+              <>
+                <label className="radio" style={css("margin-top:var(--space-2);")}>
+                  <input type="checkbox" checked={showOnPhotography} onChange={(e) => setShowOnPhotography(e.target.checked)} style={{ position: "static", width: "auto", height: "auto", opacity: 1 }} />
+                  Show in Photography (/media)
+                </label>
+                <label className="radio" style={css("margin-top:var(--space-2);")}>
+                  <input type="checkbox" checked={showOnHero} onChange={(e) => setShowOnHero(e.target.checked)} style={{ position: "static", width: "auto", height: "auto", opacity: 1 }} />
+                  Show in the homepage hero slideshow
+                </label>
+              </>
             )}
             <label className="radio" style={css("margin-top:var(--space-2);")}>
               <input type="checkbox" checked={allowDownload} onChange={(e) => setAllowDownload(e.target.checked)} style={{ position: "static", width: "auto", height: "auto", opacity: 1 }} />
               Visitors can download this file
             </label>
-            {(showOnStudio || showOnPhotography) && (
+            {(showOnStudio || showOnPhotography || showOnHero) && (
               <div className="field" style={css("max-width:140px;")}>
                 <label>Order (lower first)</label>
                 <input className="input" type="number" value={displayOrder} onChange={(e) => setDisplayOrder(Number(e.target.value) || 0)} />

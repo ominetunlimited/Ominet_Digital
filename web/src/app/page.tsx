@@ -9,9 +9,10 @@ import NewsletterForm from "@/components/NewsletterForm";
 import SocialLinks from "@/components/SocialLinks";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import ReadMoreExcerpt from "@/components/ReadMoreExcerpt";
+import HeroSlideshow from "@/components/HeroSlideshow";
 import { css } from "@/lib/css";
 import { pageMetadata, SITE_URL, SITE_NAME } from "@/lib/seo";
-import { getFeaturedBook, getArticles } from "@/lib/data";
+import { getFeaturedBook, getArticles, getHeroSlides } from "@/lib/data";
 import { getPersonSchema, getOrganizationSchema, jsonLdGraph, WEBSITE_ID, ORG_ID } from "@/lib/schema";
 import { getSiteSettings } from "@/lib/site-settings";
 
@@ -24,7 +25,13 @@ export const generateMetadata = () => pageMetadata(
 );
 
 export default async function Home() {
-  const [featuredBook, articles, personSchema, { homepage }] = await Promise.all([getFeaturedBook(), getArticles(), getPersonSchema(), getSiteSettings()]);
+  const [featuredBook, articles, personSchema, { homepage }, heroSlides] = await Promise.all([
+    getFeaturedBook(),
+    getArticles(),
+    getPersonSchema(),
+    getSiteSettings(),
+    getHeroSlides(),
+  ]);
   // A staff pick (Content admin -> Featured) wins; otherwise the newest
   // published piece, same as before.
   const latestArticle = articles.find((a) => a.featured) ?? articles[0];
@@ -76,7 +83,7 @@ export default async function Home() {
             </div>
           </div>
           <div style={css("flex:1 1 380px;position:relative;min-height:320px;")}>
-            <Image src={homepage.heroImageUrl || "/images/hero-home.jpg"} alt="" fill sizes="(max-width: 900px) 100vw, 640px" style={{ objectFit: "cover" }} priority />
+            <HeroSlideshow slides={heroSlides} fallbackImageUrl={homepage.heroImageUrl} />
           </div>
         </div>
       </section>
