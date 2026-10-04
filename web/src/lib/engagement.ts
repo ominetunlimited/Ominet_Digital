@@ -16,6 +16,23 @@ export type Comment = {
   status: CommentStatus;
 };
 
+export type Review = {
+  id: string;
+  rating: number;
+  body: string | null;
+  createdAt: string;
+  authorName: string;
+  isOwn: boolean;
+  status: CommentStatus;
+};
+
+export type ReviewSummary = {
+  average: number;
+  count: number;
+  reviews: Review[];
+  myReview: Review | null;
+};
+
 export type Engagement = {
   likeCount: number;
   likedByMe: boolean;
@@ -23,6 +40,7 @@ export type Engagement = {
 };
 
 const EMPTY: Engagement = { likeCount: 0, likedByMe: false, comments: [] };
+const EMPTY_REVIEWS: ReviewSummary = { average: 0, count: 0, reviews: [], myReview: null };
 
 /** profiles.display_name defaults to the reader's email — never show that
  *  raw in a public comment; show just the part before @ instead. */
@@ -97,4 +115,60 @@ export async function getEngagement(target: Target): Promise<Engagement> {
     likedByMe: Boolean(likedRes.data),
     comments,
   };
+}
+
+export async function getReviewSummary(target: Target): Promise<ReviewSummary> {
+  if (!supabaseConfigured) return EMPTY_REVIEWS;
+  const supabase = await createClient();
+  if (!supabase) return EMPTY_REVIEWS;
+
+  const col = target.contentId ? "content_id" : "book_id";
+  const val = target.contentId ?? target.bookId;
+  if (!val) return EMPTY_REVIEWS;
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const anonKey = user ? undefined : await readAnonKey();
+
+  const { data, error } = await supabase
+    .from("reviews")
+    .select("id,rating,body,created_at,user_id,anon_key,guest_name,status,profiles!reviews_user_id_fkey(display_name)")
+    .eq(col, val)
+    .neq("status", "deleted")
+    .order("created_at", { ascending: false });
+  // reviews (0032) may not be applied to this project yet.
+  if (error) return EMPTY_REVIEWS;
+
+  type Row = {
+    id: string;
+    rating: number;
+    body: string | null;
+    created_at: string;
+    user_id: string | null;
+    anon_key: string | null;
+    guest_name: string | null;
+    status: CommentStatus;
+    profiles: { display_name: string | null } | { display_name: string | null }[] | null;
+  };
+
+  const rows = (data ?? []) as unknown as Row[];
+  const reviews: Review[] = rows.map((r) => {
+    const profile = Array.isArray(r.profiles) ? r.profiles[0] : r.profiles;
+    return {
+      id: r.id,
+      rating: r.rating,
+      body: r.body,
+      createdAt: r.created_at,
+      authorName: r.user_id ? displayName(profile?.display_name) : (r.guest_name?.trim() || "Guest"),
+      isOwn: user ? user.id === r.user_id : Boolean(anonKey) && r.anon_key === anonKey,
+      status: r.status,
+    };
+  });
+
+  const approved = reviews.filter((r) => r.status === "approved");
+  const average = approved.length ? approved.reduce((sum, r) => sum + r.rating, 0) / approved.length : 0;
+  const myReview = reviews.find((r) => r.isOwn) ?? null;
+
+  return { average, count: approved.length, reviews: approved, myReview };
 }

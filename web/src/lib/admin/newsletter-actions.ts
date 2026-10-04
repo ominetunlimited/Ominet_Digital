@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { sendNewsletterBatch, mailgunConfigured } from "@/lib/mailgun";
+import { sendNewsletterBatch, isMailgunConfigured } from "@/lib/mailgun";
 
 export type ActionResult = { ok: true; message?: string } | { ok: false; error: string };
 
@@ -25,7 +25,7 @@ export async function sendNewsletterTest(subject: string, html: string): Promise
   if (!check.ok) return check;
   if (!check.user?.email) return { ok: false, error: "Your account has no email to send the test to." };
   if (!subject.trim() || !html.trim()) return { ok: false, error: "Write a subject and a body first." };
-  if (!mailgunConfigured) return { ok: false, error: "Mailgun isn't configured yet — set MAILGUN_API_KEY and MAILGUN_DOMAIN." };
+  if (!(await isMailgunConfigured())) return { ok: false, error: "Mailgun isn't configured yet — set it up above." };
 
   const result = await sendNewsletterBatch(`[Test] ${subject}`, html, [{ email: check.user.email, unsubscribeToken: "test" }]);
   if (!result.ok) return result;
@@ -38,7 +38,7 @@ export async function sendNewsletterCampaign(subject: string, html: string): Pro
   if (!check.ok) return check;
   const subjectTrimmed = subject.trim();
   if (!subjectTrimmed || !html.trim()) return { ok: false, error: "Write a subject and a body first." };
-  if (!mailgunConfigured) return { ok: false, error: "Mailgun isn't configured yet — set MAILGUN_API_KEY and MAILGUN_DOMAIN." };
+  if (!(await isMailgunConfigured())) return { ok: false, error: "Mailgun isn't configured yet — set it up above." };
 
   const { data: subscribers, error: fetchError } = await check.supabase
     .from("newsletter_subscribers")

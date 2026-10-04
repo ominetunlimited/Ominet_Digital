@@ -10,9 +10,10 @@ import SocialLinks from "@/components/SocialLinks";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import ReadMoreExcerpt from "@/components/ReadMoreExcerpt";
 import HeroSlideshow from "@/components/HeroSlideshow";
+import PartnersStrip from "@/components/PartnersStrip";
 import { css } from "@/lib/css";
 import { pageMetadata, SITE_URL, SITE_NAME } from "@/lib/seo";
-import { getFeaturedBook, getArticles, getHeroSlides } from "@/lib/data";
+import { getFeaturedBook, getArticles, getHeroSlides, getPartnerApps } from "@/lib/data";
 import { getPersonSchema, getOrganizationSchema, jsonLdGraph, WEBSITE_ID, ORG_ID } from "@/lib/schema";
 import { getSiteSettings } from "@/lib/site-settings";
 
@@ -25,12 +26,13 @@ export const generateMetadata = () => pageMetadata(
 );
 
 export default async function Home() {
-  const [featuredBook, articles, personSchema, { homepage }, heroSlides] = await Promise.all([
+  const [featuredBook, articles, personSchema, { homepage }, heroSlides, partnerApps] = await Promise.all([
     getFeaturedBook(),
     getArticles(),
     getPersonSchema(),
     getSiteSettings(),
     getHeroSlides(),
+    getPartnerApps(),
   ]);
   // A staff pick (Content admin -> Featured) wins; otherwise the newest
   // published piece, same as before.
@@ -87,6 +89,8 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      <PartnersStrip apps={partnerApps} />
 
       <AdSlot slotKey="home_top" />
 

@@ -18,9 +18,10 @@ import { SITE_URL } from "@/lib/seo";
 import { ogImage } from "@/lib/og-image";
 import { getSiteSettings } from "@/lib/site-settings";
 import { hasEntitlement, getCurrentUser } from "@/lib/entitlements";
-import { getEngagement } from "@/lib/engagement";
+import { getEngagement, getReviewSummary } from "@/lib/engagement";
 import LikeButton from "@/components/LikeButton";
 import CommentSection from "@/components/CommentSection";
+import ReviewSection from "@/components/ReviewSection";
 import ReadMoreExcerpt from "@/components/ReadMoreExcerpt";
 import RelatedSection from "@/components/RelatedSection";
 
@@ -50,10 +51,11 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
   const article = await getArticle(slug);
   if (!article) notFound();
 
-  const [unlocked, user, engagement, featuredBook, otherArticles] = await Promise.all([
+  const [unlocked, user, engagement, reviewSummary, featuredBook, otherArticles] = await Promise.all([
     article.access !== "paid" ? Promise.resolve(true) : hasEntitlement(article.id),
     getCurrentUser(),
     article.id ? getEngagement({ contentId: article.id }) : Promise.resolve({ likeCount: 0, likedByMe: false, comments: [] }),
+    article.id ? getReviewSummary({ contentId: article.id }) : Promise.resolve({ average: 0, count: 0, reviews: [], myReview: null }),
     getFeaturedBook(),
     getArticles(),
   ]);
@@ -185,6 +187,19 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
               currentPath={currentPath}
             />
             <div className="hr" style={css("margin:var(--space-6) 0;")} />
+            <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>RATINGS &amp; REVIEWS</div>
+            <ReviewSection
+              target={{ contentId: article.id }}
+              average={reviewSummary.average}
+              count={reviewSummary.count}
+              reviews={reviewSummary.reviews}
+              myReview={reviewSummary.myReview}
+              signedIn={Boolean(user)}
+              currentPath={currentPath}
+              requireSignIn={commentSettings.requireSignIn}
+            />
+            <div className="hr" style={css("margin:var(--space-6) 0;")} />
+            <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>COMMENTS</div>
             <CommentSection target={{ contentId: article.id }} comments={engagement.comments} signedIn={Boolean(user)} currentPath={currentPath} requireSignIn={commentSettings.requireSignIn} />
           </>
         )}

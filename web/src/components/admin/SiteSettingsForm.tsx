@@ -5,6 +5,7 @@ import { css } from "@/lib/css";
 import { useAdminAction } from "@/lib/admin/useAdminAction";
 import SaveButton from "@/components/admin/SaveButton";
 import ImageUploadField from "@/components/admin/ImageUploadField";
+import RichTextEditor from "@/components/admin/RichTextEditor";
 import { saveSiteSettings } from "@/lib/admin/site-settings-actions";
 import type { SectionName, SiteSettings } from "@/lib/site-settings-validate";
 
@@ -45,6 +46,7 @@ export default function SiteSettingsForm({ initial }: { initial: SiteSettings })
   const [about, setAbout] = useState(initial.about);
   const [ecosystem, setEcosystem] = useState(initial.ecosystem);
   const [comments, setComments] = useState(initial.comments);
+  const [legal, setLegal] = useState(initial.legal);
 
   return (
     <div style={css("max-width:720px;")}>
@@ -210,6 +212,17 @@ export default function SiteSettingsForm({ initial }: { initial: SiteSettings })
             </Field>
           </div>
         </div>
+      </Section>
+
+      <Section
+        title="Privacy policy text"
+        hint="The body of the /privacy page. Leave empty to keep the built-in policy text that's live today; write something here and it replaces it entirely."
+        section="legal"
+        data={legal}
+      >
+        <Field label="Privacy policy content">
+          <RichTextEditor value={legal.privacyHtml} onChange={(html) => setLegal({ ...legal, privacyHtml: html })} placeholder="Leave blank to use the built-in policy, or write your own here…" />
+        </Field>
       </Section>
     </div>
   );

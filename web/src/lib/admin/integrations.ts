@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { SITE_URL } from "@/lib/seo";
+import { isMailgunConfigured } from "@/lib/mailgun";
 
 export type IntegrationStatus = {
   name: string;
@@ -59,14 +60,14 @@ export async function getIntegrationStatus(): Promise<IntegrationStatus[]> {
     const { count } = await supabase.from("newsletter_subscribers").select("id", { count: "exact", head: true });
     subscribers = count ?? null;
   }
+  const mailgunReady = await isMailgunConfigured();
   out.push({
-    name: "Newsletter",
-    state: "warn",
-    summary: subscribers === null ? "Subscribers are stored here" : `${subscribers} subscriber${subscribers === 1 ? "" : "s"} stored here`,
-    detail: "No email provider is connected, so no emails are sent. Export the list from Admin → Newsletter to use it elsewhere.",
+    name: "Newsletter (Mailgun)",
+    state: mailgunReady ? "ok" : "warn",
+    summary: `${subscribers === null ? "Subscribers stored here" : `${subscribers} subscriber${subscribers === 1 ? "" : "s"}`} · ${mailgunReady ? "sending is connected" : "sending not set up"}`,
+    detail: mailgunReady ? "Manage in Admin → Newsletter." : "Set up Mailgun in Admin → Newsletter — no Vercel access needed.",
   });
 
-  out.push({ name: "Email sending", state: "off", summary: "No provider connected", detail: "Booking and purchase receipts are shown on screen; nothing is emailed yet." });
   out.push({ name: "Site address", state: SITE_URL.startsWith("https://") ? "ok" : "warn", summary: SITE_URL, detail: "Set by NEXT_PUBLIC_SITE_URL in Vercel." });
 
   return out;

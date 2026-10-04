@@ -4,7 +4,7 @@ import { useState } from "react";
 import { css } from "@/lib/css";
 import { saveEcosystemApp, removeEcosystemApp, listEcosystemApps, type EcosystemApp } from "@/lib/admin/ecosystem-apps-actions";
 
-const BLANK = { id: undefined as string | undefined, title: "", description: "", url: "", visibility: "private" as "private" | "public" };
+const BLANK = { id: undefined as string | undefined, title: "", description: "", url: "", imageUrl: "", visibility: "private" as "private" | "public" };
 
 export default function EcosystemAppsManager({ initial }: { initial: EcosystemApp[] }) {
   const [apps, setApps] = useState(initial);
@@ -42,17 +42,25 @@ export default function EcosystemAppsManager({ initial }: { initial: EcosystemAp
         {apps.length === 0 && <p style={css("font-size:13px;opacity:0.6;")}>Nothing added yet.</p>}
         {apps.map((a) => (
           <div key={a.id} className="card" style={css("gap:var(--space-2);")}>
-            <div style={css("display:flex;justify-content:space-between;gap:var(--space-2);flex-wrap:wrap;align-items:center;")}>
-              <strong>{a.title}</strong>
-              <span className={a.visibility === "public" ? "tag tag-accent" : "tag tag-outline"}>{a.visibility === "public" ? "PUBLIC" : "PRIVATE"}</span>
+            <div style={css("display:flex;gap:var(--space-3);align-items:flex-start;")}>
+              {a.imageUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={a.imageUrl} alt="" style={css("width:40px;height:40px;object-fit:contain;flex:none;")} />
+              )}
+              <div style={css("flex:1;min-width:0;")}>
+                <div style={css("display:flex;justify-content:space-between;gap:var(--space-2);flex-wrap:wrap;align-items:center;")}>
+                  <strong>{a.title}</strong>
+                  <span className={a.visibility === "public" ? "tag tag-accent" : "tag tag-outline"}>{a.visibility === "public" ? "PUBLIC" : "PRIVATE"}</span>
+                </div>
+                {a.description && <p style={css("font-size:13px;opacity:0.7;margin:0;")}>{a.description}</p>}
+                <a href={a.url} target="_blank" rel="noopener noreferrer" style={css("font-size:13px;")}>{a.url}</a>
+              </div>
             </div>
-            {a.description && <p style={css("font-size:13px;opacity:0.7;margin:0;")}>{a.description}</p>}
-            <a href={a.url} target="_blank" rel="noopener noreferrer" style={css("font-size:13px;")}>{a.url}</a>
             <div style={css("display:flex;gap:var(--space-2);flex-wrap:wrap;")}>
               <button
                 type="button"
                 className="btn btn-secondary"
-                onClick={() => setForm({ id: a.id, title: a.title, description: a.description, url: a.url, visibility: a.visibility })}
+                onClick={() => setForm({ id: a.id, title: a.title, description: a.description, url: a.url, imageUrl: a.imageUrl, visibility: a.visibility })}
               >
                 Edit
               </button>
@@ -74,6 +82,11 @@ export default function EcosystemAppsManager({ initial }: { initial: EcosystemAp
       <div className="field" style={css("margin-bottom:var(--space-4);")}>
         <label>URL</label>
         <input className="input" value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} placeholder="https://…" />
+      </div>
+      <div className="field" style={css("margin-bottom:var(--space-4);")}>
+        <label>Logo / image URL (optional)</label>
+        <input className="input" type="url" value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} placeholder="https://…" />
+        <p style={css("font-size:12px;opacity:0.6;margin:4px 0 0;")}>Upload the logo in Media Library first, then paste its URL here (use the &ldquo;Copy URL&rdquo; button there).</p>
       </div>
       <label className="radio" style={css("margin-bottom:var(--space-4);")}>
         <input

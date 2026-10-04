@@ -1,9 +1,11 @@
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import ComingSoon from "@/components/ComingSoon";
+import PartnersStrip from "@/components/PartnersStrip";
 import { css } from "@/lib/css";
 import { pageMetadata } from "@/lib/seo";
 import { getSiteSettings } from "@/lib/site-settings";
+import { getPartnerApps } from "@/lib/data";
 
 export async function generateMetadata() {
   const meta = await pageMetadata(
@@ -18,7 +20,7 @@ export async function generateMetadata() {
 const CORTEXA_URL = "https://cortexa-office.vercel.app/";
 
 export default async function CortexaOfficePage() {
-  const { ecosystem } = await getSiteSettings();
+  const [{ ecosystem }, partnerApps] = await Promise.all([getSiteSettings(), getPartnerApps()]);
   if (!ecosystem.cortexaVisible) return <ComingSoon label="CORTEXA OFFICE" message={ecosystem.cortexaMessage} />;
   return (
     <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>
@@ -49,6 +51,7 @@ export default async function CortexaOfficePage() {
       </section>
 
       <div className="hr" />
+      <PartnersStrip apps={partnerApps} />
       <Footer />
     </div>
   );

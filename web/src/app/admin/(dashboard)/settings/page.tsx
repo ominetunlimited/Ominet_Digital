@@ -38,7 +38,8 @@ export default async function SiteSettingsPage() {
 
       <h2 style={css("font-family:var(--font-heading);font-size:20px;margin:var(--space-8) 0 var(--space-2);")}>Connected services</h2>
       <p style={css("font-size:13px;opacity:0.6;margin:0 0 var(--space-4);max-width:64ch;")}>
-        Read-only status. To change a credential, update it in Vercel → Settings → Environment Variables and redeploy.
+        Read-only status. Newsletter sending (Mailgun) is set up in Admin → Newsletter; everything else here is a Vercel environment variable — update it in
+        Vercel → Settings → Environment Variables and redeploy.
       </p>
       <div style={css("display:grid;gap:var(--space-2);max-width:720px;")}>
         {integrations.map((i) => (

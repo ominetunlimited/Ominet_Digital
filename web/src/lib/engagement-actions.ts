@@ -78,6 +78,49 @@ export async function postComment(target: Target, body: string, path: string, gu
   return { ok: true, message: "Posted — awaiting moderation before it's visible to others." };
 }
 
+export async function postReview(target: Target, rating: number, body: string, path: string, guestName?: string): Promise<ActionResult & { message?: string }> {
+  const supabase = await createClient();
+  if (!supabase) return { ok: false, error: "Sign-in isn't configured yet." };
+  const r = Math.round(rating);
+  if (!Number.isFinite(r) || r < 1 || r > 5) return { ok: false, error: "Pick a rating from 1 to 5 stars." };
+  const trimmed = body.trim();
+  if (trimmed.length > 2000) return { ok: false, error: "That's a bit long — keep it under 2000 characters." };
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const row: Record<string, unknown> = { rating: r, body: trimmed || null, ...targetColumn(target) };
+  if (user) {
+    row.user_id = user.id;
+  } else {
+    const { comments } = await getSiteSettings();
+    if (comments.requireSignIn) return { ok: false, error: "Sign in first to leave a review." };
+    const name = (guestName ?? "").trim().slice(0, 60);
+    if (!name) return { ok: false, error: "Enter a name first." };
+    row.anon_key = await getOrCreateAnonKey();
+    row.guest_name = name;
+  }
+
+  const { error } = await supabase.from("reviews").insert(row);
+  if (error) {
+    if (error.code === "23505") return { ok: false, error: "You've already reviewed this." };
+    return { ok: false, error: error.message };
+  }
+  revalidatePath(path);
+  queueAlert("comment", "New review awaiting moderation", [`On: ${path}`, `${r}★`], { link: adminLink("/admin/comments") });
+  return { ok: true, message: "Posted — awaiting moderation before it's visible to others." };
+}
+
+export async function deleteReview(reviewId: string, path: string): Promise<ActionResult> {
+  const supabase = await createClient();
+  if (!supabase) return { ok: false, error: "Sign-in isn't configured yet." };
+  const { error } = await supabase.from("reviews").delete().eq("id", reviewId);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath(path);
+  return { ok: true };
+}
+
 export async function deleteComment(commentId: string, path: string): Promise<ActionResult> {
   const supabase = await createClient();
   if (!supabase) return { ok: false, error: "Sign-in isn't configured yet." };

@@ -19,9 +19,10 @@ import BookAccess from "@/components/BookAccess";
 import AdSlot from "@/components/AdSlot";
 import RelatedSection from "@/components/RelatedSection";
 import { truncate } from "@/lib/text";
-import { getEngagement } from "@/lib/engagement";
+import { getEngagement, getReviewSummary } from "@/lib/engagement";
 import LikeButton from "@/components/LikeButton";
 import CommentSection from "@/components/CommentSection";
+import ReviewSection from "@/components/ReviewSection";
 
 export const revalidate = 60;
 
@@ -58,9 +59,10 @@ export default async function BookDetailPage({ params }: { params: Promise<{ slu
   if (!book) notFound();
 
   const currentPath = `/books/${book.slug}`;
-  const [user, engagement, delivery, owned] = await Promise.all([
+  const [user, engagement, reviewSummary, delivery, owned] = await Promise.all([
     getCurrentUser(),
     book.id ? getEngagement({ bookId: book.id }) : Promise.resolve({ likeCount: 0, likedByMe: false, comments: [] }),
+    book.id ? getReviewSummary({ bookId: book.id }) : Promise.resolve({ average: 0, count: 0, reviews: [], myReview: null }),
     book.id ? getBookDelivery(book.id) : Promise.resolve(null),
     hasBookEntitlement(book.id),
   ]);
@@ -175,6 +177,19 @@ export default async function BookDetailPage({ params }: { params: Promise<{ slu
               currentPath={currentPath}
             />
             <div className="hr" style={css("margin:var(--space-6) 0;")} />
+            <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>RATINGS &amp; REVIEWS</div>
+            <ReviewSection
+              target={{ bookId: book.id }}
+              average={reviewSummary.average}
+              count={reviewSummary.count}
+              reviews={reviewSummary.reviews}
+              myReview={reviewSummary.myReview}
+              signedIn={Boolean(user)}
+              currentPath={currentPath}
+              requireSignIn={commentSettings.requireSignIn}
+            />
+            <div className="hr" style={css("margin:var(--space-6) 0;")} />
+            <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>COMMENTS</div>
             <CommentSection target={{ bookId: book.id }} comments={engagement.comments} signedIn={Boolean(user)} currentPath={currentPath} requireSignIn={commentSettings.requireSignIn} />
           </>
         )}

@@ -417,6 +417,35 @@ export async function getService(slug: string): Promise<Service | undefined> {
 
 export type MediaImage = { id: string; url: string; title: string | null; altText: string | null; caption: string | null };
 export type HeroSlide = { id: string; url: string; altText: string | null; attribution: string | null; attributionUrl: string | null };
+export type PartnerApp = { id: string; title: string; description: string; url: string; imageUrl: string | null };
+
+/** Public (visibility='public') ecosystem apps, for the Partners & Services strip (homepage, Profile, Cortexa Office). */
+export async function getPartnerApps(limit = 12): Promise<PartnerApp[]> {
+  if (!supabaseConfigured) return [];
+  const supabase = await createClient();
+  let { data, error } = await supabase!
+    .from("ecosystem_apps")
+    .select("id,title,description,url,image_url")
+    .eq("visibility", "public")
+    .order("display_order", { ascending: true })
+    .order("created_at", { ascending: true })
+    .limit(limit);
+  // 42703/PGRST204 = undefined column — image_url (0030) may not be applied
+  // to this project yet. Retry without it so the strip still shows entries.
+  if (error?.code === "42703" || error?.code === "PGRST204") {
+    const fallback = await supabase!
+      .from("ecosystem_apps")
+      .select("id,title,description,url")
+      .eq("visibility", "public")
+      .order("display_order", { ascending: true })
+      .order("created_at", { ascending: true })
+      .limit(limit);
+    data = (fallback.data ?? []).map((r) => ({ ...r, image_url: null }));
+    error = fallback.error;
+  }
+  if (error || !data) return [];
+  return data.map((r) => ({ id: r.id, title: r.title, description: r.description ?? "", url: r.url, imageUrl: r.image_url }));
+}
 export type VideoPost = { slug: string; title: string; videoUrl: string; videoThumbnailUrl?: string; readMinutes: number | null };
 
 export async function getHeroSlides(limit = 8): Promise<HeroSlide[]> {

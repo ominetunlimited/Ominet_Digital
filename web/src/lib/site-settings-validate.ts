@@ -17,6 +17,7 @@ export type SiteSettings = {
   about: { photoUrl: string; tagline: string; intro: string; bio: string };
   ecosystem: { profileVisible: boolean; profileMessage: string; cortexaVisible: boolean; cortexaMessage: string };
   comments: { requireSignIn: boolean };
+  legal: { privacyHtml: string };
 };
 
 export type SectionName = keyof SiteSettings;
@@ -30,6 +31,7 @@ export const SECTION_KEYS: Record<SectionName, string> = {
   about: "site_about",
   ecosystem: "site_ecosystem",
   comments: "site_comments",
+  legal: "site_legal",
 };
 
 const DESCRIPTION = "A digital ecosystem for publishing, creativity, professional identity and technology, founded by Omini Nfawa.";
@@ -86,6 +88,9 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   },
   // Matches the behavior before this setting existed — sign-in was required.
   comments: { requireSignIn: true },
+  // Empty = /privacy shows its own built-in text (what's live today).
+  // Once an admin saves something here, that replaces it entirely.
+  legal: { privacyHtml: "" },
 };
 
 export const PLATFORM_HOSTS: Record<SocialPlatform, string[]> = {
@@ -224,6 +229,11 @@ export function validateComments(input: unknown): Result<SiteSettings["comments"
   return { ok: true, value: { requireSignIn: Boolean(o.requireSignIn) } };
 }
 
+export function validateLegal(input: unknown): Result<SiteSettings["legal"]> {
+  const o = (input ?? {}) as Record<string, unknown>;
+  return { ok: true, value: { privacyHtml: str(o.privacyHtml, 50000) } };
+}
+
 /** Rows from the table -> full settings, falling back to defaults for anything missing or malformed. */
 export function mergeSettings(rows: { key: string; value: unknown }[]): SiteSettings {
   const by = new Map(rows.map((r) => [r.key, r.value]));
@@ -243,5 +253,6 @@ export function mergeSettings(rows: { key: string; value: unknown }[]): SiteSett
     about: pick("about", validateAbout),
     ecosystem: pick("ecosystem", validateEcosystem),
     comments: pick("comments", validateComments),
+    legal: pick("legal", validateLegal),
   };
 }

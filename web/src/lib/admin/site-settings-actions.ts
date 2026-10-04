@@ -11,6 +11,7 @@ import {
   validateFooter,
   validateHomepage,
   validateIdentity,
+  validateLegal,
   validateSeo,
   validateSocial,
   type SectionName,
@@ -28,6 +29,7 @@ const VALIDATORS = {
   about: validateAbout,
   ecosystem: validateEcosystem,
   comments: validateComments,
+  legal: validateLegal,
 } as const;
 
 /**

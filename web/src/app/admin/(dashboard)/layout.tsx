@@ -8,13 +8,16 @@ export default async function AdminDashboardLayout({ children }: { children: Rea
     data: { user },
   } = (await supabase?.auth.getUser()) ?? { data: { user: null } };
 
-  let badges = { comments: 0, bookings: 0 };
+  let badges = { comments: 0, bookings: 0, reviews: 0 };
   if (supabase) {
-    const [comments, bookings] = await Promise.all([
+    const [comments, bookings, reviews] = await Promise.all([
       supabase.from("comments").select("id", { count: "exact", head: true }).eq("status", "pending"),
       supabase.from("bookings").select("id", { count: "exact", head: true }).eq("status", "pending"),
+      supabase.from("reviews").select("id", { count: "exact", head: true }).eq("status", "pending"),
     ]);
-    badges = { comments: comments.count ?? 0, bookings: bookings.count ?? 0 };
+    // reviews (0032) may not be applied to this project yet — a missing
+    // table ("42P01") must never break every other admin page's layout.
+    badges = { comments: comments.count ?? 0, bookings: bookings.count ?? 0, reviews: reviews.error ? 0 : (reviews.count ?? 0) };
   }
 
   return (

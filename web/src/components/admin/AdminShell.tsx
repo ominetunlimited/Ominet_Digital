@@ -15,7 +15,7 @@ const HamburgerIcon = () => (
   </svg>
 );
 
-export type NavBadges = { comments: number; bookings: number };
+export type NavBadges = { comments: number; bookings: number; reviews: number };
 
 /**
  * The Admin Centre's layout shell: a sidebar on desktop, an off-canvas drawer

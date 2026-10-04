@@ -3,7 +3,7 @@
 // nothing here is copied visually). Only routes that already exist and are
 // wired are listed; there is no entry for a feature that isn't built.
 
-export type NavItem = { href: string; label: string; badgeKey?: "comments" | "bookings" };
+export type NavItem = { href: string; label: string; badgeKey?: "comments" | "bookings" | "reviews" };
 export type NavGroup = { label: string; items: NavItem[] };
 
 export const NAV_GROUPS: NavGroup[] = [
@@ -22,6 +22,7 @@ export const NAV_GROUPS: NavGroup[] = [
     label: "Engage",
     items: [
       { href: "/admin/comments", label: "Comments", badgeKey: "comments" },
+      { href: "/admin/reviews", label: "Reviews", badgeKey: "reviews" },
       { href: "/admin/bookings", label: "Bookings", badgeKey: "bookings" },
     ],
   },

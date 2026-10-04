@@ -2,6 +2,7 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import { css } from "@/lib/css";
 import { pageMetadata } from "@/lib/seo";
+import { getSiteSettings } from "@/lib/site-settings";
 
 export const generateMetadata = () => pageMetadata(
   "Privacy Policy",
@@ -55,7 +56,24 @@ function Site() {
   return <a href={SITE}>www.ominetdigital.com.ng</a>;
 }
 
-export default function PrivacyPage() {
+export default async function PrivacyPage() {
+  const { legal } = await getSiteSettings();
+  const custom = legal.privacyHtml.trim();
+
+  if (custom) {
+    return (
+      <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);")}>
+        <Nav />
+        <section style={css("padding:var(--space-8) var(--space-6) var(--space-4);")}>
+          <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>LEGAL</div>
+          <h1 style={css("font-family:var(--font-heading);font-size:clamp(32px,4.5vw,44px);margin:0 0 var(--space-6);")}>Privacy Policy</h1>
+          <div className="rte-body" style={css("max-width:70ch;font-size:15px;line-height:1.75;")} dangerouslySetInnerHTML={{ __html: custom }} />
+        </section>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);")}>
       <Nav />
