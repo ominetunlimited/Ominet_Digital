@@ -118,6 +118,7 @@ export type AnalyticsSummary = {
   contentViews: { section: string; views: number }[];
   engagement: { likes: number; comments: number; shares: number; sharesByPlatform: { platform: string; count: number }[] };
   purchases: { orderCount: number; downloads: number };
+  downloads: { totalDownloads: number; topFiles: { fileName: string; count: number }[] };
   purchaseLinkClicks: { platform: string; clicks: number }[];
   commerce: { statusCounts: Record<string, number>; revenueCents: number; orderCount: number; averageOrderValueCents: number; currency: string };
   search: { topTerms: { term: string; count: number }[]; zeroResultCount: number; totalSearches: number };
@@ -135,6 +136,7 @@ export async function getAnalyticsSummary(since: Date, until: Date): Promise<Ana
     contentViews: [],
     engagement: { likes: 0, comments: 0, shares: 0, sharesByPlatform: [] },
     purchases: { orderCount: 0, downloads: 0 },
+    downloads: { totalDownloads: 0, topFiles: [] },
     purchaseLinkClicks: [],
     commerce: { statusCounts: {}, revenueCents: 0, orderCount: 0, averageOrderValueCents: 0, currency: "NGN" },
     search: { topTerms: [], zeroResultCount: 0, totalSearches: 0 },
@@ -192,6 +194,15 @@ export async function getAnalyticsSummary(since: Date, until: Date): Promise<Ana
 
   const downloads = events.filter((e) => e.event_type === "download");
   const downloadCount = downloads.length;
+  // Group by the downloaded item (its public path) + format, which is what the
+  // download events actually carry — no filename is stored, and nothing here
+  // is invented.
+  const downloadFileCounts = new Map<string, number>();
+  for (const e of downloads) {
+    const format = typeof e.metadata?.format === "string" ? e.metadata.format : "";
+    const label = e.path ? `${e.path}${format ? ` (${format})` : ""}` : "(unknown file)";
+    downloadFileCounts.set(label, (downloadFileCounts.get(label) ?? 0) + 1);
+  }
 
   const searchEvents = events.filter((e) => e.event_type === "search");
   const termCounts = new Map<string, number>();
@@ -235,6 +246,10 @@ export async function getAnalyticsSummary(since: Date, until: Date): Promise<Ana
     purchases: {
       orderCount: orders.length,
       downloads: downloadCount,
+    },
+    downloads: {
+      totalDownloads: downloadCount,
+      topFiles: topN(downloadFileCounts, 10).map((r) => ({ fileName: r.key, count: r.count })),
     },
     purchaseLinkClicks: topN(purchaseLinkCounts, 10).map((r) => ({ platform: r.key, clicks: r.count })),
     commerce: {
