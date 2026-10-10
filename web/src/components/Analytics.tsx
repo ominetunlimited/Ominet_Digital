@@ -17,5 +17,38 @@ export default function Analytics() {
     track("page_view");
   }, [pathname]);
 
+  useEffect(() => {
+    const onLinkClick = (event: MouseEvent) => {
+      const target = event.target as Element | null;
+      const link = target?.closest("a");
+      if (!link) return;
+
+      const href = (link.getAttribute("href") || "").trim();
+      if (!href) return;
+
+      const isDownloadLink =
+        link.hasAttribute("download") ||
+        href.includes("/download") ||
+        href.includes("/files/") ||
+        href.includes("/uploads/") ||
+        /\.(pdf|zip|rar|csv|xls|xlsx|doc|docx|ppt|pptx|txt|json|xml|mp3|mp4|mov|avi|jpg|jpeg|png|webp|gif|svg|eps)(?:[?#].*)?$/i.test(href);
+
+      if (!isDownloadLink) return;
+
+      const fileName =
+        link.getAttribute("download") ||
+        decodeURIComponent(href.split("/").pop()?.split("?")[0] || "download");
+
+      track("download", {
+        fileName,
+        href,
+        kind: link.getAttribute("data-download-kind") || "file",
+      });
+    };
+
+    document.addEventListener("click", onLinkClick, true);
+    return () => document.removeEventListener("click", onLinkClick, true);
+  }, []);
+
   return null;
 }
