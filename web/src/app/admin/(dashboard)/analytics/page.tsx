@@ -54,6 +54,7 @@ export default async function AdminAnalyticsPage({
   const maxSection = Math.max(1, ...summary.contentViews.map((s) => s.views));
   const maxReferrer = Math.max(1, ...summary.referrers.map((r) => r.count));
   const maxTerm = Math.max(1, ...summary.search.topTerms.map((t) => t.count));
+  const maxDownload = Math.max(1, ...summary.downloads.topFiles.map((d) => d.count));
 
   return (
     <div>
@@ -79,7 +80,7 @@ export default async function AdminAnalyticsPage({
       <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:var(--space-4);margin-bottom:var(--space-6);")}>
         <Stat label="Page views" value={summary.siteActivity.pageViews.toLocaleString()} />
         <Stat label="Unique visitors" value={summary.siteActivity.uniqueVisitors.toLocaleString()} />
-        <Stat label="Downloads" value={summary.purchases.downloads.toLocaleString()} />
+        <Stat label="Downloads" value={summary.downloads.totalDownloads.toLocaleString()} />
         <Stat label="Likes" value={summary.engagement.likes.toLocaleString()} />
         <Stat label="Comments" value={summary.engagement.comments.toLocaleString()} />
         <Stat label="Shares" value={summary.engagement.shares.toLocaleString()} />
@@ -119,6 +120,14 @@ export default async function AdminAnalyticsPage({
             <p style={css("font-size:13px;opacity:0.5;")}>No searches logged in this range.</p>
           ) : (
             summary.search.topTerms.map((t) => <BarRow key={t.term} label={t.term} count={t.count} max={maxTerm} />)
+          )}
+        </Panel>
+
+        <Panel title="Top downloads">
+          {summary.downloads.topFiles.length === 0 ? (
+            <p style={css("font-size:13px;opacity:0.5;")}>No file downloads logged in this range.</p>
+          ) : (
+            summary.downloads.topFiles.map((d) => <BarRow key={d.fileName} label={d.fileName} count={d.count} max={maxDownload} />)
           )}
         </Panel>
 
