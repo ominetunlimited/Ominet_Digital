@@ -1,20 +1,15 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireStaff } from "@/lib/auth/guard";
 import { sendNewsletterBatch, isMailgunConfigured } from "@/lib/mailgun";
 
 export type ActionResult = { ok: true; message?: string } | { ok: false; error: string };
 
 async function staffClient() {
-  const supabase = await createClient();
-  if (!supabase) return { ok: false as const, error: "Supabase isn't configured yet." };
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const { data: isStaff } = await supabase.rpc("is_staff");
-  if (!isStaff) return { ok: false as const, error: "Not allowed." };
-  return { ok: true as const, supabase, user };
+  const auth = await requireStaff();
+  if (!auth.ok) return { ok: false as const, error: auth.error };
+  return { ok: true as const, supabase: auth.supabase, user: { id: auth.userId, email: auth.email } };
 }
 
 const CHUNK = 1000; // Mailgun's own per-call recipient limit

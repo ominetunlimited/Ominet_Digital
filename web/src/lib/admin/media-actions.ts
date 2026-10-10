@@ -1,21 +1,19 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireStaff } from "@/lib/auth/guard";
 import { validateDestination } from "@/lib/ad-validate";
 
 export type ActionResult = { ok: true; url?: string } | { ok: false; error: string };
 
 export async function uploadMedia(formData: FormData): Promise<ActionResult> {
-  const supabase = await createClient();
-  if (!supabase) return { ok: false, error: "Supabase isn't configured yet." };
+  const auth = await requireStaff();
+  if (!auth.ok) return { ok: false, error: auth.error };
+  const supabase = auth.supabase;
+  const user = { id: auth.userId };
 
   const file = formData.get("file") as File | null;
   if (!file || file.size === 0) return { ok: false, error: "Choose a file first." };
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
   const ext = file.name.split(".").pop() || "bin";
   const path = `${crypto.randomUUID()}.${ext}`;
@@ -34,7 +32,7 @@ export async function uploadMedia(formData: FormData): Promise<ActionResult> {
     url: urlData.publicUrl,
     kind,
     title: file.name,
-    uploaded_by: user?.id ?? null,
+    uploaded_by: user.id,
   });
   if (insertError) return { ok: false, error: insertError.message };
 
@@ -58,8 +56,9 @@ export async function updateMediaAsset(
     display_order: number;
   }
 ): Promise<ActionResult> {
-  const supabase = await createClient();
-  if (!supabase) return { ok: false, error: "Supabase isn't configured yet." };
+  const auth = await requireStaff();
+  if (!auth.ok) return { ok: false, error: auth.error };
+  const supabase = auth.supabase;
 
   const title = patch.title.trim().slice(0, 200);
   const altText = patch.alt_text.trim().slice(0, 300);
@@ -111,8 +110,9 @@ export async function updateMediaAsset(
 }
 
 export async function deleteMedia(id: string, storagePath: string): Promise<ActionResult> {
-  const supabase = await createClient();
-  if (!supabase) return { ok: false, error: "Supabase isn't configured yet." };
+  const auth = await requireStaff();
+  if (!auth.ok) return { ok: false, error: auth.error };
+  const supabase = auth.supabase;
 
   await supabase.storage.from("media").remove([storagePath]);
   const { error } = await supabase.from("media_assets").delete().eq("id", id);

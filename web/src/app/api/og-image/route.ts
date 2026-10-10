@@ -1,11 +1,16 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { loadImage, createCanvas } from "@napi-rs/canvas";
 import { SUPABASE_URL } from "@/lib/supabase/env";
+import { clientKey, rateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
 const MAX_WIDTH = 1200;
 const FETCH_BYTES_LIMIT = 15 * 1024 * 1024; // an admin upload cap, not a crafted-response cap
+// Each call fetches a remote image and runs a canvas re-encode — the most
+// expensive public route on the site, so it gets the tightest per-IP budget.
+const RATE_LIMIT = 60; // requests…
+const RATE_WINDOW_MS = 60 * 1000; // …per minute, per IP.
 
 /**
  * WhatsApp, Facebook etc. fetch og:image directly and are strict about size
@@ -22,6 +27,11 @@ const FETCH_BYTES_LIMIT = 15 * 1024 * 1024; // an admin upload cap, not a crafte
  * open fetch proxy for arbitrary URLs (SSRF).
  */
 export async function GET(request: NextRequest) {
+  const limit = rateLimit(clientKey(request, "og-image"), RATE_LIMIT, RATE_WINDOW_MS);
+  if (!limit.ok) {
+    return new NextResponse("Too many requests.", { status: 429, headers: { "Retry-After": String(limit.retryAfterSec), "Cache-Control": "no-store" } });
+  }
+
   const src = request.nextUrl.searchParams.get("url") ?? "";
   let parsed: URL;
   try {

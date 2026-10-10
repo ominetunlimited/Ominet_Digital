@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth/guard";
 import {
   SECTION_KEYS,
   validateAbout,
@@ -34,14 +34,14 @@ const VALIDATORS = {
 
 /**
  * Saves one section of the site settings. Admin-only: checked here with the
- * database's own is_admin() and again by the table's row-level security.
- * Values are validated and cleaned on the server — the browser's copy is never trusted.
+ * database's own is_admin() (via requireAdmin) and again by the table's
+ * row-level security. Values are validated and cleaned on the server — the
+ * browser's copy is never trusted.
  */
 export async function saveSiteSettings(section: SectionName, data: unknown): Promise<SaveResult> {
-  const supabase = await createClient();
-  if (!supabase) return { ok: false, error: "Supabase isn't configured yet." };
-  const { data: isAdmin } = await supabase.rpc("is_admin");
-  if (!isAdmin) return { ok: false, error: "Only admins can change site settings." };
+  const auth = await requireAdmin();
+  if (!auth.ok) return { ok: false, error: auth.error };
+  const supabase = auth.supabase;
   if (!(section in VALIDATORS)) return { ok: false, error: "Unknown settings section." };
 
   const checked = (VALIDATORS[section] as (v: unknown) => { ok: true; value: unknown } | { ok: false; error: string })(data);

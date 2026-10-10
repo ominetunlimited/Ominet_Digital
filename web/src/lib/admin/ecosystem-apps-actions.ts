@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireStaff } from "@/lib/auth/guard";
 import { slugify } from "@/lib/slug";
 import { validateImageUrl } from "@/lib/ad-validate";
 
@@ -19,11 +19,9 @@ export type EcosystemApp = {
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
 async function staffClient() {
-  const supabase = await createClient();
-  if (!supabase) return { ok: false as const, error: "Supabase isn't configured yet." };
-  const { data: isStaff } = await supabase.rpc("is_staff");
-  if (!isStaff) return { ok: false as const, error: "Not allowed." };
-  return { ok: true as const, supabase };
+  const auth = await requireStaff();
+  if (!auth.ok) return { ok: false as const, error: auth.error };
+  return { ok: true as const, supabase: auth.supabase };
 }
 
 export async function listEcosystemApps(): Promise<EcosystemApp[]> {

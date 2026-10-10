@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireStaff, type StaffSupabase } from "@/lib/auth/guard";
 import { PLATFORMS, validateProfileUrl, type ResearchPlatform } from "@/lib/research";
 
 export type ResearchInput = {
@@ -18,12 +18,10 @@ export type ResearchInput = {
 export type ResearchResult = { ok: true; id: string; url: string } | { ok: false; error: string };
 export type PlainResult = { ok: true } | { ok: false; error: string };
 
-async function staffClient(): Promise<{ ok: true; supabase: NonNullable<Awaited<ReturnType<typeof createClient>>> } | { ok: false; error: string }> {
-  const supabase = await createClient();
-  if (!supabase) return { ok: false, error: "Supabase isn't configured yet." };
-  const { data: isStaff } = await supabase.rpc("is_staff");
-  if (!isStaff) return { ok: false, error: "Not allowed." };
-  return { ok: true, supabase };
+async function staffClient(): Promise<{ ok: true; supabase: StaffSupabase } | { ok: false; error: string }> {
+  const auth = await requireStaff();
+  if (!auth.ok) return { ok: false, error: auth.error };
+  return { ok: true, supabase: auth.supabase };
 }
 
 function refreshPublic() {

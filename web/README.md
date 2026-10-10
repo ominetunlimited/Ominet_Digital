@@ -3,6 +3,10 @@
 Next.js (App Router, TypeScript) implementation of the approved Ominet
 Digital design (see `../project/`), backed by Supabase.
 
+> **Going live? Read [`SECURITY.md`](./SECURITY.md) first.** It covers the admin
+> authorization layers, RLS, the Paystack webhook, rate limiting, secret
+> handling, and a launch checklist (MFA, WAF, env vars) for production.
+
 ## Local development
 
 ```bash

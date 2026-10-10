@@ -7,6 +7,8 @@ export async function POST(request: Request) {
   const rawBody = await request.text();
   const signature = request.headers.get("x-paystack-signature");
 
+  // Layer 1 — authenticity: only Paystack (holder of the secret key) can
+  // produce a matching HMAC-SHA512 over the exact bytes we received.
   const valid = await verifyPaystackSignature(rawBody, signature);
   if (!valid) {
     // Bucketed to 10 minutes so someone hammering this endpoint can't turn it
@@ -17,7 +19,29 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "invalid signature" }, { status: 401 });
   }
 
-  const event = JSON.parse(rawBody);
+  let event: { event?: string; created_at?: string; data?: { reference?: string } };
+  try {
+    event = JSON.parse(rawBody);
+  } catch {
+    return NextResponse.json({ error: "invalid body" }, { status: 400 });
+  }
+
+  // Layer 2 — replay visibility. A captured, still-validly-signed event can be
+  // replayed, but it's already harmless: fulfillPaystackReference re-verifies
+  // with Paystack and is idempotent (a paid order short-circuits). So we never
+  // hard-drop a stale event here (that could drop a genuinely late first
+  // delivery the callback redirect never sees). Instead we surface clearly
+  // stale events as a dedupe'd alert so replay attempts are visible, and keep
+  // processing through the idempotent path.
+  const STALE_AFTER_MS = 30 * 60 * 1000; // 30 minutes
+  if (event.created_at) {
+    const ageMs = Date.now() - new Date(event.created_at).getTime();
+    if (Number.isFinite(ageMs) && ageMs > STALE_AFTER_MS) {
+      queueAlert("security", "Stale Paystack webhook received", [`Event is ${Math.round(ageMs / 60000)} min old. Processed idempotently; check for replay if unexpected.`], {
+        dedupeKey: `stale:${event.data?.reference ?? Math.floor(Date.now() / 600_000)}`,
+      });
+    }
+  }
 
   if (event.event === "charge.success") {
     const reference = event.data?.reference as string | undefined;

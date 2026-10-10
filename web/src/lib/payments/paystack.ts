@@ -89,6 +89,11 @@ export async function paystackVerifyTransaction(reference: string): Promise<Veri
 export async function verifyPaystackSignature(rawBody: string, signature: string | null): Promise<boolean> {
   if (!PAYSTACK_SECRET_KEY || !signature) return false;
   const crypto = await import("node:crypto");
-  const hash = crypto.createHmac("sha512", PAYSTACK_SECRET_KEY).update(rawBody).digest("hex");
-  return hash === signature;
+  const expected = crypto.createHmac("sha512", PAYSTACK_SECRET_KEY).update(rawBody).digest();
+  const provided = Buffer.from(signature, "utf8");
+  // Compare in constant time so a mismatched signature can't be narrowed
+  // byte-by-byte from response timing. timingSafeEqual throws on a length
+  // mismatch, so check lengths first and simply reject when they differ.
+  if (expected.length !== provided.length) return false;
+  return crypto.timingSafeEqual(expected, provided);
 }

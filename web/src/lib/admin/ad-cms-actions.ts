@@ -1,20 +1,18 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireStaff, type StaffSupabase } from "@/lib/auth/guard";
 import { AD_KINDS, AD_STATUSES, CAMPAIGN_STATUSES, checkDates, validateDestination, validateImageUrl } from "@/lib/ad-validate";
 
 export type SaveResult = { ok: true; id: string } | { ok: false; error: string };
 export type PlainResult = { ok: true } | { ok: false; error: string };
 
-type Db = NonNullable<Awaited<ReturnType<typeof createClient>>>;
+type Db = StaffSupabase;
 
 async function staffClient(): Promise<{ ok: true; supabase: Db } | { ok: false; error: string }> {
-  const supabase = await createClient();
-  if (!supabase) return { ok: false, error: "Supabase isn't configured yet." };
-  const { data: isStaff } = await supabase.rpc("is_staff");
-  if (!isStaff) return { ok: false, error: "Not allowed." };
-  return { ok: true, supabase };
+  const auth = await requireStaff();
+  if (!auth.ok) return { ok: false, error: auth.error };
+  return { ok: true, supabase: auth.supabase };
 }
 
 function refresh() {

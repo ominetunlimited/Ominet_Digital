@@ -1,23 +1,23 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireStaff } from "@/lib/auth/guard";
 
 export type CommentStatus = "pending" | "approved" | "rejected" | "hidden" | "deleted";
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
 /** Approve/reject/hide/restore — a soft, reversible status change. Staff-only
- *  per RLS (comments_staff_update, added in 0006_comment_moderation.sql). */
+ *  per RLS (comments_staff_update, added in 0006_comment_moderation.sql) and
+ *  enforced at the app layer by requireStaff(). */
 export async function setCommentStatus(id: string, status: CommentStatus, publicPath?: string): Promise<ActionResult> {
-  const supabase = await createClient();
-  if (!supabase) return { ok: false, error: "Supabase isn't configured yet." };
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const auth = await requireStaff();
+  if (!auth.ok) return { ok: false, error: auth.error };
+  const supabase = auth.supabase;
+  const user = { id: auth.userId };
 
   const { error } = await supabase
     .from("comments")
-    .update({ status, moderated_at: new Date().toISOString(), moderated_by: user?.id ?? null })
+    .update({ status, moderated_at: new Date().toISOString(), moderated_by: user.id })
     .eq("id", id);
   if (error) return { ok: false, error: error.message };
 
@@ -34,15 +34,14 @@ export async function setCommentStatus(id: string, status: CommentStatus, public
 /** A real, permanent delete — distinct from status:'deleted' (soft/reversible).
  *  Used for genuinely abusive content that shouldn't be recoverable. */
 export async function hardDeleteComment(id: string, publicPath?: string): Promise<ActionResult> {
-  const supabase = await createClient();
-  if (!supabase) return { ok: false, error: "Supabase isn't configured yet." };
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const auth = await requireStaff();
+  if (!auth.ok) return { ok: false, error: auth.error };
+  const supabase = auth.supabase;
+  const user = { id: auth.userId };
   const { error } = await supabase.from("comments").delete().eq("id", id);
   if (error) return { ok: false, error: error.message };
 
-  await supabase.from("analytics_events").insert({ event_type: "moderation", metadata: { action: "hard_delete", comment_id: id, admin_id: user?.id ?? null } });
+  await supabase.from("analytics_events").insert({ event_type: "moderation", metadata: { action: "hard_delete", comment_id: id, admin_id: user.id } });
 
   revalidatePath("/admin/comments");
   if (publicPath) revalidatePath(publicPath);

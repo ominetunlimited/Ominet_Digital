@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireStaff } from "@/lib/auth/guard";
 import { slugify } from "@/lib/slug";
 
 export type FaqItem = { question: string; answer: string };
@@ -38,8 +38,9 @@ export type ServiceInput = {
 export type ActionResult = { ok: true; id?: string } | { ok: false; error: string };
 
 export async function saveService(input: ServiceInput): Promise<ActionResult> {
-  const supabase = await createClient();
-  if (!supabase) return { ok: false, error: "Supabase isn't configured yet." };
+  const auth = await requireStaff();
+  if (!auth.ok) return { ok: false, error: auth.error };
+  const supabase = auth.supabase;
 
   const slug = slugify(input.slug || input.title);
   if (!slug) return { ok: false, error: "Slug can't be empty once normalized — add some letters or numbers." };
@@ -90,8 +91,9 @@ export async function saveService(input: ServiceInput): Promise<ActionResult> {
 }
 
 export async function deleteService(id: string): Promise<ActionResult> {
-  const supabase = await createClient();
-  if (!supabase) return { ok: false, error: "Supabase isn't configured yet." };
+  const auth = await requireStaff();
+  if (!auth.ok) return { ok: false, error: auth.error };
+  const supabase = auth.supabase;
   const { error } = await supabase.from("services").delete().eq("id", id);
   if (error) return { ok: false, error: error.message };
   revalidatePath("/admin/services");
@@ -101,8 +103,9 @@ export async function deleteService(id: string): Promise<ActionResult> {
 
 /** Quick status/feature toggles from the list view — no full form round-trip. */
 export async function setServiceFields(id: string, patch: Partial<Pick<ServiceInput, "status" | "featured" | "display_order">>): Promise<ActionResult> {
-  const supabase = await createClient();
-  if (!supabase) return { ok: false, error: "Supabase isn't configured yet." };
+  const auth = await requireStaff();
+  if (!auth.ok) return { ok: false, error: auth.error };
+  const supabase = auth.supabase;
   const { data, error } = await supabase.from("services").update(patch).eq("id", id).select("slug").single();
   if (error) return { ok: false, error: error.message };
   revalidatePath("/admin/services");

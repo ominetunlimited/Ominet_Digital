@@ -1,19 +1,15 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireStaff } from "@/lib/auth/guard";
 import { sendAlert } from "@/lib/notify/telegram";
 
 export type TestResult = { ok: true; message: string } | { ok: false; error: string };
 
 /** Staff-only: proves the bot token + chat id actually work end to end. */
 export async function sendTestAlert(): Promise<TestResult> {
-  const supabase = await createClient();
-  if (!supabase) return { ok: false, error: "Supabase isn't configured yet." };
-
-  // Never trust the browser about who is calling — ask the database.
-  const { data: isStaff } = await supabase.rpc("is_staff");
-  if (!isStaff) return { ok: false, error: "Not allowed." };
+  const auth = await requireStaff();
+  if (!auth.ok) return { ok: false, error: auth.error };
 
   const outcome = await sendAlert("test", "Ominet Digital test alert", ["If you can read this, Telegram alerts are working."], {
     dedupeKey: `test:${Date.now()}`,

@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireStaff, type StaffSupabase } from "@/lib/auth/guard";
 import { resolveOthers, fetchTitles, type LinkableType } from "@/lib/related";
 
 export type PlainResult = { ok: true } | { ok: false; error: string };
@@ -11,21 +11,19 @@ export type AdminRelatedRow = { relationId: string; type: LinkableType; id: stri
 const TABLE: Record<LinkableType, string> = { content: "content", book: "books", service: "services" };
 const NOUN: Record<LinkableType, string> = { content: "Article", book: "Book", service: "Service" };
 
-async function staffCheck(): Promise<{ ok: true } | { ok: false; error: string }> {
-  const supabase = await createClient();
-  if (!supabase) return { ok: false, error: "Supabase isn't configured yet." };
-  const { data: isStaff } = await supabase.rpc("is_staff");
-  return isStaff ? { ok: true } : { ok: false, error: "Not allowed." };
+async function staffClient(): Promise<{ ok: true; supabase: StaffSupabase } | { ok: false; error: string }> {
+  const auth = await requireStaff();
+  if (!auth.ok) return { ok: false, error: auth.error };
+  return { ok: true, supabase: auth.supabase };
 }
 
 /** Type-ahead search across the three linkable tables, for the "Related" picker. */
 export async function searchLinkable(query: string, excludeType: LinkableType, excludeId: string): Promise<SearchResult[]> {
-  const staff = await staffCheck();
+  const staff = await staffClient();
   if (!staff.ok) return [];
   const q = query.trim();
   if (q.length < 2) return [];
-  const supabase = await createClient();
-  if (!supabase) return [];
+  const supabase = staff.supabase;
 
   const [{ data: contentRows }, { data: bookRows }, { data: serviceRows }] = await Promise.all([
     supabase.from("content").select("id,title,status").ilike("title", `%${q}%`).limit(6),
@@ -42,10 +40,9 @@ export async function searchLinkable(query: string, excludeType: LinkableType, e
 
 /** Everything currently related to one item, for the admin panel's own list (includes drafts — staff bypasses RLS). */
 export async function listRelated(sourceType: LinkableType, sourceId: string): Promise<AdminRelatedRow[]> {
-  const staff = await staffCheck();
+  const staff = await staffClient();
   if (!staff.ok) return [];
-  const supabase = await createClient();
-  if (!supabase) return [];
+  const supabase = staff.supabase;
 
   const others = await resolveOthers(supabase, sourceType, sourceId);
   if (others.length === 0) return [];
@@ -54,13 +51,12 @@ export async function listRelated(sourceType: LinkableType, sourceId: string): P
 }
 
 export async function addRelated(sourceType: LinkableType, sourceId: string, targetType: LinkableType, targetId: string): Promise<PlainResult> {
-  const staff = await staffCheck();
+  const staff = await staffClient();
   if (!staff.ok) return staff;
   if (sourceType === targetType && sourceId === targetId) return { ok: false, error: "An item can't be related to itself." };
   if (!sourceId) return { ok: false, error: "Save this item first, then relate it to others." };
 
-  const supabase = await createClient();
-  if (!supabase) return { ok: false, error: "Supabase isn't configured yet." };
+  const supabase = staff.supabase;
 
   const { data: exists } = await supabase.from(TABLE[targetType]).select("id").eq("id", targetId).maybeSingle();
   if (!exists) return { ok: false, error: "That item couldn't be found." };
@@ -83,10 +79,9 @@ export async function addRelated(sourceType: LinkableType, sourceId: string, tar
 }
 
 export async function removeRelated(relationId: string): Promise<PlainResult> {
-  const staff = await staffCheck();
+  const staff = await staffClient();
   if (!staff.ok) return staff;
-  const supabase = await createClient();
-  if (!supabase) return { ok: false, error: "Supabase isn't configured yet." };
+  const supabase = staff.supabase;
 
   const { error } = await supabase.from("related_items").delete().eq("id", relationId);
   if (error) return { ok: false, error: error.message };

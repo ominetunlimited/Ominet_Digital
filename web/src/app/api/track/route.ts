@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getOrCreateAnonKey } from "@/lib/anon-key";
+import { clientKey, rateLimit } from "@/lib/rate-limit";
 
 // Public write endpoint for first-party analytics — no account, no auth.
 // RLS (`analytics_public_insert`) already restricts this to insert-only;
@@ -18,6 +19,12 @@ const KNOWN_EVENTS = new Set([
 
 const MAX_METADATA_CHARS = 2000;
 
+// Beacons are fire-and-forget, but an abusive client could still flood inserts.
+// Generous per-IP ceiling; over it we drop the event (still 200 — a beacon
+// failure must never surface as a broken request on the page that fired it).
+const RATE_LIMIT = 300; // events…
+const RATE_WINDOW_MS = 60 * 1000; // …per minute, per IP.
+
 export async function POST(request: Request) {
   // Only our own pages send beacons. A browser always states where a
   // cross-site request came from, so a foreign Origin is someone else's page
@@ -30,6 +37,9 @@ export async function POST(request: Request) {
     } catch {}
     if (!sameSite) return NextResponse.json({ ok: false }, { status: 200 });
   }
+
+  const limit = rateLimit(clientKey(request, "track"), RATE_LIMIT, RATE_WINDOW_MS);
+  if (!limit.ok) return NextResponse.json({ ok: false }, { status: 200 });
 
   const supabase = await createClient();
   if (!supabase) return NextResponse.json({ ok: false }, { status: 200 });

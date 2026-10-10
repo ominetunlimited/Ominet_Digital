@@ -1,19 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth/guard";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
 async function adminClient() {
-  const supabase = await createClient();
-  if (!supabase) return { ok: false as const, error: "Supabase isn't configured yet." };
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const { data: isAdmin } = await supabase.rpc("is_admin");
-  if (!isAdmin) return { ok: false as const, error: "Only admins can change this." };
-  return { ok: true as const, supabase, user };
+  const auth = await requireAdmin();
+  if (!auth.ok) return { ok: false as const, error: auth.error };
+  return { ok: true as const, supabase: auth.supabase, user: { id: auth.userId } };
 }
 
 export type MailgunStatus = { configured: boolean; domain: string; region: "us" | "eu"; apiKeyHint: string };

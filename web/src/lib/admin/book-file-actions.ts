@@ -2,7 +2,7 @@
 
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireStaff } from "@/lib/auth/guard";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { analyzeBookFile, ALLOWED_EXTENSIONS, MAX_BOOK_BYTES, type BookFormat } from "@/lib/books/analyze";
 import { extractCover } from "@/lib/books/cover";
@@ -39,10 +39,8 @@ export type UrlResult = { ok: true; url: string } | { ok: false; error: string }
 
 /** Ask the database (not the browser) whether the caller is staff. */
 async function staffCheck(): Promise<{ ok: true } | { ok: false; error: string }> {
-  const supabase = await createClient();
-  if (!supabase) return { ok: false, error: "Supabase isn't configured yet." };
-  const { data: isStaff } = await supabase.rpc("is_staff");
-  return isStaff ? { ok: true } : { ok: false, error: "Not allowed." };
+  const auth = await requireStaff();
+  return auth.ok ? { ok: true } : { ok: false, error: auth.error };
 }
 
 function extensionOf(fileName: string): string {
