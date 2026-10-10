@@ -117,6 +117,7 @@ export type AnalyticsSummary = {
   referrers: { host: string; count: number }[];
   contentViews: { section: string; views: number }[];
   engagement: { likes: number; comments: number; shares: number; sharesByPlatform: { platform: string; count: number }[] };
+  purchases: { orderCount: number; downloads: number };
   purchaseLinkClicks: { platform: string; clicks: number }[];
   commerce: { statusCounts: Record<string, number>; revenueCents: number; orderCount: number; averageOrderValueCents: number; currency: string };
   search: { topTerms: { term: string; count: number }[]; zeroResultCount: number; totalSearches: number };
@@ -133,12 +134,13 @@ export async function getAnalyticsSummary(since: Date, until: Date): Promise<Ana
     referrers: [],
     contentViews: [],
     engagement: { likes: 0, comments: 0, shares: 0, sharesByPlatform: [] },
+    purchases: { orderCount: 0, downloads: 0 },
     purchaseLinkClicks: [],
     commerce: { statusCounts: {}, revenueCents: 0, orderCount: 0, averageOrderValueCents: 0, currency: "NGN" },
     search: { topTerms: [], zeroResultCount: 0, totalSearches: 0 },
     signups: 0,
     eventRowsSampled: 0,
-    notConnected: ["Google Search Console", "Telegram", "Advertising impressions/CTR", "Core Web Vitals / technical errors", "File downloads (not yet built)"],
+    notConnected: ["Google Search Console", "Telegram", "Advertising impressions/CTR", "Core Web Vitals / technical errors"],
   };
   if (!supabase) return empty;
 
@@ -188,6 +190,9 @@ export async function getAnalyticsSummary(since: Date, until: Date): Promise<Ana
     purchaseLinkCounts.set(platform, (purchaseLinkCounts.get(platform) ?? 0) + 1);
   }
 
+  const downloads = events.filter((e) => e.event_type === "download");
+  const downloadCount = downloads.length;
+
   const searchEvents = events.filter((e) => e.event_type === "search");
   const termCounts = new Map<string, number>();
   let zeroResultCount = 0;
@@ -226,6 +231,10 @@ export async function getAnalyticsSummary(since: Date, until: Date): Promise<Ana
       comments: commentsRes.count ?? 0,
       shares: shares.length,
       sharesByPlatform: topN(sharePlatformCounts, 10).map((r) => ({ platform: r.key, count: r.count })),
+    },
+    purchases: {
+      orderCount: orders.length,
+      downloads: downloadCount,
     },
     purchaseLinkClicks: topN(purchaseLinkCounts, 10).map((r) => ({ platform: r.key, clicks: r.count })),
     commerce: {
