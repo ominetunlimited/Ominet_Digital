@@ -73,12 +73,13 @@ export default async function AdminAnalyticsPage({
         </div>
       </div>
       <p style={css("font-size:13px;opacity:0.6;margin:0 0 var(--space-6);")}>
-        {label} &middot; {new Date(since).toLocaleDateString()} – {new Date(until).toLocaleDateString()} &middot; based on {summary.eventRowsSampled.toLocaleString()} logged events. First-party only — no visitor accounts, no third-party tracking.
+        {label} &middot; {new Date(since).toLocaleDateString()} – {new Date(until).toLocaleDateString()} &middot; based on {summary.eventRowsSampled.toLocaleString()} logged events. First-party [...]
       </p>
 
       <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:var(--space-4);margin-bottom:var(--space-6);")}>
         <Stat label="Page views" value={summary.siteActivity.pageViews.toLocaleString()} />
         <Stat label="Unique visitors" value={summary.siteActivity.uniqueVisitors.toLocaleString()} />
+        <Stat label="Downloads" value={summary.purchases.downloads.toLocaleString()} />
         <Stat label="Likes" value={summary.engagement.likes.toLocaleString()} />
         <Stat label="Comments" value={summary.engagement.comments.toLocaleString()} />
         <Stat label="Shares" value={summary.engagement.shares.toLocaleString()} />
