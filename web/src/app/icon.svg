@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" role="img" aria-label="Ominet Digital logo">
+  <defs>
+    <linearGradient id="tealGrad" x1="0%" x2="100%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#59e1ff"/>
+      <stop offset="50%" stop-color="#12b9db"/>
+      <stop offset="100%" stop-color="#0f7ab1"/>
+    </linearGradient>
+    <linearGradient id="orangeGrad" x1="0%" x2="100%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffca53"/>
+      <stop offset="40%" stop-color="#f99b3d"/>
+      <stop offset="100%" stop-color="#ef4f55"/>
+    </linearGradient>
+    <linearGradient id="purpleGrad" x1="0%" x2="100%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#ff55a8"/>
+      <stop offset="35%" stop-color="#cb4de8"/>
+      <stop offset="100%" stop-color="#5f3bdd"/>
+    </linearGradient>
+    <linearGradient id="cyanFacet" x1="0%" x2="100%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#3fe0ff"/>
+      <stop offset="100%" stop-color="#1ca6d7"/>
+    </linearGradient>
+    <linearGradient id="pinkFacet" x1="0%" x2="100%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#ff6bbd"/>
+      <stop offset="100%" stop-color="#cd3bea"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="800" height="800" fill="#000000"/>
+
+  <g opacity="0.97">
+    <ellipse cx="210" cy="455" rx="245" ry="220" fill="url(#tealGrad)" transform="rotate(-12 210 455)"/>
+    <ellipse cx="590" cy="455" rx="245" ry="220" fill="url(#orangeGrad)" transform="rotate(12 590 455)"/>
+  </g>
+
+  <g transform="translate(0 10)" opacity="0.96">
+    <path d="M400 195L595 315L595 600L400 710L205 600L205 315Z" fill="url(#purpleGrad)"/>
+    <path d="M400 195L595 315L400 450L205 315Z" fill="url(#cyanFacet)" opacity="0.88"/>
+    <path d="M205 315L400 450L400 710L205 600Z" fill="url(#pinkFacet)" opacity="0.9"/>
+    <path d="M595 315L400 450L400 710L595 600Z" fill="url(#orangeGrad)" opacity="0.8"/>
+  </g>
+
+  <g opacity="0.6">
+    <path d="M348 268L470 250L545 330L420 354Z" fill="#57e0ff"/>
+    <path d="M390 400L570 470L440 610L280 540Z" fill="#f154ff" opacity="0.82"/>
+  </g>
+</svg>

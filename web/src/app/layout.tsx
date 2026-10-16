@@ -9,12 +9,13 @@ const ADSENSE_CLIENT_ID = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
 
 export async function generateMetadata(): Promise<Metadata> {
   const { identity, seo } = await getSiteSettings();
+  const favicon = seo.faviconUrl || "/icon.svg";
   return {
     // Pages give a short title; the site name is added here in one place.
     title: { default: identity.siteName, template: `%s — ${identity.siteName}` },
     description: identity.description,
     openGraph: { siteName: identity.siteName, ...(seo.defaultOgImageUrl ? { images: [seo.defaultOgImageUrl] } : {}) },
-    ...(seo.faviconUrl ? { icons: { icon: seo.faviconUrl } } : {}),
+    icons: { icon: favicon },
     ...(seo.googleVerification ? { verification: { google: seo.googleVerification } } : {}),
   };
 }
