@@ -8,7 +8,7 @@ export type SocialPlatform = "facebook" | "instagram" | "x" | "linkedin";
 export type SocialLink = { platform: SocialPlatform; label: string; url: string; enabled: boolean };
 
 export type SiteSettings = {
-  identity: { siteName: string; description: string };
+  identity: { siteName: string; description: string; logoUrl: string };
   contact: { supportEmail: string; bookingEmail: string; phone: string; whatsapp: string };
   social: SocialLink[];
   seo: { faviconUrl: string; defaultOgImageUrl: string; googleVerification: string };
@@ -54,7 +54,7 @@ const DEFAULT_BIO = [
 
 /** What the site showed before settings existed — nothing changes until an admin edits something. */
 export const DEFAULT_SETTINGS: SiteSettings = {
-  identity: { siteName: "Ominet Digital", description: DESCRIPTION },
+  identity: { siteName: "Ominet Digital", description: DESCRIPTION, logoUrl: "" },
   contact: { supportEmail: "info@ominetdigital.com.ng", bookingEmail: "ominetmedia@gmail.com", phone: "", whatsapp: "" },
   social: [
     { platform: "facebook", label: "Facebook", url: "https://www.facebook.com/OminetUnlimited", enabled: true },
@@ -111,7 +111,9 @@ export function validateIdentity(input: unknown): Result<SiteSettings["identity"
   if (siteName.length > 80) return { ok: false, error: "Keep the site name under 80 characters." };
   const description = str(o.description, 1000);
   if (description.length > 300) return { ok: false, error: "Keep the description under 300 characters (search engines cut it off)." };
-  return { ok: true, value: { siteName, description } };
+  const logo = validateImageUrl(str(o.logoUrl, 500));
+  if (!logo.ok) return { ok: false, error: `Logo: ${logo.error}` };
+  return { ok: true, value: { siteName, description, logoUrl: logo.url ?? "" } };
 }
 
 export function validateContact(input: unknown): Result<SiteSettings["contact"]> {

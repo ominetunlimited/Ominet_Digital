@@ -7,6 +7,7 @@ import { getSiteSettings } from "@/lib/site-settings";
 
 export default async function Footer() {
   const { footer, contact, identity } = await getSiteSettings();
+  const logoUrl = identity.logoUrl;
   return (
     <footer style={{ borderTop: "none", padding: "var(--space-8) var(--space-6) var(--space-6)", background: "var(--om-navy)", color: "#eafaf0" }}>
       <style>{`
@@ -16,7 +17,7 @@ export default async function Footer() {
       <div className="omd-footer" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: "var(--space-6)", maxWidth: 1200, margin: "0 auto" }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, fontFamily: "var(--font-heading)", fontSize: 20, fontWeight: 700, marginBottom: "var(--space-2)", color: "#fff" }}>
-            <Image src="/images/ominet-digital-logo.png" alt={identity.siteName} width={30} height={23} style={{ display: "block" }} />
+            <Image src={logoUrl || "/images/ominet-digital-logo.png"} alt={identity.siteName} width={30} height={23} style={{ display: "block" }} />
             {identity.siteName.toUpperCase()}
           </div>
           {footer.blurb && <p style={{ fontSize: 13, opacity: 0.75, maxWidth: "36ch", margin: "0 0 var(--space-4)" }}>{footer.blurb}</p>}

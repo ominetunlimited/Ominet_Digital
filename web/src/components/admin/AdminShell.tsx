@@ -27,11 +27,13 @@ export default function AdminShell({
   badges,
   footer,
   children,
+  logoUrl,
 }: {
   userEmail?: string | null;
   badges: NavBadges;
   footer: ReactNode;
   children: ReactNode;
+  logoUrl?: string;
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -53,7 +55,7 @@ export default function AdminShell({
 
       <aside className="admin-sidebar" aria-label="Admin navigation">
         <div className="admin-sidebar-brand">
-          <Image src="/images/ominet-digital-logo.png" alt="" width={20} height={15} style={{ display: "block" }} />
+          <Image src={logoUrl || "/images/ominet-digital-logo.png"} alt="" width={20} height={15} style={{ display: "block" }} />
           OMINI NFAWA
         </div>
         <div style={{ marginBottom: "var(--space-4)" }}>

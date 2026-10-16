@@ -5,6 +5,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import SocialLinks from "@/components/SocialLinks";
+import { useSiteSettings } from "@/components/SiteSettingsProvider";
 
 const LINKS: { href: string; label: string; match: string }[] = [
   { href: "/omini-nfawa", label: "OMINI NFAWA", match: "/omini-nfawa" },
@@ -18,6 +19,7 @@ const LINKS: { href: string; label: string; match: string }[] = [
 ];
 
 export default function Nav() {
+  const { logoUrl } = useSiteSettings();
   const pathname = usePathname();
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -127,7 +129,7 @@ export default function Nav() {
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-8)" }}>
             <span style={{ display: "flex", alignItems: "center", gap: 10, fontWeight: 700, letterSpacing: "0.02em", color: "#fff" }}>
-              <Image src="/images/ominet-digital-logo.png" alt="Ominet Digital" width={30} height={23} style={{ display: "block" }} />
+              <Image src={logoUrl || "/images/ominet-digital-logo.png"} alt="Ominet Digital" width={30} height={23} style={{ display: "block" }} />
               OMINET DIGITAL
             </span>
             <button ref={closeButtonRef} type="button" className="btn btn-ghost btn-icon" aria-label="Close menu" onClick={() => setMenuOpen(false)} style={{ color: "#eafaf0" }}>

@@ -140,7 +140,7 @@ export default function SiteSettingsForm({ initial }: { initial: SiteSettings })
         <Field label={`Description (${identity.description.length}/300)`}>
           <textarea className="input" rows={3} value={identity.description} onChange={(e) => setIdentity({ ...identity, description: e.target.value })} />
         </Field>
-        <p style={css("font-size:12px;opacity:0.6;margin:0;")}>Logo: the site uses the supplied Ominet Digital logo everywhere; it is fixed and isn&apos;t editable here.</p>
+        <ImageUploadField label="Site logo (header, footer, admin shell — falls back to the built-in logo if blank)" value={identity.logoUrl} onChange={(url) => setIdentity({ ...identity, logoUrl: url })} />
       </Section>
 
       <Section title="Contact" hint="Where visitors are told to reach you. Shown in the footer's Contact link, on booking confirmations and in booking error messages." section="contact" data={contact}>
