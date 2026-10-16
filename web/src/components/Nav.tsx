@@ -88,7 +88,7 @@ export default function Nav() {
       `}</style>
       <nav className="nav" style={{ padding: "0 var(--space-6)", borderBottom: "none", position: "relative", background: "var(--om-navy)", color: "#eafaf0" }}>
         <Link href="/" className="nav-brand" style={{ textDecoration: "none", color: "#fff", fontWeight: 700, letterSpacing: "0.02em", display: "flex", alignItems: "center", gap: 10 }}>
-          <Image src="/images/ominet-digital-logo.svg" alt="Ominet Digital" width={30} height={23} priority style={{ display: "block" }} />
+          <Image src="/images/ominet-digital-logo.png" alt="Ominet Digital" width={30} height={23} priority style={{ display: "block" }} />
           <span>OMINET DIGITAL</span>
         </Link>
         <div className="omd-links">
@@ -127,7 +127,7 @@ export default function Nav() {
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-8)" }}>
             <span style={{ display: "flex", alignItems: "center", gap: 10, fontWeight: 700, letterSpacing: "0.02em", color: "#fff" }}>
-              <Image src="/images/ominet-digital-logo.svg" alt="Ominet Digital" width={30} height={23} style={{ display: "block" }} />
+              <Image src="/images/ominet-digital-logo.png" alt="Ominet Digital" width={30} height={23} style={{ display: "block" }} />
               OMINET DIGITAL
             </span>
             <button ref={closeButtonRef} type="button" className="btn btn-ghost btn-icon" aria-label="Close menu" onClick={() => setMenuOpen(false)} style={{ color: "#eafaf0" }}>

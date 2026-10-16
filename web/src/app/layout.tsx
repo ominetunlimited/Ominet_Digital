@@ -14,7 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: { default: identity.siteName, template: `%s — ${identity.siteName}` },
     description: identity.description,
     openGraph: { siteName: identity.siteName, ...(seo.defaultOgImageUrl ? { images: [seo.defaultOgImageUrl] } : {}) },
-    ...(seo.faviconUrl ? { icons: { icon: seo.faviconUrl } } : {}),
+    ...(seo.faviconUrl ? { icons: { icon: seo.faviconUrl } } : { icons: [{ rel: "icon", type: "image/x-icon", href: "/favicon.ico" }, { rel: "icon", type: "image/png", sizes: "16x16", href: "/favicon-16x16.png" }, { rel: "icon", type: "image/png", sizes: "32x32", href: "/favicon-32x32.png" }, { rel: "apple-touch-icon", href: "/apple-touch-icon.png" }, { rel: "manifest", href: "/site.webmanifest" }] }),
     ...(seo.googleVerification ? { verification: { google: seo.googleVerification } } : {}),
   };
 }

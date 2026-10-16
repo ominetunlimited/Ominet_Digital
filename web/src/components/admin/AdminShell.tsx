@@ -53,7 +53,7 @@ export default function AdminShell({
 
       <aside className="admin-sidebar" aria-label="Admin navigation">
         <div className="admin-sidebar-brand">
-          <Image src="/images/ominet-digital-logo.svg" alt="" width={20} height={15} style={{ display: "block" }} />
+          <Image src="/images/ominet-digital-logo.png" alt="" width={20} height={15} style={{ display: "block" }} />
           OMINI NFAWA
         </div>
         <div style={{ marginBottom: "var(--space-4)" }}>

@@ -52,7 +52,7 @@ export default async function Home() {
       <section style={css("padding:var(--space-8) var(--space-6);background:var(--om-teal-light);")}>
         <div style={css("max-width:1280px;margin:0 auto;border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-lg);display:flex;flex-wrap:wrap;min-height:520px;")}>
           <div style={css("flex:1 1 380px;background:var(--om-navy);color:#eafaf0;padding:var(--space-8);display:flex;flex-direction:column;justify-content:center;gap:var(--space-4);")}>
-            <Image src="/images/ominet-digital-logo.svg" alt="Ominet Digital" width={64} height={49} priority style={css("display:block;")} />
+            <Image src="/images/ominet-digital-logo.png" alt="Ominet Digital" width={64} height={49} priority style={css("display:block;")} />
             <div style={css("font-family:var(--font-heading);font-size:13px;letter-spacing:0.14em;color:var(--om-orange);font-weight:800;")}>OMINI NFAWA</div>
             <h1 style={css("font-family:var(--font-heading);font-size:clamp(34px,4.5vw,48px);line-height:1.08;margin:0;color:#fff;")}>
               {homepage.heroHeading.split("\n").map((line, i, arr) => (
