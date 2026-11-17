@@ -11,7 +11,7 @@ import { useSiteSettings } from "@/components/SiteSettingsProvider";
  * otherwise render invisible dark-on-dark there.
  */
 export default function SocialLinks({
-  color = "#eafaf0",
+  color = "#f1eefb",
   size = 16,
   gap = "var(--space-3)",
 }: {

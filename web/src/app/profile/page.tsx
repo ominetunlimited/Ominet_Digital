@@ -17,7 +17,8 @@ export async function generateMetadata() {
   return ecosystem.profileVisible ? meta : { ...meta, robots: { index: false, follow: false } };
 }
 
-const PROFILE_APP_URL = "https://profile-app-sand.vercel.app/";
+// Set NEXT_PUBLIC_PROFILE_APP_URL to the app's own ominetdigital.com.ng address once it is mapped; until then it falls back to its current deployment.
+const PROFILE_APP_URL = process.env.NEXT_PUBLIC_PROFILE_APP_URL || "https://profile-app-sand.vercel.app/";
 
 const steps = [
   { n: "01", title: "Activity", body: "Your work is logged as it happens." },

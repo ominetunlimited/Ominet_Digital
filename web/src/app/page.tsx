@@ -13,7 +13,9 @@ import HeroSlideshow from "@/components/HeroSlideshow";
 import PartnersStrip from "@/components/PartnersStrip";
 import { css } from "@/lib/css";
 import { pageMetadata, SITE_URL, SITE_NAME } from "@/lib/seo";
-import { getFeaturedBook, getArticles, getHeroSlides, getPartnerApps } from "@/lib/data";
+import { getFeaturedBook, getArticles, getHeroSlides, getPartnerApps, getServices } from "@/lib/data";
+import ArtCard from "@/components/ArtCard";
+import { isPageOn } from "@/lib/site-pages";
 import { getPersonSchema, getOrganizationSchema, jsonLdGraph, WEBSITE_ID, ORG_ID } from "@/lib/schema";
 import { getSiteSettings } from "@/lib/site-settings";
 
@@ -26,14 +28,17 @@ export const generateMetadata = () => pageMetadata(
 );
 
 export default async function Home() {
-  const [featuredBook, articles, personSchema, { identity, homepage }, heroSlides, partnerApps] = await Promise.all([
+  const [featuredBook, articles, personSchema, { identity, homepage, pages }, heroSlides, partnerApps, services] = await Promise.all([
     getFeaturedBook(),
     getArticles(),
     getPersonSchema(),
     getSiteSettings(),
     getHeroSlides(),
     getPartnerApps(),
+    getServices(),
   ]);
+  const on = (k: string) => isPageOn(pages, k);
+  const homeServices = services.filter((x) => x.featured).concat(services.filter((x) => !x.featured)).slice(0, 6);
   // A staff pick (Content admin -> Featured) wins; otherwise the newest
   // published piece, same as before.
   const logoUrl = identity.logoUrl;
@@ -52,9 +57,9 @@ export default async function Home() {
 
       <section style={css("padding:var(--space-8) var(--space-6);background:var(--om-teal-light);")}>
         <div style={css("max-width:1280px;margin:0 auto;border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-lg);display:flex;flex-wrap:wrap;min-height:520px;")}>
-          <div style={css("flex:1 1 380px;background:var(--om-navy);color:#eafaf0;padding:var(--space-8);display:flex;flex-direction:column;justify-content:center;gap:var(--space-4);")}>
-            <Image src={logoUrl || "/images/ominet-digital-logo.png"} alt="Ominet Digital" width={64} height={49} priority style={css("display:block;")} />
-            <div style={css("font-family:var(--font-heading);font-size:13px;letter-spacing:0.14em;color:var(--om-orange);font-weight:800;")}>OMINI NFAWA</div>
+          <div style={css("flex:1 1 380px;background:var(--om-navy);color:#f1eefb;padding:var(--space-8);display:flex;flex-direction:column;justify-content:center;gap:var(--space-4);")}>
+            <Image src={logoUrl || "/images/ominet-digital-logo.svg"} alt="Ominet Digital" width={72} height={70} priority style={css("display:block;height:70px;width:auto;")} />
+            <div style={css("font-family:var(--font-heading);font-size:13px;letter-spacing:0.14em;color:var(--om-cyan);font-weight:800;")}>OMINI NFAWA</div>
             <h1 style={css("font-family:var(--font-heading);font-size:clamp(34px,4.5vw,48px);line-height:1.08;margin:0;color:#fff;")}>
               {homepage.heroHeading.split("\n").map((line, i, arr) => (
                 <span key={i}>
@@ -65,15 +70,16 @@ export default async function Home() {
             </h1>
             <p style={css("font-size:16px;line-height:1.6;opacity:0.85;max-width:40ch;margin:0;")}>{homepage.heroSubheading}</p>
             <div style={css("display:flex;gap:var(--space-3);flex-wrap:wrap;margin-top:var(--space-2);")}>
-              <Link href="/writing"><button type="button" className="btn btn-primary" style={css("border-radius:var(--radius-md);")}>Read the writing</button></Link>
-              <Link href="/about"><button type="button" className="btn btn-secondary" style={css("border-radius:var(--radius-md);border-color:rgba(255,255,255,0.4);color:#fff;")}>About Omini</button></Link>
+              {on("writing") && <Link href="/writing"><button type="button" className="btn btn-primary" style={css("border-radius:var(--radius-md);")}>Read the writing</button></Link>}
+              {on("services") && <Link href="/services"><button type="button" className="btn btn-secondary" style={css("border-radius:var(--radius-md);border-color:rgba(255,255,255,0.4);color:#fff;")}>Our services</button></Link>}
+              {on("about") && <Link href="/about"><button type="button" className="btn btn-secondary" style={css("border-radius:var(--radius-md);border-color:rgba(255,255,255,0.4);color:#fff;")}>About Omini</button></Link>}
             </div>
             {heroArticles.length > 0 && (
               <div style={css("margin-top:var(--space-3);")}>
                 <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.6;margin-bottom:var(--space-2);")}>RECENT WRITING</div>
                 <div style={css("display:grid;gap:6px;")}>
                   {heroArticles.map((a) => (
-                    <Link key={a.slug} href={`/writing/${a.slug}`} style={css("font-size:14px;opacity:0.9;color:#eafaf0;")}>
+                    <Link key={a.slug} href={`/writing/${a.slug}`} style={css("font-size:14px;opacity:0.9;color:#f1eefb;")}>
                       {a.title} &rarr;
                     </Link>
                   ))}
@@ -100,6 +106,7 @@ export default async function Home() {
       <section style={css("padding:var(--space-8) var(--space-6);")}>
         <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-4);")}>THE ECOSYSTEM</div>
         <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--space-6);")}>
+          {on("omini-nfawa") && (
           <EcosystemItem
             kicker="WRITER · RESEARCHER · MEDIA & COMMUNICATIONS"
             title="Omini Nfawa"
@@ -107,6 +114,8 @@ export default async function Home() {
             href="/omini-nfawa"
             cta="Explore Omini Nfawa"
           />
+          )}
+          {on("profile") && (
           <EcosystemItem
             kicker="PROFESSIONAL IDENTITY"
             title="PROFILE"
@@ -114,6 +123,8 @@ export default async function Home() {
             href="/profile"
             cta="Explore Profile"
           />
+          )}
+          {on("media") && (
           <EcosystemItem
             kicker="VIDEO · PHOTOGRAPHY"
             title="Media"
@@ -121,6 +132,8 @@ export default async function Home() {
             href="/media"
             cta="Watch & view"
           />
+          )}
+          {on("cortexa-office") && (
           <EcosystemItem
             kicker="EMERGING PRODUCT"
             title="Cortexa Office"
@@ -128,6 +141,7 @@ export default async function Home() {
             href="/cortexa-office"
             cta="Learn more"
           />
+          )}
         </div>
       </section>
 
@@ -135,7 +149,27 @@ export default async function Home() {
 
       <div className="hr" />
 
-      {featuredBook && (
+      {on("services") && homeServices.length > 0 && (
+        <section style={css("padding:var(--space-8) var(--space-6);")}>
+          <div style={css("display:flex;justify-content:space-between;align-items:flex-end;gap:var(--space-4);flex-wrap:wrap;margin-bottom:var(--space-5);")}>
+            <div>
+              <div style={css("font-size:11px;letter-spacing:0.12em;color:var(--om-azure);font-weight:600;margin-bottom:var(--space-2);")}>WHAT WE DO</div>
+              <h2 style={css("font-family:var(--font-heading);font-size:clamp(28px,4vw,40px);margin:0;")}>One creative partner. Multiple professional solutions.</h2>
+            </div>
+            <Link href="/services" className="btn btn-secondary">All services</Link>
+          </div>
+          <div className="omd-grid">
+            {homeServices.map((x, i) => (
+              <ArtCard key={x.slug} href={`/services/${x.slug}`} kind="service" slug={x.slug} imageUrl={x.featuredImageUrl} kicker={`${String(i + 1).padStart(2, "0")}${x.category ? " · " + x.category : ""}`} title={x.title} description={x.shortDescription} cta="Explore service" />
+            ))}
+          </div>
+        </section>
+      )}
+
+
+      <div className="hr" />
+
+      {on("books") && featuredBook && (
         <section style={css("padding:var(--space-8) var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;gap:var(--space-8);")}>
           <div style={css("aspect-ratio:1/1;position:relative;flex:1 1 240px;max-width:320px;border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-md);")}>
             {featuredBook.coverImageUrl ? (
@@ -161,7 +195,7 @@ export default async function Home() {
 
       <div className="hr" />
 
-      {latestArticle && (
+      {on("writing") && latestArticle && (
         <section style={css("padding:var(--space-8) var(--space-6);display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--space-6);")}>
           <Link href={`/writing/${latestArticle.slug}`} style={css("display:block;")}>
             <div className="card">
@@ -176,9 +210,9 @@ export default async function Home() {
 
       <div className="hr" />
 
-      <section style={css("padding:var(--space-8) var(--space-6);background:var(--om-navy);color:#eafaf0;")}>
+      <section style={css("padding:var(--space-8) var(--space-6);background:var(--om-navy);color:#f1eefb;")}>
         <div style={css("max-width:640px;")}>
-          <div style={css("font-family:var(--font-heading);font-size:14px;font-weight:800;letter-spacing:0.08em;color:var(--om-orange);margin-bottom:var(--space-3);")}>PROFILE</div>
+          <div style={css("font-family:var(--font-heading);font-size:14px;font-weight:800;letter-spacing:0.08em;color:var(--om-cyan);margin-bottom:var(--space-3);")}>PROFILE</div>
           <h2 style={css("font-family:var(--font-heading);font-size:32px;margin:0 0 var(--space-3);color:#fff;")}>Your professional identity should be more than a CV.</h2>
           <p style={css("font-size:16px;line-height:1.7;opacity:0.85;margin:0 0 var(--space-4);")}>Activity, verification and attribution &mdash; built into one identity you carry between opportunities.</p>
           <Link href="/profile"><button type="button" className="btn btn-primary" style={css("border-radius:var(--radius-md);")}>Explore Profile</button></Link>

@@ -11,7 +11,7 @@ import { useSiteSettings } from "@/components/SiteSettingsProvider";
  * no further wiring needed.
  */
 export default function WhatsAppButton({
-  color = "#eafaf0",
+  color = "#f1eefb",
   size = 16,
   label,
   message = "Hi, I'd like to get in touch.",

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth/guard";
+import { validatePages } from "@/lib/site-pages";
 import {
   SECTION_KEYS,
   validateAbout,
@@ -30,6 +31,7 @@ const VALIDATORS = {
   ecosystem: validateEcosystem,
   comments: validateComments,
   legal: validateLegal,
+  pages: validatePages,
 } as const;
 
 /**
