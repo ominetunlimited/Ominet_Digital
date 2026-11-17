@@ -3,6 +3,7 @@ import Script from "next/script";
 import Analytics from "@/components/Analytics";
 import { SiteSettingsProvider } from "@/components/SiteSettingsProvider";
 import { getSiteSettings } from "@/lib/site-settings";
+import { SITE_URL } from "@/lib/seo";
 import "./globals.css";
 
 const ADSENSE_CLIENT_ID = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
@@ -10,11 +11,23 @@ const ADSENSE_CLIENT_ID = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
 export async function generateMetadata(): Promise<Metadata> {
   const { identity, seo } = await getSiteSettings();
   return {
+    // Absolute URLs (canonical, share images) always resolve to the real domain.
+    metadataBase: new URL(SITE_URL),
     // Pages give a short title; the site name is added here in one place.
     title: { default: identity.siteName, template: `%s — ${identity.siteName}` },
     description: identity.description,
     openGraph: { siteName: identity.siteName, ...(seo.defaultOgImageUrl ? { images: [seo.defaultOgImageUrl] } : {}) },
-    ...(seo.faviconUrl ? { icons: { icon: seo.faviconUrl } } : { icons: [{ rel: "icon", type: "image/x-icon", href: "/favicon.ico" }, { rel: "icon", type: "image/png", sizes: "16x16", href: "/favicon-16x16.png" }, { rel: "icon", type: "image/png", sizes: "32x32", href: "/favicon-32x32.png" }, { rel: "apple-touch-icon", href: "/apple-touch-icon.png" }, { rel: "manifest", href: "/site.webmanifest" }] }),
+    manifest: "/site.webmanifest",
+    icons: seo.faviconUrl
+      ? { icon: seo.faviconUrl }
+      : {
+          icon: [
+            { url: "/favicon.ico", type: "image/x-icon" },
+            { url: "/favicon-16x16.png", type: "image/png", sizes: "16x16" },
+            { url: "/favicon-32x32.png", type: "image/png", sizes: "32x32" },
+          ],
+          apple: "/apple-touch-icon.png",
+        },
     ...(seo.googleVerification ? { verification: { google: seo.googleVerification } } : {}),
   };
 }
@@ -27,7 +40,7 @@ try {
 `;
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const { social, identity, contact } = await getSiteSettings();
+  const { social, identity, contact, pages } = await getSiteSettings();
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -44,7 +57,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body>
         <Analytics />
         {/* Only links that are switched on are handed to the browser — hidden ones never appear in the page source. */}
-        <SiteSettingsProvider value={{ social: social.filter((s) => s.enabled && s.url), siteName: identity.siteName, whatsapp: contact.whatsapp, logoUrl: identity.logoUrl }}>
+        <SiteSettingsProvider value={{ social: social.filter((s) => s.enabled && s.url), siteName: identity.siteName, whatsapp: contact.whatsapp, logoUrl: identity.logoUrl, pages }}>
           {children}
         </SiteSettingsProvider>
       </body>

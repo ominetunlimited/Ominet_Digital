@@ -86,7 +86,7 @@ export default function RichTextEditor({ value, onChange, placeholder }: { value
           type="color"
           title="Text colour"
           aria-label="Text colour"
-          defaultValue="#023337"
+          defaultValue="#160E3D"
           style={css("width:28px;height:28px;padding:0;border:1px solid var(--color-divider);border-radius:var(--radius-sm);cursor:pointer;")}
           onChange={(e) => exec("foreColor", e.target.value)}
         />

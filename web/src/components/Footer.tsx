@@ -4,21 +4,27 @@ import SocialLinks from "@/components/SocialLinks";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { ResearchFooterLinks } from "@/components/ResearchProfileLinks";
 import { getSiteSettings } from "@/lib/site-settings";
+import { isPageOn } from "@/lib/site-pages";
 
 export default async function Footer() {
-  const { footer, contact, identity } = await getSiteSettings();
+  const { footer, contact, identity, pages } = await getSiteSettings();
+  const on = (k: string) => isPageOn(pages, k);
+  const custom = pages.custom.filter((c) => c.enabled);
   const logoUrl = identity.logoUrl;
   return (
-    <footer style={{ borderTop: "none", padding: "var(--space-8) var(--space-6) var(--space-6)", background: "var(--om-navy)", color: "#eafaf0" }}>
+    <footer style={{ borderTop: "none", padding: "var(--space-8) var(--space-6) var(--space-6)", background: "var(--om-navy)", color: "#f1eefb" }}>
       <style>{`
-        .omd-footer a{color:#cfe9d5;text-decoration:none;}
-        .omd-footer a:hover{color:var(--om-orange);}
+        .omd-footer a{color:#d9d3f0;text-decoration:none;}
+        .omd-footer a:hover{color:var(--om-cyan);}
       `}</style>
       <div className="omd-footer" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: "var(--space-6)", maxWidth: 1200, margin: "0 auto" }}>
         <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, fontFamily: "var(--font-heading)", fontSize: 20, fontWeight: 700, marginBottom: "var(--space-2)", color: "#fff" }}>
-            <Image src={logoUrl || "/images/ominet-digital-logo.png"} alt={identity.siteName} width={30} height={23} style={{ display: "block" }} />
-            {identity.siteName.toUpperCase()}
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: "var(--space-3)" }}>
+            <Image src={logoUrl || "/images/ominet-digital-logo.svg"} alt="" width={40} height={39} style={{ display: "block", height: 39, width: "auto" }} />
+            <span style={{ display: "inline-flex", flexDirection: "column", lineHeight: 1, letterSpacing: "0.22em", color: "#fff" }}>
+              <span style={{ fontFamily: "var(--font-heading)", fontSize: 22 }}>OMINET</span>
+              <span style={{ fontSize: 9, letterSpacing: "0.5em", marginTop: 4, color: "#c9c2e6" }}>DIGITAL</span>
+            </span>
           </div>
           {footer.blurb && <p style={{ fontSize: 13, opacity: 0.75, maxWidth: "36ch", margin: "0 0 var(--space-4)" }}>{footer.blurb}</p>}
           <div style={{ display: "flex", alignItems: "center", gap: "var(--space-3)" }}>
@@ -29,27 +35,31 @@ export default async function Footer() {
         <div>
           <div style={{ fontSize: 11, letterSpacing: "0.1em", opacity: 0.6, marginBottom: "var(--space-3)" }}>OMINI NFAWA</div>
           <div style={{ display: "grid", gap: "var(--space-2)", fontSize: 13 }}>
-            <Link href="/omini-nfawa">Overview</Link>
-            <Link href="/writing">Writing</Link>
-            <Link href="/books">Books</Link>
-            <Link href="/media">Media</Link>
-            <Link href="/about">About</Link>
+            {on("omini-nfawa") && <Link href="/omini-nfawa">Overview</Link>}
+            {on("writing") && <Link href="/writing">Writing</Link>}
+            {on("books") && <Link href="/books">Books</Link>}
+            {on("media") && <Link href="/media">Media</Link>}
+            {on("services") && <Link href="/services">Services</Link>}
+            {on("about") && <Link href="/about">About</Link>}
           </div>
         </div>
         <ResearchFooterLinks />
         <div>
           <div style={{ fontSize: 11, letterSpacing: "0.1em", opacity: 0.6, marginBottom: "var(--space-3)" }}>ECOSYSTEM</div>
           <div style={{ display: "grid", gap: "var(--space-2)", fontSize: 13 }}>
-            <Link href="/profile">PROFILE</Link>
-            <Link href="/cortexa-office">Cortexa Office</Link>
-            <Link href="/store">Store</Link>
-            <Link href="/ominet-digital">Studio &amp; services</Link>
+            {on("profile") && <Link href="/profile">PROFILE</Link>}
+            {on("cortexa-office") && <Link href="/cortexa-office">Cortexa Office</Link>}
+            {on("store") && <Link href="/store">Store</Link>}
+            {on("ominet-digital") && <Link href="/ominet-digital">Studio &amp; services</Link>}
+            {custom.map((c) => (
+              <Link key={c.id} href={c.href} {...(c.href.startsWith("https://") ? { target: "_blank", rel: "noopener noreferrer" } : {})}>{c.label}</Link>
+            ))}
           </div>
         </div>
         <div>
           <div style={{ fontSize: 11, letterSpacing: "0.1em", opacity: 0.6, marginBottom: "var(--space-3)" }}>MORE</div>
           <div style={{ display: "grid", gap: "var(--space-2)", fontSize: 13 }}>
-            <Link href="/search">Search</Link>
+            {on("search") && <Link href="/search">Search</Link>}
             <Link href="/omini-nfawa#newsletter">Newsletter</Link>
             <a href={`mailto:${contact.supportEmail}`}>Contact</a>
             <WhatsAppButton label="WhatsApp" />
@@ -62,7 +72,7 @@ export default async function Footer() {
       <div className="hr" style={{ maxWidth: 1200, margin: "var(--space-6) auto", background: "rgba(255,255,255,0.15)" }} />
       <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "var(--space-2)", maxWidth: 1200, margin: "0 auto", fontSize: 12, opacity: 0.6 }}>
         <span>&copy; {new Date().getFullYear()} {footer.copyrightName}. All rights reserved.</span>
-        <span>Omini Nfawa &middot; PROFILE &middot; Cortexa Office</span>
+        <span>Creative Solutions. Professional Excellence.</span>
       </div>
     </footer>
   );

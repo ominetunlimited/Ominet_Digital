@@ -17,7 +17,8 @@ export async function generateMetadata() {
   return ecosystem.cortexaVisible ? meta : { ...meta, robots: { index: false, follow: false } };
 }
 
-const CORTEXA_URL = "https://cortexa-office.vercel.app/";
+// Set NEXT_PUBLIC_CORTEXA_APP_URL to the app's own ominetdigital.com.ng address once it is mapped; until then it falls back to its current deployment.
+const CORTEXA_URL = process.env.NEXT_PUBLIC_CORTEXA_APP_URL || "https://cortexa-office.vercel.app/";
 
 export default async function CortexaOfficePage() {
   const [{ ecosystem }, partnerApps] = await Promise.all([getSiteSettings(), getPartnerApps()]);

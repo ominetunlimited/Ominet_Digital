@@ -1,5 +1,4 @@
 /* Modernist — design-system tokens and component classes. This file is the source of truth for the system's look; retune it here and see readme.md. */
-@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&display=swap');
 
 :root {
   --color-bg: #f3f2f2;
@@ -251,76 +250,110 @@ textarea.input { min-height: 90px; resize: vertical; }
 .dialog-actions { display: flex; justify-content: flex-end; gap: var(--space-2); margin-top: var(--space-2); }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   Ominet Digital retheme — overrides Modernist's own tokens above. This is
-   the real source of truth for color/radius on this project; do not revert
-   to Modernist's flat red/white look. See project/CLAUDE.md and Handoff.
+   Ominet Digital brand system (2026 rebrand) — the real source of truth for
+   colour, type, radius and elevation. Palette is sampled from the official
+   logo and the Ominet style reference. Indigo + ivory lead; cyan/azure are
+   the working accents; violet, magenta, coral, orange and amber are
+   reserved for illustration and one-off highlights.
+   (Token names --om-navy / --om-teal / --om-orange are kept so existing
+   components keep working; they now carry the new palette.)
    ══════════════════════════════════════════════════════════════════════ */
 :root {
-  --om-navy: #023337;
-  --om-navy-2: #03474d;
-  --om-teal: #4ea674;
-  --om-teal-light: #c0e6b9;
-  --om-orange: #4ea674;
-  --om-orange-2: #3d8a5e;
-  --om-cream: #e9f8e7;
+  --om-indigo: #160E3D;
+  --om-indigo-2: #241a5c;
+  --om-ivory: #F6F4FA;
+  --om-blush: #F8E9E0;
+  --om-cyan: #02C8ED;
+  --om-azure: #0B8FD6;
+  --om-mist: #DDF6FD;
+  --om-amber: #F9CD62;
+  --om-violet: #8C0DF0;
+  --om-magenta: #E64770;
+  --om-coral: #E25868;
+  --om-orange: #F39154;
 
-  --color-bg: #e9f8e7;
+  /* legacy aliases (do not remove — components reference these) */
+  --om-navy: var(--om-indigo);
+  --om-navy-2: var(--om-indigo-2);
+  --om-teal: var(--om-cyan);
+  --om-teal-light: var(--om-mist);
+  --om-orange-2: var(--om-azure);
+  --om-cream: var(--om-ivory);
+
+  --font-heading: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+  --font-heading-weight: 400;
+  --font-body: "Avenir Next", "Segoe UI", "Helvetica Neue", system-ui, -apple-system, sans-serif;
+
+  --color-bg: var(--om-ivory);
   --color-surface: #ffffff;
-  --color-text: var(--om-navy);
-  --color-accent: var(--om-teal);
-  --color-accent-2: var(--om-teal);
-  --color-divider: color-mix(in srgb, var(--om-navy) 14%, transparent);
+  --color-text: var(--om-indigo);
+  --color-accent: var(--om-cyan);
+  --color-accent-2: var(--om-azure);
+  --color-link: var(--om-azure);
+  --color-divider: color-mix(in srgb, var(--om-indigo) 14%, transparent);
+  --on-accent: var(--om-indigo);
 
   --color-neutral-100: #ffffff;
-  --color-neutral-200: #eef8ec;
-  --color-neutral-300: #d9ecd3;
-  --color-neutral-400: #b7d9ac;
-  --color-neutral-500: #8fb884;
-  --color-neutral-600: #5f8f5c;
-  --color-neutral-700: #3a6640;
-  --color-neutral-800: #1c3f2e;
-  --color-neutral-900: var(--om-navy);
+  --color-neutral-200: #efecf6;
+  --color-neutral-300: #dcd7ea;
+  --color-neutral-400: #bdb6d3;
+  --color-neutral-500: #9890b6;
+  --color-neutral-600: #756c99;
+  --color-neutral-700: #544a7c;
+  --color-neutral-800: #382e68;
+  --color-neutral-900: var(--om-indigo);
 
-  --color-accent-100: #e9f8e7;
-  --color-accent-200: #c0e6b9;
-  --color-accent-300: #9ad692;
-  --color-accent-400: #6fbb7f;
-  --color-accent-500: var(--om-teal);
-  --color-accent-600: var(--om-orange-2);
-  --color-accent-700: #2c6b45;
-  --color-accent-800: #1c4a30;
-  --color-accent-900: #0f2f1e;
-  --color-accent-2-100: #e9f8e7; --color-accent-2-200: #c0e6b9; --color-accent-2-300: #9ad692;
-  --color-accent-2-400: #6fbb7f; --color-accent-2-500: var(--om-teal); --color-accent-2-600: var(--om-orange-2);
-  --color-accent-2-700: #2c6b45; --color-accent-2-800: #1c4a30; --color-accent-2-900: #0f2f1e;
+  --color-accent-100: #e8fafe;
+  --color-accent-200: var(--om-mist);
+  --color-accent-300: #a6e9f8;
+  --color-accent-400: #4fd8f2;
+  --color-accent-500: var(--om-cyan);
+  --color-accent-600: #02a6c7;
+  --color-accent-700: var(--om-azure);
+  --color-accent-800: #0a6aa3;
+  --color-accent-900: #0b3f66;
+  --color-accent-2-100: #e8f4fc; --color-accent-2-200: #cbe6f8; --color-accent-2-300: #98d0f1;
+  --color-accent-2-400: #4fb1e6; --color-accent-2-500: var(--om-azure); --color-accent-2-600: #0a78b8;
+  --color-accent-2-700: #0a6aa3; --color-accent-2-800: #0a4f7a; --color-accent-2-900: #0b3f66;
 
-  --radius-sm: 10px;
-  --radius-md: 18px;
-  --radius-lg: 28px;
+  --space-5: 20px;
+  --space-7: 28px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
 
-  --shadow-sm: 0 2px 8px color-mix(in srgb, var(--om-navy) 18%, transparent);
-  --shadow-md: 0 8px 24px color-mix(in srgb, var(--om-navy) 20%, transparent);
-  --shadow-lg: 0 20px 50px color-mix(in srgb, var(--om-navy) 26%, transparent);
+  --shadow-sm: 0 1px 3px color-mix(in srgb, var(--om-indigo) 14%, transparent);
+  --shadow-md: 0 6px 18px color-mix(in srgb, var(--om-indigo) 14%, transparent);
+  --shadow-lg: 0 18px 44px color-mix(in srgb, var(--om-indigo) 22%, transparent);
 
-  /* PROFILE keeps this blue identity untouched */
-  --om-blue: #4B648D; --om-blue-2: #5987A8; --om-powder: #B9E4F4; --om-mist: #E7FBF9;
-  --om-plum: #30232D; --om-coral: #D55053; --om-peach: #F1C095;
+  /* PROFILE keeps its own blue identity untouched */
+  --om-blue: #4B648D; --om-blue-2: #5987A8; --om-powder: #B9E4F4;
+  --om-plum: #30232D; --om-peach: #F1C095;
 }
 
 [data-theme="dark"] {
-  --color-bg: var(--om-navy);
-  --color-surface: var(--om-navy-2);
-  --color-text: #eafaf0;
-  --color-divider: color-mix(in srgb, var(--om-teal-light) 25%, transparent);
-  --color-neutral-100: var(--om-navy-2); --color-neutral-200: #0a4a45; --color-neutral-300: #135c50;
-  --color-neutral-700: #bfe8cf; --color-neutral-800: #dcf3e3; --color-neutral-900: #f2fbf5;
+  --color-bg: var(--om-indigo);
+  --color-surface: var(--om-indigo-2);
+  --color-text: #f1eefb;
+  --color-link: var(--om-cyan);
+  --color-divider: color-mix(in srgb, var(--om-mist) 22%, transparent);
+  --color-neutral-100: var(--om-indigo-2); --color-neutral-200: #2e2370; --color-neutral-300: #3b2f85;
+  --color-neutral-700: #cfc8ea; --color-neutral-800: #e3def5; --color-neutral-900: #f6f4fa;
   --shadow-sm: 0 2px 8px rgba(0,0,0,0.4);
   --shadow-md: 0 8px 24px rgba(0,0,0,0.45);
   --shadow-lg: 0 20px 50px rgba(0,0,0,0.55);
 }
 
+/* Buttons: sans-serif, indigo text on cyan for strong contrast */
+.btn { font-family: var(--font-body); font-weight: 600; letter-spacing: 0.01em; }
+.btn-primary { background: var(--om-cyan); color: var(--om-indigo); }
+.btn-primary:hover { background: #4fd8f2; color: var(--om-indigo); }
+.btn-primary:active { background: #02a6c7; }
+.btn-ghost { color: var(--color-link); }
+h1, h2, h3, h4 { letter-spacing: -0.01em; }
+
 a { color: var(--color-text); text-decoration: none; }
-a:hover { color: var(--color-accent-700); }
+a:hover { color: var(--color-link); }
 html, body { background: var(--color-bg); }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -462,3 +495,23 @@ html, body { background: var(--color-bg); }
   .admin-shell .table-responsive td[data-label=""]::before,
   .admin-shell .table-responsive td:not([data-label])::before { content: none; }
 }
+
+/* ── Shared card system (services, books, writing, media, store, portfolio) ──
+   One structure everywhere: art on top, kicker, title, description, link.
+   Artwork is a branded SVG (public/art) unless the item has its own image. */
+.omd-card { position: relative; display: flex; flex-direction: column; height: 100%; background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-lg); overflow: hidden; transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+.omd-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: color-mix(in srgb, var(--om-cyan) 55%, transparent); }
+.omd-card-media { position: relative; aspect-ratio: 4 / 3; background: var(--om-ivory); overflow: hidden; }
+.omd-card-media img { transition: transform .35s ease; }
+.omd-card:hover .omd-card-media img { transform: scale(1.03); }
+.omd-card-body { display: flex; flex-direction: column; gap: 6px; padding: var(--space-4) var(--space-5) var(--space-5); flex: 1; }
+.omd-card-kicker { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--om-azure); font-weight: 600; }
+[data-theme="dark"] .omd-card-kicker { color: var(--om-cyan); }
+.omd-card-title { font-family: var(--font-heading); font-size: 20px; line-height: 1.25; margin: 0; }
+.omd-card-desc { font-size: 14px; line-height: 1.6; opacity: 0.75; margin: 0; flex: 1; }
+.omd-card-cta { margin-top: var(--space-3); font-size: 13px; font-weight: 600; color: var(--om-azure); display: inline-flex; align-items: center; gap: 6px; }
+[data-theme="dark"] .omd-card-cta { color: var(--om-cyan); }
+.omd-card-link { position: absolute; inset: 0; z-index: 1; border-radius: inherit; }
+.omd-card-link:focus-visible { outline: 3px solid var(--om-cyan); outline-offset: -3px; }
+.omd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: var(--space-6); }
+@media (prefers-reduced-motion: reduce) { .omd-card, .omd-card-media img { transition: none; } .omd-card:hover { transform: none; } }

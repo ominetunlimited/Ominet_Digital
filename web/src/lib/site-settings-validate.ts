@@ -3,6 +3,7 @@
 // publicly readable) — credentials and tokens never belong in it.
 
 import { validateDestination, validateImageUrl } from "./ad-validate";
+import { DEFAULT_PAGES, validatePages, type PagesSettings } from "./site-pages";
 
 export type SocialPlatform = "facebook" | "instagram" | "x" | "linkedin";
 export type SocialLink = { platform: SocialPlatform; label: string; url: string; enabled: boolean };
@@ -18,6 +19,7 @@ export type SiteSettings = {
   ecosystem: { profileVisible: boolean; profileMessage: string; cortexaVisible: boolean; cortexaMessage: string };
   comments: { requireSignIn: boolean };
   legal: { privacyHtml: string };
+  pages: PagesSettings;
 };
 
 export type SectionName = keyof SiteSettings;
@@ -32,6 +34,7 @@ export const SECTION_KEYS: Record<SectionName, string> = {
   ecosystem: "site_ecosystem",
   comments: "site_comments",
   legal: "site_legal",
+  pages: "site_pages",
 };
 
 const DESCRIPTION = "A digital ecosystem for publishing, creativity, professional identity and technology, founded by Omini Nfawa.";
@@ -91,6 +94,8 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   // Empty = /privacy shows its own built-in text (what's live today).
   // Once an admin saves something here, that replaces it entirely.
   legal: { privacyHtml: "" },
+  // Every page is on until an admin switches it off (Admin → Pages).
+  pages: DEFAULT_PAGES,
 };
 
 export const PLATFORM_HOSTS: Record<SocialPlatform, string[]> = {
@@ -256,5 +261,6 @@ export function mergeSettings(rows: { key: string; value: unknown }[]): SiteSett
     ecosystem: pick("ecosystem", validateEcosystem),
     comments: pick("comments", validateComments),
     legal: pick("legal", validateLegal),
+    pages: pick("pages", validatePages),
   };
 }

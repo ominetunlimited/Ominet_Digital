@@ -79,7 +79,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           {service.featuredImageUrl ? (
             <Image src={service.featuredImageUrl} alt="" fill sizes="(max-width: 700px) 90vw, 320px" style={{ objectFit: "cover" }} priority />
           ) : (
-            <PlaceholderImage label="Service" />
+            <PlaceholderImage kind="service" slug={service.slug} title={service.title} portrait />
           )}
         </div>
         <div style={css("flex:2 1 380px;")}>

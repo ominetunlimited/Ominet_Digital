@@ -3,8 +3,8 @@
   "short_name": "Ominet",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#0ea5e9",
+  "background_color": "#160E3D",
+  "theme_color": "#160E3D",
   "icons": [
     {
       "src": "/android-chrome-192x192.png",
