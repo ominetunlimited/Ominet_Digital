@@ -2,6 +2,7 @@
 // unit-tested. Everything stored here is PUBLIC (the site_settings table is
 // publicly readable) — credentials and tokens never belong in it.
 
+import { sanitizeRichHtml } from "@/lib/rich-text";
 import { validateDestination, validateImageUrl } from "./ad-validate";
 import { DEFAULT_PAGES, validatePages, type PagesSettings } from "./site-pages";
 
@@ -213,7 +214,7 @@ export function validateAbout(input: unknown): Result<SiteSettings["about"]> {
   if (!photo.ok) return { ok: false, error: `Photo: ${photo.error}` };
   const tagline = str(o.tagline, 200);
   const intro = str(o.intro, 300);
-  const bio = str(o.bio, 8000);
+  const bio = sanitizeRichHtml(str(o.bio, 40000));
   if (!bio) return { ok: false, error: "The bio can't be empty." };
   return { ok: true, value: { photoUrl: photo.url ?? "", tagline, intro, bio } };
 }
@@ -238,7 +239,7 @@ export function validateComments(input: unknown): Result<SiteSettings["comments"
 
 export function validateLegal(input: unknown): Result<SiteSettings["legal"]> {
   const o = (input ?? {}) as Record<string, unknown>;
-  return { ok: true, value: { privacyHtml: str(o.privacyHtml, 50000) } };
+  return { ok: true, value: { privacyHtml: sanitizeRichHtml(str(o.privacyHtml, 80000)) } };
 }
 
 /** Rows from the table -> full settings, falling back to defaults for anything missing or malformed. */

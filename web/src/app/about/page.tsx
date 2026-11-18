@@ -1,3 +1,5 @@
+import RichText from "@/components/RichText";
+import { splitRichBlocks } from "@/lib/rich-text";
 import Image from "next/image";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
@@ -16,7 +18,7 @@ export const generateMetadata = () => pageMetadata(
 
 export default async function AboutPage() {
   const [work, personSchema, { about }] = await Promise.all([getSelectedWork(), getPersonSchema(), getSiteSettings()]);
-  const bioParagraphs = about.bio.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
+  const bioBlocks = splitRichBlocks(about.bio);
   const jsonLd = jsonLdGraph([
     personSchema,
     breadcrumbSchema([{ name: "Home", path: "/" }, { name: "About", path: "/about" }]),
@@ -42,18 +44,14 @@ export default async function AboutPage() {
               {about.intro}
             </p>
           )}
-          {bioParagraphs.slice(0, 2).map((p, i) => (
-            <p key={i} style={css("font-size:16px;line-height:1.7;opacity:0.8;max-width:60ch;margin:0 0 var(--space-3);")}>{p}</p>
-          ))}
+          <RichText html={bioBlocks.slice(0, 2).join("")} style={css("font-size:16px;line-height:1.7;opacity:0.8;max-width:60ch;")} />
         </div>
       </section>
 
       <div className="hr" />
 
       <section style={css("padding:var(--space-8) var(--space-6);max-width:760px;")}>
-        {bioParagraphs.slice(2).map((p, i) => (
-          <p key={i} style={css("font-size:16px;line-height:1.75;opacity:0.8;margin:0 0 var(--space-4);")}>{p}</p>
-        ))}
+        <RichText html={bioBlocks.slice(2).join("")} style={css("font-size:16px;line-height:1.75;opacity:0.8;")} />
       </section>
 
       <div className="hr" />

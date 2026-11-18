@@ -1,5 +1,6 @@
 "use server";
 
+import { sanitizeRichHtml } from "@/lib/rich-text";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireStaff } from "@/lib/auth/guard";
@@ -57,7 +58,7 @@ export async function saveContent(input: ContentInput): Promise<ActionResult> {
     subcategory: input.subcategory || null,
     dek: input.dek || null,
     excerpt: input.excerpt || null,
-    body: input.body || null,
+    body: sanitizeRichHtml(input.body) || null,
     access: input.access,
     price_cents: input.access === "paid" ? input.price_cents : null,
     currency: input.currency || "NGN",

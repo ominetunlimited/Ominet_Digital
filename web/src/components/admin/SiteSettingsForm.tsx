@@ -77,8 +77,8 @@ export default function SiteSettingsForm({ initial }: { initial: SiteSettings })
         <Field label="Intro line (shown in italics)">
           <input className="input" value={about.intro} onChange={(e) => setAbout({ ...about, intro: e.target.value })} />
         </Field>
-        <Field label="Bio" hint="Paragraphs separated by a blank line.">
-          <textarea className="input" rows={14} value={about.bio} onChange={(e) => setAbout({ ...about, bio: e.target.value })} />
+        <Field label="Bio" hint="Format with the toolbar, or paste from Word or Google Docs.">
+          <RichTextEditor value={about.bio} onChange={(html) => setAbout({ ...about, bio: html })} minHeight={320} />
         </Field>
       </Section>
 

@@ -1,115 +1,149 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
+import { useEditor, EditorContent, type Editor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import TextAlign from "@tiptap/extension-text-align";
+import { Placeholder } from "@tiptap/extensions";
 import { css } from "@/lib/css";
+import { sanitizeRichHtml, toRichHtml } from "@/lib/rich-text";
 
-const FONTS = ["Default", "Georgia", "Arial", "Times New Roman", "Courier New", "Verdana"];
-const SIZES = [
-  { label: "Small", value: "2" },
-  { label: "Normal", value: "3" },
-  { label: "Large", value: "5" },
-  { label: "Huge", value: "7" },
-];
-
-function Btn({ onClick, active, children, title }: { onClick: () => void; active?: boolean; children: React.ReactNode; title: string }) {
+function Btn({ onClick, active, title, children, disabled }: { onClick: () => void; active?: boolean; title: string; children: React.ReactNode; disabled?: boolean }) {
   return (
     <button
       type="button"
       title={title}
       aria-label={title}
-      onMouseDown={(e) => e.preventDefault()} // keep the editor's text selection from collapsing before the command runs
+      aria-pressed={active}
+      disabled={disabled}
+      onMouseDown={(e) => e.preventDefault()} // keep the selection while the command runs
       onClick={onClick}
       className={active ? "btn btn-primary" : "btn btn-secondary"}
-      style={css("padding:4px 9px;font-size:13px;min-height:0;")}
+      style={css("padding:4px 9px;font-size:13px;min-height:34px;min-width:34px;")}
     >
       {children}
     </button>
   );
 }
 
+function setLink(editor: Editor) {
+  const prev = (editor.getAttributes("link").href as string | undefined) ?? "";
+  const url = window.prompt("Link address (https://…, mailto: or tel:)", prev || "https://");
+  if (url === null) return;
+  const trimmed = url.trim();
+  if (!trimmed) return void editor.chain().focus().extendMarkRange("link").unsetLink().run();
+  if (!/^(https?:\/\/|mailto:|tel:)/i.test(trimmed)) return void window.alert("Links must start with https://, mailto: or tel:");
+  editor.chain().focus().extendMarkRange("link").setLink({ href: trimmed }).run();
+}
+
 /**
- * A very simple post editor — bold, italic, underline, font, size, colour —
- * built on the browser's own contentEditable + execCommand rather than a
- * new dependency. Spell-checking is the browser's native underline (the
- * spellcheck attribute below), not something this needs to implement.
- * Stores and returns real HTML; the public article page renders that HTML
- * directly (see src/app/writing/[slug]/page.tsx).
+ * Admin rich-text editor (TipTap). Pasting from Word, Google Docs or a web
+ * page keeps headings, paragraphs, bold/italic/underline, lists, quotes,
+ * links and alignment, and discards fonts, colours, classes and scripts:
+ * ProseMirror only keeps what the schema below allows, and the value is
+ * sanitised again on the way out. Older plain-text values load as
+ * paragraphs and bullets. Props are unchanged from the previous editor.
  */
-export default function RichTextEditor({ value, onChange, placeholder }: { value: string; onChange: (html: string) => void; placeholder?: string }) {
-  const ref = useRef<HTMLDivElement>(null);
+export default function RichTextEditor({ value, onChange, placeholder, minHeight = 260 }: { value: string; onChange: (html: string) => void; placeholder?: string; minHeight?: number }) {
+  const [source, setSource] = useState(false);
+  const [sourceText, setSourceText] = useState("");
 
-  // Uncontrolled on purpose: setting innerHTML from `value` on every render
-  // (e.g. via dangerouslySetInnerHTML tied to the prop) fights the browser's
-  // own cursor position — each keystroke's React re-render would reset the
-  // caret to the start, so typed text comes out reversed. Set it once on
-  // mount and let the DOM own it from then on; onInput is the only way data
-  // flows back out.
+  const editor = useEditor({
+    immediatelyRender: false,
+    extensions: [
+      StarterKit.configure({ heading: { levels: [1, 2, 3] }, code: false, codeBlock: false, link: { openOnClick: false, autolink: true, protocols: ["mailto", "tel"] } }),
+      TextAlign.configure({ types: ["heading", "paragraph"] }),
+      Placeholder.configure({ placeholder: placeholder ?? "" }),
+    ],
+    content: toRichHtml(value),
+    editorProps: {
+      attributes: { role: "textbox", "aria-multiline": "true", "aria-label": "Content", class: "rte-body rte-editable", "data-placeholder": placeholder ?? "" },
+    },
+    onUpdate: ({ editor: ed }) => onChange(ed.isEmpty ? "" : sanitizeRichHtml(ed.getHTML())),
+  });
+
+  // Keep the toolbar's active states in sync without re-rendering on every keystroke elsewhere.
+  const [, force] = useState(0);
   useEffect(() => {
-    if (ref.current) ref.current.innerHTML = value;
-    // Mount only — see comment above.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (!editor) return;
+    const tick = () => force((n) => n + 1);
+    editor.on("selectionUpdate", tick);
+    editor.on("transaction", tick);
+    return () => { editor.off("selectionUpdate", tick); editor.off("transaction", tick); };
+  }, [editor]);
 
-  function exec(command: string, arg?: string) {
-    ref.current?.focus();
-    document.execCommand(command, false, arg);
-    if (ref.current) onChange(ref.current.innerHTML);
+  if (!editor) return <div style={css(`min-height:${minHeight}px;border:1px solid var(--color-divider);border-radius:var(--radius-md);`)} aria-busy="true" />;
+
+  const c = editor.chain().focus();
+  const align = (a: "left" | "center" | "right" | "justify") => c.setTextAlign(a).run();
+
+  function toggleSource() {
+    if (!source) {
+      setSourceText(sanitizeRichHtml(editor!.getHTML()));
+      setSource(true);
+    } else {
+      const clean = sanitizeRichHtml(sourceText);
+      editor!.commands.setContent(clean || "", { emitUpdate: true });
+      onChange(clean);
+      setSource(false);
+    }
   }
 
   return (
     <div>
-      <div style={css("display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:var(--space-2);border:1px solid var(--color-divider);border-bottom:none;border-radius:var(--radius-md) var(--radius-md) 0 0;background:var(--color-surface);")}>
-        <Btn title="Bold" onClick={() => exec("bold")}><strong>B</strong></Btn>
-        <Btn title="Italic" onClick={() => exec("italic")}><em>I</em></Btn>
-        <Btn title="Underline" onClick={() => exec("underline")}><span style={css("text-decoration:underline;")}>U</span></Btn>
+      <div role="toolbar" aria-label="Formatting" style={css("display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:var(--space-2);border:1px solid var(--color-divider);border-bottom:none;border-radius:var(--radius-md) var(--radius-md) 0 0;background:var(--color-surface);")}>
         <select
           className="input"
-          style={css("width:auto;min-height:0;padding:4px 6px;font-size:13px;")}
-          defaultValue="Default"
-          title="Font"
-          aria-label="Font"
-          onChange={(e) => exec("fontName", e.target.value === "Default" ? "inherit" : e.target.value)}
+          aria-label="Text style"
+          style={css("width:auto;min-height:34px;padding:4px 6px;font-size:13px;")}
+          disabled={source}
+          value={editor.isActive("heading", { level: 1 }) ? "h1" : editor.isActive("heading", { level: 2 }) ? "h2" : editor.isActive("heading", { level: 3 }) ? "h3" : "p"}
+          onChange={(e) => {
+            const v = e.target.value;
+            if (v === "p") editor.chain().focus().setParagraph().run();
+            else editor.chain().focus().toggleHeading({ level: Number(v[1]) as 1 | 2 | 3 }).run();
+          }}
         >
-          {FONTS.map((f) => <option key={f} value={f}>{f}</option>)}
+          <option value="p">Normal paragraph</option>
+          <option value="h1">Heading 1</option>
+          <option value="h2">Heading 2</option>
+          <option value="h3">Heading 3</option>
         </select>
-        <select
-          className="input"
-          style={css("width:auto;min-height:0;padding:4px 6px;font-size:13px;")}
-          defaultValue="3"
-          title="Size"
-          aria-label="Font size"
-          onChange={(e) => exec("fontSize", e.target.value)}
-        >
-          {SIZES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-        </select>
-        <input
-          type="color"
-          title="Text colour"
-          aria-label="Text colour"
-          defaultValue="#160E3D"
-          style={css("width:28px;height:28px;padding:0;border:1px solid var(--color-divider);border-radius:var(--radius-sm);cursor:pointer;")}
-          onChange={(e) => exec("foreColor", e.target.value)}
-        />
-        <Btn title="Bulleted list" onClick={() => exec("insertUnorderedList")}>&bull; List</Btn>
-        <Btn title="Clear formatting" onClick={() => exec("removeFormat")}>Clear</Btn>
+        <Btn title="Bold" active={editor.isActive("bold")} disabled={source} onClick={() => editor.chain().focus().toggleBold().run()}><strong>B</strong></Btn>
+        <Btn title="Italic" active={editor.isActive("italic")} disabled={source} onClick={() => editor.chain().focus().toggleItalic().run()}><em>I</em></Btn>
+        <Btn title="Underline" active={editor.isActive("underline")} disabled={source} onClick={() => editor.chain().focus().toggleUnderline().run()}><span style={{ textDecoration: "underline" }}>U</span></Btn>
+        <Btn title="Numbered list" active={editor.isActive("orderedList")} disabled={source} onClick={() => editor.chain().focus().toggleOrderedList().run()}>1. List</Btn>
+        <Btn title="Bullet list" active={editor.isActive("bulletList")} disabled={source} onClick={() => editor.chain().focus().toggleBulletList().run()}>&bull; List</Btn>
+        <Btn title="Blockquote" active={editor.isActive("blockquote")} disabled={source} onClick={() => editor.chain().focus().toggleBlockquote().run()}>&ldquo; Quote</Btn>
+        <Btn title="Insert or edit link" active={editor.isActive("link")} disabled={source} onClick={() => setLink(editor)}>Link</Btn>
+        <Btn title="Remove link" disabled={source || !editor.isActive("link")} onClick={() => editor.chain().focus().extendMarkRange("link").unsetLink().run()}>Unlink</Btn>
+        <Btn title="Align left" active={editor.isActive({ textAlign: "left" })} disabled={source} onClick={() => align("left")}>&#8676;</Btn>
+        <Btn title="Align centre" active={editor.isActive({ textAlign: "center" })} disabled={source} onClick={() => align("center")}>&#8596;</Btn>
+        <Btn title="Align right" active={editor.isActive({ textAlign: "right" })} disabled={source} onClick={() => align("right")}>&#8677;</Btn>
+        <Btn title="Horizontal separator" disabled={source} onClick={() => editor.chain().focus().setHorizontalRule().run()}>&mdash;</Btn>
+        <Btn title="Undo" disabled={source || !editor.can().undo()} onClick={() => editor.chain().focus().undo().run()}>Undo</Btn>
+        <Btn title="Redo" disabled={source || !editor.can().redo()} onClick={() => editor.chain().focus().redo().run()}>Redo</Btn>
+        <Btn title="Clear formatting" disabled={source} onClick={() => editor.chain().focus().clearNodes().unsetAllMarks().run()}>Clear</Btn>
+        <Btn title={source ? "Back to the visual editor" : "Edit the HTML source"} active={source} onClick={toggleSource}>{source ? "Visual" : "HTML"}</Btn>
       </div>
-      <div
-        ref={ref}
-        contentEditable
-        spellCheck
-        suppressContentEditableWarning
-        role="textbox"
-        aria-multiline="true"
-        aria-label="Body"
-        data-placeholder={placeholder}
-        className="rte-body rte-editable"
-        style={css("min-height:260px;padding:var(--space-3);border:1px solid var(--color-divider);border-radius:0 0 var(--radius-md) var(--radius-md);font-size:16px;line-height:1.7;")}
-        onInput={(e) => onChange(e.currentTarget.innerHTML)}
-      />
+      {source ? (
+        <textarea
+          aria-label="HTML source"
+          className="input"
+          spellCheck={false}
+          value={sourceText}
+          onChange={(e) => setSourceText(e.target.value)}
+          style={css(`min-height:${minHeight}px;font-family:ui-monospace,Menlo,monospace;font-size:13px;border-radius:0 0 var(--radius-md) var(--radius-md);`)}
+        />
+      ) : (
+        <div style={css(`min-height:${minHeight}px;padding:var(--space-3);border:1px solid var(--color-divider);border-radius:0 0 var(--radius-md) var(--radius-md);font-size:16px;line-height:1.7;`)}>
+          <EditorContent editor={editor} />
+        </div>
+      )}
       <style>{`
-        .rte-body:empty:before{content:attr(data-placeholder);opacity:0.4;}
-        .rte-editable{outline:none;}
-        .rte-editable:focus-visible{outline:2px solid var(--color-accent);outline-offset:-2px;}
+        .rte-editable{outline:none;min-height:${Math.max(120, minHeight - 40)}px;}
+        .rte-editable p.is-editor-empty:first-child::before{content:attr(data-placeholder);opacity:0.4;float:left;height:0;pointer-events:none;}
+        .rte-editable:focus-visible{outline:2px solid var(--color-accent);outline-offset:4px;}
       `}</style>
     </div>
   );

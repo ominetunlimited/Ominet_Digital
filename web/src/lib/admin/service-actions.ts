@@ -1,5 +1,6 @@
 "use server";
 
+import { sanitizeRichHtml } from "@/lib/rich-text";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireStaff } from "@/lib/auth/guard";
@@ -55,7 +56,7 @@ export async function saveService(input: ServiceInput): Promise<ActionResult> {
     title: input.title,
     slug,
     short_description: input.short_description || null,
-    full_description: input.full_description || null,
+    full_description: sanitizeRichHtml(input.full_description) || null,
     featured_image_url: input.featured_image_url || null,
     gallery: input.gallery,
     category: input.category || null,
@@ -66,7 +67,7 @@ export async function saveService(input: ServiceInput): Promise<ActionResult> {
     availability: input.availability || null,
     location_mode: input.location_mode,
     booking_enabled: input.booking_enabled,
-    requirements: input.requirements || null,
+    requirements: sanitizeRichHtml(input.requirements) || null,
     faq: input.faq,
     external_booking_url: input.external_booking_url || null,
     cta_label: input.cta_label || null,

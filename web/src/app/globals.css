@@ -91,6 +91,15 @@ p { margin: 0 0 var(--space-3); }
    <div> in most browsers, not <p>, so give those their own rhythm too. */
 .rte-body p, .rte-body div { margin: 0 0 1.4em; }
 .rte-body ul, .rte-body ol { margin: 0 0 1.4em; padding-left: 1.4em; }
+.rte-body li { margin: 0 0 0.4em; }
+.rte-body li > p { margin: 0; }
+.rte-body > :last-child { margin-bottom: 0; }
+.rte-body h1, .rte-body h2, .rte-body h3, .rte-body h4 { font-family: var(--font-heading); line-height: 1.2; margin: 1.6em 0 0.6em; }
+.rte-body > h1:first-child, .rte-body > h2:first-child, .rte-body > h3:first-child { margin-top: 0; }
+.rte-body h1 { font-size: 1.7em; } .rte-body h2 { font-size: 1.4em; } .rte-body h3 { font-size: 1.15em; }
+.rte-body blockquote { margin: 0 0 1.4em; padding: 0.2em 0 0.2em 1.1em; border-left: 3px solid var(--om-cyan); opacity: 0.9; font-style: italic; }
+.rte-body hr { border: 0; border-top: 1px solid var(--color-divider); margin: 2em 0; }
+.rte-body a { color: var(--color-accent); }
 a { color: var(--color-accent); text-underline-offset: 3px; }
 img { display: block; max-width: 100%; }
 figure { margin: 0; }

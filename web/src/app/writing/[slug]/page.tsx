@@ -1,3 +1,4 @@
+import RichText from "@/components/RichText";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import Nav from "@/components/Nav";
@@ -127,7 +128,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
         )}
 
         {unlocked && article.body && (
-          <div className="rte-body" style={css("font-size:18px;line-height:1.8;")} dangerouslySetInnerHTML={{ __html: article.body }} />
+          <RichText html={article.body} style={css("font-size:18px;line-height:1.8;")} />
         )}
 
         {((article.attachmentFormat && unlocked && article.id) || article.externalUrl) && (
