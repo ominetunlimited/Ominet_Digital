@@ -2,7 +2,7 @@ import Link from "next/link";
 import { css } from "@/lib/css";
 import { createClient } from "@/lib/supabase/server";
 import BookingRow, { type BookingItem } from "@/components/admin/BookingRow";
-import type { QuotationItem, EventItem } from "@/components/admin/WorkflowPanel";
+import type { QuotationItem, EventItem, PaymentItem, DocItem } from "@/components/admin/WorkflowPanel";
 import type { Stage } from "@/lib/workflow";
 import type { BookingStatus } from "@/lib/admin/booking-actions";
 
@@ -38,12 +38,14 @@ export default async function AdminBookingsPage({ searchParams }: { searchParams
 
   const { data } = query ? await query : { data: [] };
   const ids = (data ?? []).map((r) => r.id as string);
-  const [qRes, eRes] = ids.length && supabase
+  const [qRes, eRes, pRes, dRes] = ids.length && supabase
     ? await Promise.all([
         supabase.from("quotations").select("*").in("booking_id", ids).order("version", { ascending: false }),
         supabase.from("enquiry_events").select("id,booking_id,kind,from_stage,to_stage,note,created_at").in("booking_id", ids).order("created_at", { ascending: false }).limit(500),
+        supabase.from("booking_payments").select("id,booking_id,kind,amount_cents,currency,method,reference,paid_on,status").in("booking_id", ids).order("created_at", { ascending: true }),
+        supabase.from("documents").select("id,booking_id,kind,number,status,payment_id").in("booking_id", ids).order("created_at", { ascending: false }),
       ])
-    : [{ data: [] }, { data: [] }];
+    : [{ data: [] }, { data: [] }, { data: [] }, { data: [] }];
   const quotesBy = new Map<string, QuotationItem[]>();
   for (const q of qRes.data ?? []) {
     const list = quotesBy.get(q.booking_id) ?? [];
@@ -54,6 +56,18 @@ export default async function AdminBookingsPage({ searchParams }: { searchParams
       conditions: q.conditions, expiryDate: q.expiry_date, sentAt: q.sent_at,
     });
     quotesBy.set(q.booking_id, list);
+  }
+  const paysBy = new Map<string, PaymentItem[]>();
+  for (const x of pRes.data ?? []) {
+    const list = paysBy.get(x.booking_id) ?? [];
+    list.push({ id: x.id, kind: x.kind, amountCents: Number(x.amount_cents), currency: x.currency, method: x.method, reference: x.reference, paidOn: x.paid_on, status: x.status });
+    paysBy.set(x.booking_id, list);
+  }
+  const docsBy = new Map<string, DocItem[]>();
+  for (const x of dRes.data ?? []) {
+    const list = docsBy.get(x.booking_id) ?? [];
+    list.push({ id: x.id, kind: x.kind, number: x.number, status: x.status, paymentId: x.payment_id });
+    docsBy.set(x.booking_id, list);
   }
   const eventsBy = new Map<string, EventItem[]>();
   for (const e of eRes.data ?? []) {
@@ -83,6 +97,8 @@ export default async function AdminBookingsPage({ searchParams }: { searchParams
     bookingRef: r.booking_ref ?? null,
     quotations: quotesBy.get(r.id) ?? [],
     events: eventsBy.get(r.id) ?? [],
+    payments: paysBy.get(r.id) ?? [],
+    documents: docsBy.get(r.id) ?? [],
   }));
 
   return (

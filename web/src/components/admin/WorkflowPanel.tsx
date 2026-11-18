@@ -6,6 +6,9 @@ import { useAdminAction } from "@/lib/admin/useAdminAction";
 import { changeStage, saveQuotation, sendQuotation, recordQuotationResponse, confirmBooking, type QuotationInput } from "@/lib/admin/workflow-actions";
 import { STAGE_LABEL, TRANSITIONS, CONFIRMABLE, CLIENT_NOTIFY_STAGES, type Stage, type Milestone } from "@/lib/workflow";
 import { formatMoney } from "@/lib/money";
+import Link from "next/link";
+import { recordPayment, voidPayment, createDocument } from "@/lib/admin/document-actions";
+import { DOC_LABEL, type DocKind } from "@/lib/documents";
 
 export type QuotationItem = {
   id: string; reference: string; version: number; status: string; scope: string | null; priceCents: number; discountCents: number; currency: string;
@@ -13,6 +16,8 @@ export type QuotationItem = {
   deliverables: string | null; milestones: Milestone[]; paymentTerms: string | null; revisionTerms: string | null; conditions: string | null;
   expiryDate: string | null; sentAt: string | null;
 };
+export type PaymentItem = { id: string; kind: string; amountCents: number; currency: string; method: string | null; reference: string | null; paidOn: string; status: string };
+export type DocItem = { id: string; kind: DocKind; number: string; status: string; paymentId: string | null };
 export type EventItem = { id: string; kind: string; fromStage: string | null; toStage: string | null; note: string | null; createdAt: string };
 
 const LOCKED: Stage[] = ["booking_confirmed", "in_progress", "awaiting_review", "completed", "cancelled", "archived"];
@@ -37,8 +42,8 @@ function blank(latest: QuotationItem | undefined, details: Record<string, unknow
   };
 }
 
-export default function WorkflowPanel({ bookingId, stage, bookingRef, details, quotations, events }: {
-  bookingId: string; stage: Stage; bookingRef: string | null; details: Record<string, unknown>; quotations: QuotationItem[]; events: EventItem[];
+export default function WorkflowPanel({ bookingId, stage, bookingRef, details, quotations, events, payments = [], documents = [] }: {
+  bookingId: string; stage: Stage; bookingRef: string | null; details: Record<string, unknown>; quotations: QuotationItem[]; events: EventItem[]; payments?: PaymentItem[]; documents?: DocItem[];
 }) {
   const latest = quotations[0];
   const locked = LOCKED.includes(stage);
@@ -53,8 +58,11 @@ export default function WorkflowPanel({ bookingId, stage, bookingRef, details, q
   const sendAct = useAdminAction();
   const respAct = useAdminAction();
   const confirmAct = useAdminAction();
-  const anyBusy = stageAct.busy || saveAct.busy || sendAct.busy || respAct.busy || confirmAct.busy;
-  const err = stageAct.error || saveAct.error || sendAct.error || respAct.error || confirmAct.error;
+  const payAct = useAdminAction();
+  const docAct = useAdminAction();
+  const [pay, setPay] = useState({ kind: "deposit" as "deposit" | "instalment" | "balance" | "full", amount: "", method: "", reference: "", paidOn: new Date().toISOString().slice(0, 10), note: "" });
+  const anyBusy = stageAct.busy || saveAct.busy || sendAct.busy || respAct.busy || confirmAct.busy || payAct.busy || docAct.busy;
+  const err = stageAct.error || saveAct.error || sendAct.error || respAct.error || confirmAct.error || payAct.error || docAct.error;
 
   const set = <K extends keyof QuotationInput>(k: K, v: QuotationInput[K]) => setForm((f) => ({ ...f, [k]: v }));
   const options = (TRANSITIONS[stage] ?? []).filter((s) => s !== "booking_confirmed" && s !== "quotation_sent");
@@ -131,6 +139,66 @@ export default function WorkflowPanel({ bookingId, stage, bookingRef, details, q
           <div style={css("display:flex;gap:var(--space-2);flex-wrap:wrap;")}>
             <input className="input" aria-label="Payment status shown to the client" style={css("flex:1 1 240px;")} value={payment} onChange={(e) => setPayment(e.target.value)} placeholder="Payment status, e.g. Deposit received" />
             <button type="button" className="btn btn-primary" disabled={anyBusy} onClick={async () => { if (!window.confirm("Confirm this booking and email the client?")) return; const r = await confirmAct.run(() => confirmBooking(bookingId, payment)); if (r?.ok) setFlash(r.message ?? "Confirmed."); }}>{confirmAct.busy ? "Confirming…" : "Confirm booking"}</button>
+          </div>
+        </div>
+      )}
+
+      {accepted && (
+        <div>
+          <div style={sec}>PAYMENTS</div>
+          {(() => {
+            const live = payments.filter((x) => x.status === "recorded");
+            const agreed = Math.max(0, accepted.priceCents - accepted.discountCents);
+            const received = live.reduce((a, x) => a + x.amountCents, 0);
+            const left = agreed - received;
+            return (
+              <>
+                <p style={css("font-size:13px;margin:0 0 var(--space-2);")}>Agreed {formatMoney(agreed, accepted.currency)} · received {formatMoney(received, accepted.currency)} · <strong>outstanding {formatMoney(left, accepted.currency)}</strong></p>
+                {payments.map((x) => {
+                  const rc = documents.find((d) => d.kind === "receipt" && d.paymentId === x.id && d.status !== "void");
+                  return (
+                    <div key={x.id} style={css("display:flex;gap:var(--space-3);flex-wrap:wrap;align-items:center;font-size:12px;padding:6px 0;border-top:1px solid var(--color-divider);" + (x.status === "voided" ? "opacity:0.5;text-decoration:line-through;" : ""))}>
+                      <span>{x.paidOn}</span><strong>{formatMoney(x.amountCents, x.currency)}</strong><span>{x.kind}</span><span style={css("opacity:0.7;")}>{[x.method, x.reference].filter(Boolean).join(" · ")}</span>
+                      {x.status === "recorded" && (
+                        <span style={css("margin-left:auto;display:flex;gap:6px;")}>
+                          {rc ? <Link href={`/admin/documents/${rc.id}`}>Receipt {rc.number}</Link> : <button type="button" className="btn btn-secondary" style={css("font-size:11px;padding:3px 8px;")} disabled={anyBusy} onClick={async () => { const r = await docAct.run(() => createDocument(bookingId, "receipt", { paymentId: x.id })); if (r?.ok) setFlash(r.message ?? ""); }}>Create receipt</button>}
+                          <button type="button" className="btn btn-ghost" style={css("font-size:11px;padding:3px 8px;")} disabled={anyBusy} onClick={async () => { const why = window.prompt("Why is this payment being voided?"); if (!why) return; const r = await payAct.run(() => voidPayment(x.id, why)); if (r?.ok) setFlash(r.message ?? ""); }}>Void</button>
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+                {left > 0 && (
+                  <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:var(--space-2);margin-top:var(--space-2);")}>
+                    <select className="input" aria-label="Payment type" value={pay.kind} onChange={(e) => setPay({ ...pay, kind: e.target.value as typeof pay.kind })}>
+                      <option value="deposit">Deposit</option><option value="instalment">Instalment</option><option value="balance">Balance</option><option value="full">Full payment</option>
+                    </select>
+                    <input className="input" aria-label="Amount received" inputMode="decimal" placeholder="Amount received" value={pay.amount} onChange={(e) => setPay({ ...pay, amount: e.target.value })} />
+                    <input className="input" aria-label="Date received" type="date" value={pay.paidOn} onChange={(e) => setPay({ ...pay, paidOn: e.target.value })} />
+                    <input className="input" aria-label="Payment method" placeholder="Method, e.g. Bank transfer" value={pay.method} onChange={(e) => setPay({ ...pay, method: e.target.value })} />
+                    <input className="input" aria-label="Payment reference" placeholder="Reference" value={pay.reference} onChange={(e) => setPay({ ...pay, reference: e.target.value })} />
+                    <button type="button" className="btn btn-primary" disabled={anyBusy || !pay.amount} onClick={async () => { const r = await payAct.run(() => recordPayment(bookingId, pay)); if (r?.ok) { setFlash(r.message ?? "Recorded."); setPay({ ...pay, amount: "", reference: "", note: "" }); } }}>{payAct.busy ? "Recording…" : "Record payment"}</button>
+                  </div>
+                )}
+                <p style={css("font-size:12px;opacity:0.55;margin:var(--space-2) 0 0;")}>Only record money that has actually arrived. A draft receipt is created for each recorded payment.</p>
+              </>
+            );
+          })()}
+        </div>
+      )}
+
+      {(quotations.length > 0 || documents.length > 0) && (
+        <div>
+          <div style={sec}>DOCUMENTS</div>
+          {documents.map((d) => (
+            <div key={d.id} style={css("display:flex;gap:var(--space-3);font-size:13px;padding:4px 0;")}>
+              <Link href={`/admin/documents/${d.id}`}>{d.number}</Link><span>{DOC_LABEL[d.kind]}</span><span style={css("text-transform:uppercase;font-size:11px;letter-spacing:0.06em;")}>{d.status}</span>
+            </div>
+          ))}
+          <div style={css("display:flex;gap:6px;flex-wrap:wrap;margin-top:var(--space-2);")}>
+            {([["quotation", !!latest], ["booking_confirmation", !!accepted], ["agreement", !!accepted], ["invoice", !!accepted], ["completion_note", !!accepted && (stage === "awaiting_review" || stage === "completed")]] as [DocKind, boolean][]).filter(([, ok]) => ok).map(([k]) => (
+              <button key={k} type="button" className="btn btn-secondary" style={css("font-size:12px;")} disabled={anyBusy} onClick={async () => { const r = await docAct.run(() => createDocument(bookingId, k, k === "quotation" ? { quotationId: latest?.id } : {})); if (r?.ok) setFlash(r.message ?? "Created."); }}>New {DOC_LABEL[k].toLowerCase()}</button>
+            ))}
           </div>
         </div>
       )}

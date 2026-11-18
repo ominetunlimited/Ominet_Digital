@@ -5,7 +5,7 @@ import { css } from "@/lib/css";
 import { setBookingStatus, updateBooking, deleteBooking, type BookingStatus } from "@/lib/admin/booking-actions";
 import { useAdminAction } from "@/lib/admin/useAdminAction";
 import SaveButton from "@/components/admin/SaveButton";
-import WorkflowPanel, { type QuotationItem, type EventItem } from "@/components/admin/WorkflowPanel";
+import WorkflowPanel, { type QuotationItem, type EventItem, type PaymentItem, type DocItem } from "@/components/admin/WorkflowPanel";
 import { STAGE_LABEL, type Stage } from "@/lib/workflow";
 
 export type BookingItem = {
@@ -30,6 +30,8 @@ export type BookingItem = {
   bookingRef?: string | null;
   quotations?: QuotationItem[];
   events?: EventItem[];
+  payments?: PaymentItem[];
+  documents?: DocItem[];
 };
 
 const DETAIL_LABELS: Record<string, string> = {
@@ -142,7 +144,7 @@ export default function BookingRow({ item }: { item: BookingItem }) {
                 </div>
               )}
               {workflow && item.stage && (
-                <WorkflowPanel bookingId={item.id} stage={item.stage} bookingRef={item.bookingRef ?? null} details={item.details ?? {}} quotations={item.quotations ?? []} events={item.events ?? []} />
+                <WorkflowPanel bookingId={item.id} stage={item.stage} bookingRef={item.bookingRef ?? null} details={item.details ?? {}} quotations={item.quotations ?? []} events={item.events ?? []} payments={item.payments ?? []} documents={item.documents ?? []} />
               )}
               {!workflow && (<div>
                 <div style={css("font-size:11px;opacity:0.5;letter-spacing:0.08em;margin-bottom:4px;")}>RESCHEDULE / CONFIRM A SLOT</div>
