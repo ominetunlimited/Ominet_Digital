@@ -28,7 +28,7 @@ export default async function AdminBookingsPage({ searchParams }: { searchParams
   const supabase = await createClient();
   let query = supabase
     ?.from("bookings")
-    .select("id,service_title,name,email,phone,preferred_date,preferred_time,message,status,confirmed_date,confirmed_time,internal_notes,created_at")
+    .select("id,service_title,name,email,phone,preferred_date,preferred_time,message,status,confirmed_date,confirmed_time,internal_notes,created_at,reference,enquiry_kind,details,email_status")
     .order("created_at", { ascending: false })
     .limit(200);
   if (status !== "all") query = query?.eq("status", status);
@@ -49,6 +49,10 @@ export default async function AdminBookingsPage({ searchParams }: { searchParams
     confirmedTime: r.confirmed_time,
     internalNotes: r.internal_notes,
     createdAt: r.created_at,
+    reference: r.reference ?? null,
+    enquiryKind: r.enquiry_kind ?? "service_request",
+    details: (r.details ?? {}) as Record<string, unknown>,
+    emailStatus: (r.email_status ?? {}) as Record<string, unknown>,
   }));
 
   return (

@@ -20,6 +20,16 @@ export type BookingItem = {
   confirmedTime: string | null;
   internalNotes: string | null;
   createdAt: string;
+  reference?: string | null;
+  enquiryKind?: string;
+  details?: Record<string, unknown>;
+  emailStatus?: Record<string, unknown>;
+};
+
+const DETAIL_LABELS: Record<string, string> = {
+  projectTitle: "Project", organisation: "Organisation", country: "Country", city: "City / state", requirements: "Requirements",
+  deliverables: "Deliverables", deliveryTimeline: "Delivery timeline", startDate: "Start date", budget: "Budget",
+  contactMethod: "Preferred contact", heardFrom: "Heard about us via", comments: "Comments",
 };
 
 const STATUS_LABEL: Record<BookingStatus, string> = {
@@ -62,6 +72,7 @@ export default function BookingRow({ item }: { item: BookingItem }) {
       <tr>
         <td data-label="Customer" style={css("max-width:260px;")}>
           <div style={css("font-weight:700;font-size:13px;")}>{item.name}</div>
+          {item.reference && <div style={css("font-size:11px;opacity:0.6;letter-spacing:0.04em;")}>{item.reference}</div>}
           <div style={css("font-size:12px;opacity:0.7;word-break:break-all;")}><a href={`mailto:${item.email}`}>{item.email}</a></div>
           {item.phone && <div style={css("font-size:12px;opacity:0.7;")}>{item.phone}</div>}
         </td>
@@ -100,6 +111,26 @@ export default function BookingRow({ item }: { item: BookingItem }) {
                 <div>
                   <div style={css("font-size:11px;opacity:0.5;letter-spacing:0.08em;margin-bottom:2px;")}>THEIR MESSAGE</div>
                   <div style={css("font-size:13px;line-height:1.6;white-space:pre-wrap;")}>{item.message}</div>
+                </div>
+              )}
+              {item.details && Object.keys(item.details).length > 0 && (
+                <div>
+                  <div style={css("font-size:11px;opacity:0.5;letter-spacing:0.08em;margin-bottom:4px;")}>PROJECT ENQUIRY DETAILS</div>
+                  <dl style={css("margin:0;display:grid;grid-template-columns:minmax(120px,32%) 1fr;gap:4px 12px;font-size:13px;")}>
+                    {Object.entries(DETAIL_LABELS).map(([k, label]) => {
+                      const v = item.details?.[k];
+                      return v ? (<div key={k} style={{ display: "contents" }}><dt style={{ opacity: 0.6 }}>{label}</dt><dd style={{ margin: 0, whiteSpace: "pre-wrap" }}>{String(v)}</dd></div>) : null;
+                    })}
+                    {Object.entries((item.details.serviceDetails ?? {}) as Record<string, string>).map(([k, v]) => (
+                      <div key={k} style={{ display: "contents" }}><dt style={{ opacity: 0.6 }}>{k}</dt><dd style={{ margin: 0, whiteSpace: "pre-wrap" }}>{String(v)}</dd></div>
+                    ))}
+                  </dl>
+                  {item.emailStatus && Object.keys(item.emailStatus).length > 0 && (
+                    <div style={css("font-size:12px;opacity:0.7;margin-top:6px;")}>
+                      Emails: team notification {String(item.emailStatus.internal ?? "?")}, client acknowledgement {String(item.emailStatus.acknowledgement ?? "?")}
+                      {" "}(accepted means Mailgun took it, not that it reached the inbox).
+                    </div>
+                  )}
                 </div>
               )}
               <div>

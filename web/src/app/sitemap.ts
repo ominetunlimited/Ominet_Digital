@@ -8,7 +8,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const { articles, books, services } = await getAllSlugs();
   const { pages } = await getSiteSettings();
   const on = (k: string) => isPageOn(pages, k);
-  const STATIC_ROUTES = ["", ...SITE_PAGES.filter((p) => on(p.key)).map((p) => p.path)];
+  const STATIC_ROUTES = ["", "/discuss-a-project", ...SITE_PAGES.filter((p) => on(p.key)).map((p) => p.path)];
 
   return [
     ...STATIC_ROUTES.map((path) => ({ url: `${SITE_URL}${path}`, lastModified: new Date() })),

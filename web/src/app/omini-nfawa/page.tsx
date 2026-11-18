@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import PlaceholderImage from "@/components/PlaceholderImage";
 import NewsletterForm from "@/components/NewsletterForm";
 import { css } from "@/lib/css";
+import { AMAZON_AUTHOR_URL } from "@/lib/links";
 import { pageMetadata } from "@/lib/seo";
 import { getFeaturedBook, getArticles } from "@/lib/data";
 import { truncate } from "@/lib/text";
@@ -44,6 +45,7 @@ export default async function OminiNfawaPage() {
           <div style={css("display:flex;gap:var(--space-3);flex-wrap:wrap;")}>
             <Link href="/writing"><button type="button" className="btn btn-primary">Read the latest writing</button></Link>
             <Link href="/books"><button type="button" className="btn btn-secondary">Browse books</button></Link>
+            <a className="btn btn-secondary" href={AMAZON_AUTHOR_URL} target="_blank" rel="noopener noreferrer">Find my books on Amazon</a>
           </div>
         </div>
       </section>

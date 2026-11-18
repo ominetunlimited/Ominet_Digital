@@ -3,6 +3,7 @@
 
 const SERVICE_FILES: Record<string, string> = {
   "writing-ghostwriting": "service-writing-ghostwriting",
+  "writing-ghostwriting-editorial-services": "service-writing-ghostwriting",
   "research-academic-support": "service-research-academic",
   "book-publishing-formatting": "service-book-publishing",
   "graphic-design-brand-identity": "service-graphic-design",
