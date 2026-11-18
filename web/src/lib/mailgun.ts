@@ -86,3 +86,41 @@ export async function sendNewsletterBatch(
     return { ok: false, error: e instanceof Error ? e.message : "Couldn't reach Mailgun." };
   }
 }
+
+
+export type TransactionalMail = { to: string; subject: string; html: string; text: string; replyTo?: string };
+export type TransactionalResult = { ok: true; providerId: string | null } | { ok: false; error: string; notConfigured?: boolean };
+
+/**
+ * One-to-one transactional email (acknowledgements, internal notifications).
+ * A 200 from Mailgun means "accepted for sending", NOT "delivered": callers
+ * should record it as "accepted" and let webhooks (when added) move it to
+ * delivered / bounced.
+ */
+export async function sendTransactional(mail: TransactionalMail): Promise<TransactionalResult> {
+  const config = await getMailgunConfig();
+  if (!config) return { ok: false, error: "Mailgun isn't configured.", notConfigured: true };
+  const form = new FormData();
+  form.set("from", FROM);
+  form.set("to", mail.to);
+  form.set("subject", mail.subject);
+  form.set("html", mail.html);
+  form.set("text", mail.text);
+  if (mail.replyTo) form.set("h:Reply-To", mail.replyTo);
+  try {
+    const res = await fetch(`${apiBase(config.region)}/v3/${config.domain}/messages`, {
+      method: "POST",
+      headers: { Authorization: `Basic ${Buffer.from(`api:${config.apiKey}`).toString("base64")}` },
+      body: form,
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      return { ok: false, error: `Mailgun said: ${res.status} ${body.slice(0, 200)}` };
+    }
+    const json = (await res.json().catch(() => null)) as { id?: string } | null;
+    return { ok: true, providerId: json?.id ?? null };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Couldn't reach Mailgun." };
+  }
+}

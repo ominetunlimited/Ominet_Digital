@@ -110,7 +110,7 @@ export default function Nav() {
           <button type="button" className="btn btn-ghost btn-icon" aria-label="Toggle dark mode" onClick={toggleTheme} style={{ color: "#f1eefb" }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>
           </button>
-          <Link href="/omini-nfawa#newsletter" className="btn btn-primary">SUBSCRIBE</Link>
+          <Link href="/discuss-a-project" className="btn btn-primary">DISCUSS A PROJECT</Link>
         </div>
         <button
           ref={openButtonRef}
@@ -159,7 +159,7 @@ export default function Nav() {
             })}
             
             <div style={{ display: "flex", gap: "var(--space-3)", flexWrap: "wrap", fontSize: 14, fontFamily: "var(--font-body)" }}>
-              <Link href="/omini-nfawa#newsletter" className="btn btn-primary" onClick={() => setMenuOpen(false)}>Subscribe</Link>
+              <Link href="/discuss-a-project" className="btn btn-primary" onClick={() => setMenuOpen(false)}>Discuss a project</Link>
               <button type="button" className="btn btn-secondary" onClick={toggleTheme}>Toggle dark mode</button>
             </div>
             <div style={{ opacity: 0.8 }}>

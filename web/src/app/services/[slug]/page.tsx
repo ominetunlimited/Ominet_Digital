@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import Nav from "@/components/Nav";
@@ -111,6 +112,9 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           ) : (
             <p style={css("font-size:13px;opacity:0.5;")}>Not currently bookable.</p>
           )}
+          <p style={css("font-size:14px;margin:var(--space-3) 0 0;")}>
+            Have a bigger brief? <Link href={`/discuss-a-project?service=${service.slug}`}>Send a detailed project enquiry</Link>.
+          </p>
 
           <div style={css("margin-top:var(--space-6);")}>
             <ShareBar url={`${SITE_URL}/services/${service.slug}`} title={service.title} />

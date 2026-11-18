@@ -6,6 +6,7 @@ import PlaceholderImage from "@/components/PlaceholderImage";
 import EmptyState from "@/components/EmptyState";
 import { css } from "@/lib/css";
 import { getBooks } from "@/lib/data";
+import { AMAZON_AUTHOR_URL } from "@/lib/links";
 import { pageMetadata } from "@/lib/seo";
 import { truncate } from "@/lib/text";
 import { collectionPageSchema } from "@/lib/schema";
@@ -42,6 +43,7 @@ export default async function BooksPage() {
       <section style={css("padding:var(--space-8) var(--space-6) var(--space-6);")}>
         <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>BOOKS</div>
         <h1 style={css("font-family:var(--font-heading);font-size:56px;margin:0;")}>Books</h1>
+        <p style={css("margin:var(--space-3) 0 0;")}><a className="btn btn-secondary" href={AMAZON_AUTHOR_URL} target="_blank" rel="noopener noreferrer">Visit my Amazon author page</a></p>
       </section>
 
       {featured && (

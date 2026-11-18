@@ -3,6 +3,7 @@ import Image from "next/image";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import PlaceholderImage from "@/components/PlaceholderImage";
+import { AMAZON_AUTHOR_URL } from "@/lib/links";
 import EcosystemItem from "@/components/EcosystemItem";
 import AdSlot from "@/components/AdSlot";
 import NewsletterForm from "@/components/NewsletterForm";
@@ -70,7 +71,8 @@ export default async function Home() {
             </h1>
             <p style={css("font-size:16px;line-height:1.6;opacity:0.85;max-width:40ch;margin:0;")}>{homepage.heroSubheading}</p>
             <div style={css("display:flex;gap:var(--space-3);flex-wrap:wrap;margin-top:var(--space-2);")}>
-              {on("writing") && <Link href="/writing"><button type="button" className="btn btn-primary" style={css("border-radius:var(--radius-md);")}>Read the writing</button></Link>}
+              <Link href="/discuss-a-project"><button type="button" className="btn btn-primary" style={css("border-radius:var(--radius-md);")}>Discuss a project</button></Link>
+              {on("writing") && <Link href="/writing"><button type="button" className="btn btn-secondary" style={css("border-radius:var(--radius-md);border-color:rgba(255,255,255,0.4);color:#fff;")}>Read the writing</button></Link>}
               {on("services") && <Link href="/services"><button type="button" className="btn btn-secondary" style={css("border-radius:var(--radius-md);border-color:rgba(255,255,255,0.4);color:#fff;")}>Our services</button></Link>}
               {on("about") && <Link href="/about"><button type="button" className="btn btn-secondary" style={css("border-radius:var(--radius-md);border-color:rgba(255,255,255,0.4);color:#fff;")}>About Omini</button></Link>}
             </div>
@@ -97,9 +99,90 @@ export default async function Home() {
         </div>
       </section>
 
-      <PartnersStrip apps={partnerApps} />
-
       <AdSlot slotKey="home_top" />
+
+      <div className="hr" />
+
+      {on("services") && homeServices.length > 0 && (
+        <section style={css("padding:var(--space-8) var(--space-6);")}>
+          <div style={css("display:flex;justify-content:space-between;align-items:flex-end;gap:var(--space-4);flex-wrap:wrap;margin-bottom:var(--space-5);")}>
+            <div>
+              <div style={css("font-size:11px;letter-spacing:0.12em;color:var(--om-azure);font-weight:600;margin-bottom:var(--space-2);")}>WHAT WE DO</div>
+              <h2 style={css("font-family:var(--font-heading);font-size:clamp(28px,4vw,40px);margin:0;")}>One creative partner. Multiple professional solutions.</h2>
+            </div>
+            <Link href="/services" className="btn btn-secondary">All services</Link>
+          </div>
+          <div className="omd-grid">
+            {homeServices.map((x, i) => (
+              <ArtCard key={x.slug} href={`/services/${x.slug}`} kind="service" slug={x.slug} imageUrl={x.featuredImageUrl} kicker={`${String(i + 1).padStart(2, "0")}${x.category ? " · " + x.category : ""}`} title={x.title} description={x.shortDescription} cta="Explore service" />
+            ))}
+          </div>
+        </section>
+      )}
+
+
+      <div className="hr" />
+
+      {on("books") && featuredBook && (
+        <section style={css("padding:var(--space-8) var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;gap:var(--space-8);")}>
+          <div style={css("aspect-ratio:1/1;position:relative;flex:1 1 240px;max-width:320px;border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-md);")}>
+            {featuredBook.coverImageUrl ? (
+              <Image src={featuredBook.coverImageUrl} alt="" fill sizes="(max-width: 700px) 90vw, 320px" style={{ objectFit: "cover" }} />
+            ) : (
+              <PlaceholderImage label="Book cover" />
+            )}
+          </div>
+          <div style={css("flex:2 1 380px;display:flex;flex-direction:column;justify-content:center;")}>
+            <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>FEATURED BOOK &middot; OMINI NFAWA</div>
+            <h2 style={css("font-family:var(--font-heading);font-size:36px;margin:0 0 var(--space-2);")}>{featuredBook.title}</h2>
+            <ReadMoreExcerpt
+              text={featuredBook.excerpt}
+              style={css("font-size:16px;line-height:1.7;opacity:0.75;max-width:52ch;margin:0 0 var(--space-4);")}
+            />
+            <div style={css("display:flex;gap:var(--space-3);flex-wrap:wrap;")}>
+              <Link href={`/books/${featuredBook.slug}`}><button type="button" className="btn btn-primary">View book</button></Link>
+              <Link href={`/books/${featuredBook.slug}`}>Where to buy &rarr;</Link>
+              <a href={AMAZON_AUTHOR_URL} target="_blank" rel="noopener noreferrer">Find my books on Amazon &rarr;</a>
+            </div>
+          </div>
+        </section>
+      )}
+
+      <div className="hr" />
+
+      {on("writing") && latestArticle && (
+        <section style={css("padding:var(--space-8) var(--space-6);display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--space-6);")}>
+          <Link href={`/writing/${latestArticle.slug}`} style={css("display:block;")}>
+            <div className="card">
+              <div className="card-kicker">{latestArticle.featured ? "FEATURED WRITING" : "LATEST WRITING"}</div>
+              <div className="card-title">{latestArticle.title}</div>
+              <ReadMoreExcerpt text={latestArticle.excerpt} className="card-body" />
+              <div className="card-meta"><span>{latestArticle.date}</span></div>
+            </div>
+          </Link>
+        </section>
+      )}
+
+      <div className="hr" />
+
+      <section style={css("padding:var(--space-8) var(--space-6);")}>
+        <div style={css("font-size:11px;letter-spacing:0.12em;color:var(--om-azure);font-weight:600;margin-bottom:var(--space-2);")}>WHY OMINET DIGITAL</div>
+        <h2 style={css("font-family:var(--font-heading);font-size:clamp(26px,3.6vw,36px);margin:0 0 var(--space-5);max-width:24ch;")}>Ideas, words, research and visual media in one considered process.</h2>
+        <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--space-6);")}>
+          {[
+            ["Integrated expertise", "Writing, editing, research, design and multimedia are treated as connected parts of one project."],
+            ["Books and publishing", "Manuscript development, interiors, digital formats, print specifications and promotional material."],
+            ["Research with integrity", "Credible sources, accurate attribution and honest representation of evidence."],
+            ["Ready for use", "Correct files, clean sound, readable slides. The practical details that make work ready to serve its purpose."],
+          ].map(([t, d]) => (
+            <div key={t} style={css("border-top:2px solid var(--om-cyan);padding-top:var(--space-3);")}>
+              <div style={css("font-family:var(--font-heading);font-size:18px;margin-bottom:6px;")}>{t}</div>
+              <div style={css("font-size:14px;line-height:1.6;opacity:0.7;")}>{d}</div>
+            </div>
+          ))}
+        </div>
+        <div style={css("margin-top:var(--space-5);")}><Link href="/discuss-a-project" className="btn btn-primary">Discuss a project</Link></div>
+      </section>
 
       <div className="hr" />
 
@@ -145,68 +228,10 @@ export default async function Home() {
         </div>
       </section>
 
+
+      <PartnersStrip apps={partnerApps} />
+
       <AdSlot slotKey="home_middle" />
-
-      <div className="hr" />
-
-      {on("services") && homeServices.length > 0 && (
-        <section style={css("padding:var(--space-8) var(--space-6);")}>
-          <div style={css("display:flex;justify-content:space-between;align-items:flex-end;gap:var(--space-4);flex-wrap:wrap;margin-bottom:var(--space-5);")}>
-            <div>
-              <div style={css("font-size:11px;letter-spacing:0.12em;color:var(--om-azure);font-weight:600;margin-bottom:var(--space-2);")}>WHAT WE DO</div>
-              <h2 style={css("font-family:var(--font-heading);font-size:clamp(28px,4vw,40px);margin:0;")}>One creative partner. Multiple professional solutions.</h2>
-            </div>
-            <Link href="/services" className="btn btn-secondary">All services</Link>
-          </div>
-          <div className="omd-grid">
-            {homeServices.map((x, i) => (
-              <ArtCard key={x.slug} href={`/services/${x.slug}`} kind="service" slug={x.slug} imageUrl={x.featuredImageUrl} kicker={`${String(i + 1).padStart(2, "0")}${x.category ? " · " + x.category : ""}`} title={x.title} description={x.shortDescription} cta="Explore service" />
-            ))}
-          </div>
-        </section>
-      )}
-
-
-      <div className="hr" />
-
-      {on("books") && featuredBook && (
-        <section style={css("padding:var(--space-8) var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;gap:var(--space-8);")}>
-          <div style={css("aspect-ratio:1/1;position:relative;flex:1 1 240px;max-width:320px;border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-md);")}>
-            {featuredBook.coverImageUrl ? (
-              <Image src={featuredBook.coverImageUrl} alt="" fill sizes="(max-width: 700px) 90vw, 320px" style={{ objectFit: "cover" }} />
-            ) : (
-              <PlaceholderImage label="Book cover" />
-            )}
-          </div>
-          <div style={css("flex:2 1 380px;display:flex;flex-direction:column;justify-content:center;")}>
-            <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>FEATURED BOOK &middot; OMINI NFAWA</div>
-            <h2 style={css("font-family:var(--font-heading);font-size:36px;margin:0 0 var(--space-2);")}>{featuredBook.title}</h2>
-            <ReadMoreExcerpt
-              text={featuredBook.excerpt}
-              style={css("font-size:16px;line-height:1.7;opacity:0.75;max-width:52ch;margin:0 0 var(--space-4);")}
-            />
-            <div style={css("display:flex;gap:var(--space-3);flex-wrap:wrap;")}>
-              <Link href={`/books/${featuredBook.slug}`}><button type="button" className="btn btn-primary">View book</button></Link>
-              <Link href={`/books/${featuredBook.slug}`}>Where to buy &rarr;</Link>
-            </div>
-          </div>
-        </section>
-      )}
-
-      <div className="hr" />
-
-      {on("writing") && latestArticle && (
-        <section style={css("padding:var(--space-8) var(--space-6);display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--space-6);")}>
-          <Link href={`/writing/${latestArticle.slug}`} style={css("display:block;")}>
-            <div className="card">
-              <div className="card-kicker">{latestArticle.featured ? "FEATURED WRITING" : "LATEST WRITING"}</div>
-              <div className="card-title">{latestArticle.title}</div>
-              <ReadMoreExcerpt text={latestArticle.excerpt} className="card-body" />
-              <div className="card-meta"><span>{latestArticle.date}</span></div>
-            </div>
-          </Link>
-        </section>
-      )}
 
       <div className="hr" />
 

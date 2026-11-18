@@ -4,6 +4,7 @@ import SocialLinks from "@/components/SocialLinks";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { ResearchFooterLinks } from "@/components/ResearchProfileLinks";
 import { getSiteSettings } from "@/lib/site-settings";
+import { AMAZON_AUTHOR_URL } from "@/lib/links";
 import { isPageOn } from "@/lib/site-pages";
 
 export default async function Footer() {
@@ -38,8 +39,10 @@ export default async function Footer() {
             {on("omini-nfawa") && <Link href="/omini-nfawa">Overview</Link>}
             {on("writing") && <Link href="/writing">Writing</Link>}
             {on("books") && <Link href="/books">Books</Link>}
+            <a href={AMAZON_AUTHOR_URL} target="_blank" rel="noopener noreferrer">Amazon author page</a>
             {on("media") && <Link href="/media">Media</Link>}
             {on("services") && <Link href="/services">Services</Link>}
+            <Link href="/discuss-a-project">Discuss a project</Link>
             {on("about") && <Link href="/about">About</Link>}
           </div>
         </div>
