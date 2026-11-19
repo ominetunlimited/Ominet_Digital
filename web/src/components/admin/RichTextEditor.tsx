@@ -74,8 +74,7 @@ export default function RichTextEditor({ value, onChange, placeholder, minHeight
 
   if (!editor) return <div style={css(`min-height:${minHeight}px;border:1px solid var(--color-divider);border-radius:var(--radius-md);`)} aria-busy="true" />;
 
-  const c = editor.chain().focus();
-  const align = (a: "left" | "center" | "right" | "justify") => c.setTextAlign(a).run();
+  const align = (a: "left" | "center" | "right" | "justify") => editor.chain().focus().setTextAlign(a).run();
 
   function toggleSource() {
     if (!source) {
