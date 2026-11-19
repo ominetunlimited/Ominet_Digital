@@ -1,4 +1,5 @@
 import Link from "next/link";
+import RichText from "@/components/RichText";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import Nav from "@/components/Nav";
@@ -126,7 +127,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
         <>
           <div className="hr" />
           <section style={css("max-width:720px;margin:0 auto;padding:var(--space-8) var(--space-6);font-size:17px;line-height:1.8;")}>
-            {service.fullDescription.split(/\n{2,}/).map((p, i) => <p key={i}>{p}</p>)}
+            <RichText html={service.fullDescription} />
           </section>
         </>
       )}
@@ -134,7 +135,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
       {service.requirements && (
         <section style={css("max-width:720px;margin:0 auto;padding:0 var(--space-6) var(--space-8);")}>
           <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>WHAT TO PREPARE</div>
-          <p style={css("font-size:15px;line-height:1.7;opacity:0.8;")}>{service.requirements}</p>
+          <RichText html={service.requirements} style={css("font-size:15px;line-height:1.7;opacity:0.8;")} />
         </section>
       )}
 

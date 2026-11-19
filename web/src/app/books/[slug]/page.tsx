@@ -1,3 +1,4 @@
+import RichText from "@/components/RichText";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -160,7 +161,7 @@ export default async function BookDetailPage({ params }: { params: Promise<{ slu
         {book.authorNote && (
           <>
             <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>AUTHOR&apos;S NOTE</div>
-            <p style={css("font-size:16px;line-height:1.75;opacity:0.8;margin-bottom:var(--space-8);")}>{book.authorNote}</p>
+            <RichText html={book.authorNote} style={css("font-size:16px;line-height:1.75;opacity:0.8;margin-bottom:var(--space-8);")} />
           </>
         )}
 

@@ -3,10 +3,13 @@
 import { useState } from "react";
 import { css } from "@/lib/css";
 import { useAdminAction } from "@/lib/admin/useAdminAction";
-import { saveMailgunConfig, clearMailgunConfig, type MailgunStatus } from "@/lib/admin/integration-settings-actions";
+import { saveMailgunConfig, clearMailgunConfig, saveWebhookSigningKey, type MailgunStatus } from "@/lib/admin/integration-settings-actions";
 
 /** Admin-only (gated by the server page — this component is just the form). */
-export default function MailgunSetup({ initial }: { initial: MailgunStatus }) {
+export default function MailgunSetup({ initial, webhookKeySet = false }: { initial: MailgunStatus; webhookKeySet?: boolean }) {
+  const [hookKey, setHookKey] = useState("");
+  const [hookSet, setHookSet] = useState(webhookKeySet);
+  const hook = useAdminAction();
   const [status, setStatus] = useState(initial);
   const [apiKey, setApiKey] = useState("");
   const [domain, setDomain] = useState(initial.domain);
@@ -71,6 +74,22 @@ export default function MailgunSetup({ initial }: { initial: MailgunStatus }) {
             {clear.busy ? "Disconnecting…" : "Disconnect"}
           </button>
         )}
+      </div>
+
+      <hr style={css("border:0;border-top:1px solid var(--color-divider);margin:var(--space-2) 0;width:100%;")} />
+      <strong style={css("font-size:14px;")}>Delivery tracking {hookSet ? <span style={css("font-size:12px;font-weight:400;opacity:0.6;")}>· signing key saved</span> : null}</strong>
+      <p style={css("font-size:12px;opacity:0.6;margin:0;")}>
+        In Mailgun go to Sending, Webhooks, add a webhook URL <code>https://www.ominetdigital.com.ng/api/webhooks/mailgun</code> for Delivered, Permanent failure, Temporary failure, Spam complaints, Unsubscribes (and Opened/Clicked if you want them), then paste the HTTP webhook signing key here. Events that fail signature checks are ignored.
+      </p>
+      <div className="field">
+        <label>HTTP webhook signing key</label>
+        <input className="input" type="password" autoComplete="off" value={hookKey} onChange={(e) => setHookKey(e.target.value)} placeholder={hookSet ? "Saved. Paste a new key to replace it" : "Signing key"} />
+      </div>
+      {hook.error && <p style={css("font-size:13px;color:var(--om-coral);margin:0;")}>{hook.error}</p>}
+      <div>
+        <button type="button" className="btn btn-secondary" disabled={hook.busy || !hookKey.trim()} onClick={async () => { const r = await hook.run(() => saveWebhookSigningKey(hookKey)); if (r?.ok) { setHookSet(true); setHookKey(""); } }}>
+          {hook.busy ? "Saving…" : hook.saved ? "Saved ✓" : "Save signing key"}
+        </button>
       </div>
     </div>
   );

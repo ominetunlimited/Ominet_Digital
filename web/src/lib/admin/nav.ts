@@ -24,6 +24,10 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: "/admin/comments", label: "Comments", badgeKey: "comments" },
       { href: "/admin/reviews", label: "Reviews", badgeKey: "reviews" },
       { href: "/admin/bookings", label: "Bookings", badgeKey: "bookings" },
+      { href: "/admin/clients", label: "Clients" },
+      { href: "/admin/projects", label: "Projects" },
+      { href: "/admin/documents", label: "Documents" },
+      { href: "/admin/email-activity", label: "Email activity" },
     ],
   },
   {

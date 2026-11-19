@@ -5,6 +5,9 @@ import { css } from "@/lib/css";
 import { submitEnquiry, type EnquiryInput } from "@/lib/enquiries";
 import { groupForService } from "@/lib/enquiry-fields";
 import { useAsyncAction } from "@/lib/useAsyncAction";
+import { ACCEPT, ACCEPT_LABEL, MAX_FILES, MAX_FILE_BYTES, prettySize } from "@/lib/enquiry-upload";
+
+type Attached = { key: string; name: string; size: number; state: "uploading" | "done" | "error"; id?: string; error?: string };
 
 type Svc = { id: string; slug: string; title: string };
 
@@ -22,6 +25,27 @@ export default function ProjectEnquiryForm({ services, preselect }: { services: 
   const [details, setDetails] = useState<Record<string, string>>({});
   const [done, setDone] = useState<{ reference: string; ack: boolean } | null>(null);
   const { busy, error, run } = useAsyncAction();
+  const [files, setFiles] = useState<Attached[]>([]);
+  const uploading = files.some((f) => f.state === "uploading");
+
+  async function addFiles(list: FileList | null) {
+    if (!list) return;
+    const room = MAX_FILES - files.filter((f) => f.state !== "error").length;
+    const picked = Array.from(list).slice(0, Math.max(0, room));
+    for (const file of picked) {
+      const key = `${file.name}-${file.size}-${Math.random().toString(36).slice(2)}`;
+      if (file.size > MAX_FILE_BYTES) { setFiles((x) => [...x, { key, name: file.name, size: file.size, state: "error", error: "Larger than 4 MB. Please email this one to us." }]); continue; }
+      setFiles((x) => [...x, { key, name: file.name, size: file.size, state: "uploading" }]);
+      try {
+        const body = new FormData(); body.append("file", file);
+        const res = await fetch("/api/enquiry-upload", { method: "POST", body });
+        const json = (await res.json().catch(() => null)) as { ok: boolean; id?: string; error?: string } | null;
+        setFiles((x) => x.map((f) => (f.key === key ? (json?.ok ? { ...f, state: "done", id: json.id } : { ...f, state: "error", error: json?.error ?? "Upload failed. Please try again." }) : f)));
+      } catch {
+        setFiles((x) => x.map((f) => (f.key === key ? { ...f, state: "error", error: "Upload failed. Check your connection and try again." } : f)));
+      }
+    }
+  }
 
   const set = (k: keyof typeof EMPTY, val: string | boolean) => setV((x) => ({ ...x, [k]: val }));
   const groups = useMemo(
@@ -33,7 +57,7 @@ export default function ProjectEnquiryForm({ services, preselect }: { services: 
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    const res = await run(() => submitEnquiry({ ...v, serviceIds: picked, serviceDetails: details }));
+    const res = await run(() => submitEnquiry({ ...v, serviceIds: picked, serviceDetails: details, uploadIds: files.filter((f) => f.state === "done" && f.id).map((f) => f.id as string) }));
     if (res?.ok) setDone({ reference: res.reference, ack: res.acknowledgementSent });
   }
 
@@ -121,7 +145,22 @@ export default function ProjectEnquiryForm({ services, preselect }: { services: 
         <legend style={css("font-family:var(--font-heading);font-size:20px;margin-bottom:var(--space-3);")}>A little more</legend>
         <div className="field"><label htmlFor="pe-heard">How did you hear about Ominet Digital?</label><input id="pe-heard" className="input" value={v.heardFrom} onChange={(e) => set("heardFrom", e.target.value)} /></div>
         <div className="field"><label htmlFor="pe-comments">Additional comments</label><textarea id="pe-comments" className="input" rows={3} value={v.comments} onChange={(e) => set("comments", e.target.value)} /></div>
-        <p style={css("font-size:13px;opacity:0.7;margin:0;")}>Have files to share, such as a manuscript or brief? Reply to our acknowledgement email with them attached, or send them to the address below.</p>
+        <div className="field">
+          <label htmlFor="pe-files">Reference files (optional)</label>
+          <input id="pe-files" className="input" type="file" multiple accept={ACCEPT} disabled={files.filter((f) => f.state !== "error").length >= MAX_FILES} onChange={(e) => { void addFiles(e.target.files); e.target.value = ""; }} aria-describedby="pe-files-help" />
+          <span id="pe-files-help" style={css("font-size:12px;opacity:0.65;")}>{ACCEPT_LABEL}. Larger files can be emailed to us after you submit.</span>
+          {files.length > 0 && (
+            <ul style={css("list-style:none;margin:8px 0 0;padding:0;display:grid;gap:6px;font-size:13px;")} aria-live="polite">
+              {files.map((f) => (
+                <li key={f.key} style={css("display:flex;gap:8px;flex-wrap:wrap;align-items:center;")}>
+                  <span>{f.name} <span style={css("opacity:0.6;")}>({prettySize(f.size)})</span></span>
+                  <span style={css(f.state === "error" ? "color:var(--om-coral);" : "opacity:0.7;")}>{f.state === "uploading" ? "Uploading…" : f.state === "done" ? "Attached" : f.error}</span>
+                  <button type="button" className="btn btn-ghost" style={css("font-size:12px;padding:2px 8px;")} onClick={() => setFiles((x) => x.filter((y) => y.key !== f.key))}>Remove</button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
         <label style={css("display:flex;gap:10px;align-items:flex-start;font-size:14px;min-height:44px;")}>
           <input type="checkbox" checked={v.consent} onChange={(e) => set("consent", e.target.checked)} style={css("margin-top:3px;")} />
           <span>I agree that Ominet Digital may contact me about this enquiry. *</span>
@@ -134,7 +173,7 @@ export default function ProjectEnquiryForm({ services, preselect }: { services: 
 
       {error && <p role="alert" style={css("font-size:14px;color:var(--om-coral);margin:0;")}>{error}</p>}
       <div>
-        <button type="submit" className="btn btn-primary" disabled={busy} style={css("min-height:48px;")}>{busy ? "Sending…" : "Send my enquiry"}</button>
+        <button type="submit" className="btn btn-primary" disabled={busy || uploading} style={css("min-height:48px;")}>{busy ? "Sending…" : uploading ? "Uploading files…" : "Send my enquiry"}</button>
       </div>
     </form>
   );

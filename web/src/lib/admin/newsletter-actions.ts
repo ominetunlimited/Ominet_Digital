@@ -1,5 +1,6 @@
 "use server";
 
+import { sanitizeRichHtml } from "@/lib/rich-text";
 import { revalidatePath } from "next/cache";
 import { requireStaff } from "@/lib/auth/guard";
 import { sendNewsletterBatch, isMailgunConfigured } from "@/lib/mailgun";
@@ -15,7 +16,8 @@ async function staffClient() {
 const CHUNK = 1000; // Mailgun's own per-call recipient limit
 
 /** A one-recipient send to the signed-in staff member's own address, to proof-read before it goes to real subscribers. */
-export async function sendNewsletterTest(subject: string, html: string): Promise<ActionResult> {
+export async function sendNewsletterTest(subject: string, rawHtml: string): Promise<ActionResult> {
+  const html = sanitizeRichHtml(rawHtml);
   const check = await staffClient();
   if (!check.ok) return check;
   if (!check.user?.email) return { ok: false, error: "Your account has no email to send the test to." };
@@ -28,7 +30,8 @@ export async function sendNewsletterTest(subject: string, html: string): Promise
 }
 
 /** Sends to every currently-subscribed reader and records the campaign. Each recipient gets their own unsubscribe link. */
-export async function sendNewsletterCampaign(subject: string, html: string): Promise<ActionResult> {
+export async function sendNewsletterCampaign(subject: string, rawHtml: string): Promise<ActionResult> {
+  const html = sanitizeRichHtml(rawHtml);
   const check = await staffClient();
   if (!check.ok) return check;
   const subjectTrimmed = subject.trim();

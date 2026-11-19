@@ -88,7 +88,7 @@ export async function sendNewsletterBatch(
 }
 
 
-export type TransactionalMail = { to: string; subject: string; html: string; text: string; replyTo?: string };
+export type TransactionalMail = { to: string; subject: string; html: string; text: string; replyTo?: string; attachments?: { filename: string; content: Uint8Array; contentType: string }[] };
 export type TransactionalResult = { ok: true; providerId: string | null } | { ok: false; error: string; notConfigured?: boolean };
 
 /**
@@ -107,6 +107,7 @@ export async function sendTransactional(mail: TransactionalMail): Promise<Transa
   form.set("html", mail.html);
   form.set("text", mail.text);
   if (mail.replyTo) form.set("h:Reply-To", mail.replyTo);
+  for (const a of mail.attachments ?? []) form.append("attachment", new Blob([a.content as BlobPart], { type: a.contentType }), a.filename);
   try {
     const res = await fetch(`${apiBase(config.region)}/v3/${config.domain}/messages`, {
       method: "POST",

@@ -1,11 +1,9 @@
-import Link from "next/link";
-import Image from "next/image";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
-import PlaceholderImage from "@/components/PlaceholderImage";
 import EmptyState from "@/components/EmptyState";
 import AdSlot from "@/components/AdSlot";
-import VideoThumbnail from "@/components/VideoThumbnail";
+import MediaCard from "@/components/cards/MediaCard";
+import PortfolioCard from "@/components/cards/PortfolioCard";
 import { css } from "@/lib/css";
 import { pageMetadata } from "@/lib/seo";
 import { getMediaPhotos, getVideoPosts } from "@/lib/data";
@@ -44,15 +42,9 @@ export default async function MediaPage() {
         {videos.length === 0 ? (
           <EmptyState title="No videos yet." body="Nothing here yet. Please check back soon." />
         ) : (
-          <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--space-6);")}>
+          <div className="md-grid">
             {videos.map((v) => (
-              <div key={v.slug}>
-                <VideoThumbnail url={v.videoUrl} thumbnailUrl={v.videoThumbnailUrl} />
-                <Link href={`/writing/${v.slug}`}>
-                  <div style={css("font-family:var(--font-heading);font-size:18px;margin:var(--space-2) 0 var(--space-1);")}>{v.title}</div>
-                </Link>
-                {v.readMinutes && <div style={css("font-size:12px;opacity:0.55;")}>{v.readMinutes} min read</div>}
-              </div>
+              <MediaCard key={v.slug} href={`/writing/${v.slug}`} title={v.title} thumbUrl={v.videoThumbnailUrl} label="Video" meta={v.readMinutes ? `${v.readMinutes} min` : undefined} />
             ))}
           </div>
         )}
@@ -65,15 +57,9 @@ export default async function MediaPage() {
         {photos.length === 0 ? (
           <EmptyState title="No photographs yet." body="Nothing here yet. Please check back soon." />
         ) : (
-          <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--space-3);")}>
-            {photos.map((p) => (
-              <div key={p.id} style={css("aspect-ratio:1;position:relative;border-radius:var(--radius-md);overflow:hidden;")}>
-                {p.url ? (
-                  <Image src={p.url} alt={p.altText ?? ""} fill sizes="220px" style={{ objectFit: "cover" }} />
-                ) : (
-                  <PlaceholderImage label="Photo" />
-                )}
-              </div>
+          <div className="pf-grid">
+            {photos.map((p, i) => (
+              <PortfolioCard key={p.id} index={i} imageUrl={p.url} alt={p.altText ?? ""} title={p.title ?? undefined} caption={p.caption} category="Photography" />
             ))}
           </div>
         )}

@@ -1,3 +1,4 @@
+import RichText from "@/components/RichText";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import { css } from "@/lib/css";
@@ -67,7 +68,7 @@ export default async function PrivacyPage() {
         <section style={css("padding:var(--space-8) var(--space-6) var(--space-4);")}>
           <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>LEGAL</div>
           <h1 style={css("font-family:var(--font-heading);font-size:clamp(32px,4.5vw,44px);margin:0 0 var(--space-6);")}>Privacy Policy</h1>
-          <div className="rte-body" style={css("max-width:70ch;font-size:15px;line-height:1.75;")} dangerouslySetInnerHTML={{ __html: custom }} />
+          <RichText html={custom} style={css("max-width:70ch;font-size:15px;line-height:1.75;")} />
         </section>
         <Footer />
       </div>

@@ -2,6 +2,8 @@ import Link from "next/link";
 import { css } from "@/lib/css";
 import { createClient } from "@/lib/supabase/server";
 import BookingRow, { type BookingItem } from "@/components/admin/BookingRow";
+import type { QuotationItem, EventItem, PaymentItem, DocItem } from "@/components/admin/WorkflowPanel";
+import type { Stage } from "@/lib/workflow";
 import type { BookingStatus } from "@/lib/admin/booking-actions";
 
 export const metadata = { title: "Bookings — Admin", robots: { index: false, follow: false } };
@@ -28,13 +30,54 @@ export default async function AdminBookingsPage({ searchParams }: { searchParams
   const supabase = await createClient();
   let query = supabase
     ?.from("bookings")
-    .select("id,service_title,name,email,phone,preferred_date,preferred_time,message,status,confirmed_date,confirmed_time,internal_notes,created_at,reference,enquiry_kind,details,email_status")
+    .select("id,service_title,name,email,phone,preferred_date,preferred_time,message,status,confirmed_date,confirmed_time,internal_notes,created_at,reference,enquiry_kind,details,email_status,stage,booking_ref")
     .order("created_at", { ascending: false })
     .limit(200);
   if (status !== "all") query = query?.eq("status", status);
   if (q) query = query?.or(`name.ilike.%${q}%,email.ilike.%${q}%,service_title.ilike.%${q}%`);
 
   const { data } = query ? await query : { data: [] };
+  const ids = (data ?? []).map((r) => r.id as string);
+  const [qRes, eRes, pRes, dRes, fRes] = ids.length && supabase
+    ? await Promise.all([
+        supabase.from("quotations").select("*").in("booking_id", ids).order("version", { ascending: false }),
+        supabase.from("enquiry_events").select("id,booking_id,kind,from_stage,to_stage,note,created_at").in("booking_id", ids).order("created_at", { ascending: false }).limit(500),
+        supabase.from("booking_payments").select("id,booking_id,kind,amount_cents,currency,method,reference,paid_on,status").in("booking_id", ids).order("created_at", { ascending: true }),
+        supabase.from("documents").select("id,booking_id,kind,number,status,payment_id").in("booking_id", ids).order("created_at", { ascending: false }),
+        supabase.from("enquiry_uploads").select("id,booking_id,original_name,size_bytes").in("booking_id", ids).order("created_at", { ascending: true }),
+      ])
+    : [{ data: [] }, { data: [] }, { data: [] }, { data: [] }, { data: [] }];
+  const quotesBy = new Map<string, QuotationItem[]>();
+  for (const q of qRes.data ?? []) {
+    const list = quotesBy.get(q.booking_id) ?? [];
+    list.push({
+      id: q.id, reference: q.reference, version: q.version, status: q.status, scope: q.scope, priceCents: Number(q.price_cents), discountCents: Number(q.discount_cents),
+      currency: q.currency, duration: q.duration, startDate: q.start_date, completionDate: q.completion_date, location: q.location, eventDate: q.event_date,
+      deliverables: q.deliverables, milestones: (q.milestones ?? []) as QuotationItem["milestones"], paymentTerms: q.payment_terms, revisionTerms: q.revision_terms,
+      conditions: q.conditions, expiryDate: q.expiry_date, sentAt: q.sent_at,
+    });
+    quotesBy.set(q.booking_id, list);
+  }
+  const paysBy = new Map<string, PaymentItem[]>();
+  for (const x of pRes.data ?? []) {
+    const list = paysBy.get(x.booking_id) ?? [];
+    list.push({ id: x.id, kind: x.kind, amountCents: Number(x.amount_cents), currency: x.currency, method: x.method, reference: x.reference, paidOn: x.paid_on, status: x.status });
+    paysBy.set(x.booking_id, list);
+  }
+  const docsBy = new Map<string, DocItem[]>();
+  for (const x of dRes.data ?? []) {
+    const list = docsBy.get(x.booking_id) ?? [];
+    list.push({ id: x.id, kind: x.kind, number: x.number, status: x.status, paymentId: x.payment_id });
+    docsBy.set(x.booking_id, list);
+  }
+  const filesBy = new Map<string, { id: string; name: string; size: number }[]>();
+  for (const x of fRes.data ?? []) filesBy.set(x.booking_id, [...(filesBy.get(x.booking_id) ?? []), { id: x.id, name: x.original_name, size: Number(x.size_bytes) }]);
+  const eventsBy = new Map<string, EventItem[]>();
+  for (const e of eRes.data ?? []) {
+    const list = eventsBy.get(e.booking_id) ?? [];
+    if (list.length < 12) list.push({ id: e.id, kind: e.kind, fromStage: e.from_stage, toStage: e.to_stage, note: e.note, createdAt: e.created_at });
+    eventsBy.set(e.booking_id, list);
+  }
   const items: BookingItem[] = (data ?? []).map((r) => ({
     id: r.id,
     serviceTitle: r.service_title,
@@ -53,6 +96,13 @@ export default async function AdminBookingsPage({ searchParams }: { searchParams
     enquiryKind: r.enquiry_kind ?? "service_request",
     details: (r.details ?? {}) as Record<string, unknown>,
     emailStatus: (r.email_status ?? {}) as Record<string, unknown>,
+    stage: (r.stage ?? "new_enquiry") as Stage,
+    bookingRef: r.booking_ref ?? null,
+    quotations: quotesBy.get(r.id) ?? [],
+    events: eventsBy.get(r.id) ?? [],
+    payments: paysBy.get(r.id) ?? [],
+    files: filesBy.get(r.id) ?? [],
+    documents: docsBy.get(r.id) ?? [],
   }));
 
   return (
@@ -64,7 +114,7 @@ export default async function AdminBookingsPage({ searchParams }: { searchParams
         </a>
       </div>
       <p style={css("font-size:13px;opacity:0.6;margin:0 0 var(--space-4);")}>
-        Requests from the Services pages. Customers need no account. Booking emails are not sent automatically yet — check here (or connect Telegram alerts in the next stage).
+        Enquiries and requests from the Services and Discuss a Project pages. Open Details to prepare and send a quotation, record the client\u2019s answer and confirm the booking. Customers need no account.
       </p>
 
       <div style={css("display:flex;gap:var(--space-2);flex-wrap:wrap;margin-bottom:var(--space-4);")}>

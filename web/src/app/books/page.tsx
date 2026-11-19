@@ -4,6 +4,7 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import PlaceholderImage from "@/components/PlaceholderImage";
 import EmptyState from "@/components/EmptyState";
+import BookCard from "@/components/cards/BookCard";
 import { css } from "@/lib/css";
 import { getBooks } from "@/lib/data";
 import { AMAZON_AUTHOR_URL } from "@/lib/links";
@@ -68,13 +69,9 @@ export default async function BooksPage() {
           <div className="hr" />
           <section style={css("padding:var(--space-6);")}>
             <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-4);")}>UPCOMING</div>
-            <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--space-6);")}>
+            <div className="bk-grid">
               {upcomingBooks.map((b) => (
-                <div key={b.slug}>
-                  <div style={css("aspect-ratio:2/3;position:relative;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-3);")}><BookCover url={b.coverImageUrl} label="Cover" sizes="180px" /></div>
-                  <div style={css("font-family:var(--font-heading);font-size:18px;")}>{b.title}</div>
-                  <div style={css("font-size:12px;opacity:0.55;")}>{b.kind} &middot; {b.year}</div>
-                </div>
+                <BookCard key={b.slug} href={`/books/${b.slug}`} upcoming title={b.title} author={b.author} kind={b.kind} year={b.year} coverUrl={b.coverImageUrl} formats={b.formats} />
               ))}
             </div>
           </section>
@@ -88,13 +85,9 @@ export default async function BooksPage() {
         {published.length === 0 ? (
           <EmptyState title="No books published yet." body="Nothing here yet. Please check back soon." />
         ) : (
-        <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:var(--space-4);")}>
+        <div className="bk-grid">
           {published.map((b) => (
-            <Link key={b.slug} href={`/books/${b.slug}`}>
-              <div style={css("aspect-ratio:2/3;position:relative;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-3);")}><BookCover url={b.coverImageUrl} label="Cover" sizes="160px" /></div>
-              <div style={css("font-family:var(--font-heading);font-size:16px;")}>{b.title}</div>
-              <div style={css("font-size:12px;opacity:0.55;")}>{b.year}</div>
-            </Link>
+            <BookCard key={b.slug} href={`/books/${b.slug}`} title={b.title} author={b.author} kind={b.kind} year={b.year} excerpt={truncate(b.excerpt)} coverUrl={b.coverImageUrl} formats={b.formats} />
           ))}
         </div>
         )}

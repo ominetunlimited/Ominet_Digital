@@ -1,5 +1,6 @@
 "use client";
 
+import RichTextEditor from "@/components/admin/RichTextEditor";
 import { useState } from "react";
 import { css } from "@/lib/css";
 import { saveBook, deleteBook, type BookInput } from "@/lib/admin/book-actions";
@@ -205,7 +206,7 @@ export default function BookForm({
       </div>
       <div className="field" style={css("margin-bottom:var(--space-4);")}>
         <label>Author&apos;s Note (optional — your own words about the book, shown on its page)</label>
-        <textarea className="input" rows={4} value={values.author_note} onChange={(e) => set("author_note", e.target.value)} />
+        <RichTextEditor value={values.author_note} onChange={(html) => set("author_note", html)} placeholder="A note from the author" minHeight={180} />
       </div>
       <div className="field" style={css("margin-bottom:var(--space-4);")}>
         <label>Formats (comma-separated)</label>

@@ -5,6 +5,9 @@ import { css } from "@/lib/css";
 import { setBookingStatus, updateBooking, deleteBooking, type BookingStatus } from "@/lib/admin/booking-actions";
 import { useAdminAction } from "@/lib/admin/useAdminAction";
 import SaveButton from "@/components/admin/SaveButton";
+import EnquiryFiles, { type EnquiryFile } from "@/components/admin/EnquiryFiles";
+import WorkflowPanel, { type QuotationItem, type EventItem, type PaymentItem, type DocItem } from "@/components/admin/WorkflowPanel";
+import { STAGE_LABEL, type Stage } from "@/lib/workflow";
 
 export type BookingItem = {
   id: string;
@@ -24,6 +27,13 @@ export type BookingItem = {
   enquiryKind?: string;
   details?: Record<string, unknown>;
   emailStatus?: Record<string, unknown>;
+  stage?: Stage;
+  bookingRef?: string | null;
+  quotations?: QuotationItem[];
+  events?: EventItem[];
+  payments?: PaymentItem[];
+  documents?: DocItem[];
+  files?: EnquiryFile[];
 };
 
 const DETAIL_LABELS: Record<string, string> = {
@@ -49,6 +59,8 @@ export default function BookingRow({ item }: { item: BookingItem }) {
   const reschedule = useAdminAction();
   const noteSave = useAdminAction();
   const del = useAdminAction();
+  // Enquiries that go through quotations use the workflow below; the quick Confirm buttons would bypass it.
+  const workflow = item.enquiryKind === "project_enquiry" || (item.quotations?.length ?? 0) > 0;
   const busy = status.busy || reschedule.busy || noteSave.busy || del.busy;
   const error = status.error || reschedule.error || noteSave.error || del.error;
 
@@ -88,14 +100,14 @@ export default function BookingRow({ item }: { item: BookingItem }) {
           )}
           <div style={css("opacity:0.5;")}>Sent {new Date(item.createdAt).toLocaleString()}</div>
         </td>
-        <td data-label="Status" style={css("font-size:12px;font-weight:700;")}>{STATUS_LABEL[item.status]}</td>
+        <td data-label="Status" style={css("font-size:12px;font-weight:700;")}>{workflow && item.stage ? STAGE_LABEL[item.stage] : STATUS_LABEL[item.status]}</td>
         <td data-label="Actions">
           <div style={css("display:flex;gap:6px;flex-wrap:wrap;")}>
-            {item.status !== "confirmed" && btn("Confirm", "confirmed", "btn btn-primary")}
-            {item.status === "pending" && btn("Decline", "declined")}
-            {(item.status === "pending" || item.status === "confirmed") && btn("Cancel", "cancelled")}
-            {item.status === "confirmed" && btn("Mark completed", "completed")}
-            {item.status !== "pending" && btn("Back to pending", "pending", "btn btn-ghost")}
+            {!workflow && item.status !== "confirmed" && btn("Confirm", "confirmed", "btn btn-primary")}
+            {!workflow && item.status === "pending" && btn("Decline", "declined")}
+            {!workflow && (item.status === "pending" || item.status === "confirmed") && btn("Cancel", "cancelled")}
+            {!workflow && item.status === "confirmed" && btn("Mark completed", "completed")}
+            {!workflow && item.status !== "pending" && btn("Back to pending", "pending", "btn btn-ghost")}
             <button type="button" className="btn btn-ghost" style={css("font-size:11px;padding:3px 8px;")} onClick={() => setOpen((o) => !o)}>
               {open ? "Close" : "Details"}
             </button>
@@ -106,7 +118,7 @@ export default function BookingRow({ item }: { item: BookingItem }) {
       {open && (
         <tr>
           <td colSpan={5} style={css("background:var(--color-surface);")}>
-            <div style={css("display:grid;gap:var(--space-3);max-width:640px;padding:var(--space-2) 0;")}>
+            <div style={css("display:grid;gap:var(--space-3);max-width:860px;padding:var(--space-2) 0;")}>
               {item.message && (
                 <div>
                   <div style={css("font-size:11px;opacity:0.5;letter-spacing:0.08em;margin-bottom:2px;")}>THEIR MESSAGE</div>
@@ -133,7 +145,11 @@ export default function BookingRow({ item }: { item: BookingItem }) {
                   )}
                 </div>
               )}
-              <div>
+              <EnquiryFiles files={item.files ?? []} />
+              {workflow && item.stage && (
+                <WorkflowPanel bookingId={item.id} stage={item.stage} bookingRef={item.bookingRef ?? null} details={item.details ?? {}} quotations={item.quotations ?? []} events={item.events ?? []} payments={item.payments ?? []} documents={item.documents ?? []} />
+              )}
+              {!workflow && (<div>
                 <div style={css("font-size:11px;opacity:0.5;letter-spacing:0.08em;margin-bottom:4px;")}>RESCHEDULE / CONFIRM A SLOT</div>
                 <div style={css("display:flex;gap:var(--space-2);flex-wrap:wrap;align-items:center;")}>
                   <input type="date" className="input" style={css("width:170px;")} value={date} onChange={(e) => setDate(e.target.value)} />
@@ -145,7 +161,7 @@ export default function BookingRow({ item }: { item: BookingItem }) {
                     onClick={() => reschedule.run(() => updateBooking(item.id, { confirmedDate: date, confirmedTime: time, confirm: true }))}
                   />
                 </div>
-              </div>
+              </div>)}
               <div>
                 <div style={css("font-size:11px;opacity:0.5;letter-spacing:0.08em;margin-bottom:4px;")}>INTERNAL NOTES (never shown to the customer)</div>
                 <textarea className="input" rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />

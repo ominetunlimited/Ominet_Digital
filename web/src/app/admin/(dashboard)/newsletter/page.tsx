@@ -2,6 +2,7 @@ import { css } from "@/lib/css";
 import { createClient } from "@/lib/supabase/server";
 import NewsletterComposer from "@/components/admin/NewsletterComposer";
 import MailgunSetup from "@/components/admin/MailgunSetup";
+import { hasWebhookSigningKey } from "@/lib/admin/integration-settings-actions";
 import { isMailgunConfigured } from "@/lib/mailgun";
 import { getMailgunStatus } from "@/lib/admin/integration-settings-actions";
 
@@ -37,7 +38,7 @@ export default async function AdminNewsletterPage() {
           </p>
         )
       ) : (
-        <MailgunSetup initial={mailgunStatus} />
+        <MailgunSetup initial={mailgunStatus} webhookKeySet={await hasWebhookSigningKey()} />
       )}
 
       <NewsletterComposer subscriberCount={activeCount} />

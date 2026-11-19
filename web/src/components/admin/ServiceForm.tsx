@@ -1,5 +1,6 @@
 "use client";
 
+import RichTextEditor from "@/components/admin/RichTextEditor";
 import { useState } from "react";
 import { css } from "@/lib/css";
 import { saveService, deleteService, type ServiceInput, type FaqItem } from "@/lib/admin/service-actions";
@@ -123,7 +124,7 @@ export default function ServiceForm({ initial }: { initial?: Partial<ServiceInpu
       </div>
       <div className="field" style={css("margin-bottom:var(--space-4);")}>
         <label>Full description</label>
-        <textarea className="input" rows={8} value={values.full_description} onChange={(e) => set("full_description", e.target.value)} placeholder="Paragraphs separated by a blank line." />
+        <RichTextEditor value={values.full_description} onChange={(html) => set("full_description", html)} placeholder="Describe the service. You can paste straight from Word or Google Docs." minHeight={320} />
       </div>
 
       <div style={css("display:flex;gap:var(--space-4);margin-bottom:var(--space-4);")}>
@@ -182,7 +183,7 @@ export default function ServiceForm({ initial }: { initial?: Partial<ServiceInpu
 
       <div className="field" style={css("margin-bottom:var(--space-4);")}>
         <label>Requirements (what the client should bring/prepare)</label>
-        <textarea className="input" rows={2} value={values.requirements} onChange={(e) => set("requirements", e.target.value)} />
+        <RichTextEditor value={values.requirements} onChange={(html) => set("requirements", html)} placeholder="What should the client bring or prepare?" minHeight={160} />
       </div>
 
       <label className="radio" style={css("margin-bottom:var(--space-4);display:block;")}>

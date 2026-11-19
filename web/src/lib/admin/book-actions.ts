@@ -1,5 +1,6 @@
 "use server";
 
+import { sanitizeRichHtml } from "@/lib/rich-text";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireStaff } from "@/lib/auth/guard";
@@ -92,7 +93,7 @@ export async function saveBook(input: BookInput): Promise<ActionResult> {
     pages: input.page_count && input.page_count > 0 ? `${Math.round(input.page_count)} pages` : null,
     excerpt: input.excerpt || null,
     description: input.description || null,
-    author_note: input.author_note || null,
+    author_note: sanitizeRichHtml(input.author_note) || null,
     cover_image_url: input.cover_image_url || null,
     og_image_url: input.og_image_url || null,
     seo_title: input.seo_title.trim() || null,
