@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import PlaceholderImage from "@/components/PlaceholderImage";
 
 /** Dark screening-room card for video and visual documentation. Always indigo, so footage reads the same in light and dark themes. */

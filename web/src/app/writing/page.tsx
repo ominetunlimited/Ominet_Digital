@@ -7,7 +7,6 @@ import { pageMetadata } from "@/lib/seo";
 import { collectionPageSchema } from "@/lib/schema";
 import type { Article } from "@/lib/content";
 import ArticleCard from "@/components/cards/ArticleCard";
-import ReadMoreExcerpt from "@/components/ReadMoreExcerpt";
 
 export const generateMetadata = () => pageMetadata(
   "Writing",
