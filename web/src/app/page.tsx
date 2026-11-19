@@ -4,7 +4,8 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import PlaceholderImage from "@/components/PlaceholderImage";
 import { AMAZON_AUTHOR_URL } from "@/lib/links";
-import EcosystemItem from "@/components/EcosystemItem";
+import EcosystemCard from "@/components/cards/EcosystemCard";
+import ArticleCard from "@/components/cards/ArticleCard";
 import AdSlot from "@/components/AdSlot";
 import NewsletterForm from "@/components/NewsletterForm";
 import SocialLinks from "@/components/SocialLinks";
@@ -151,15 +152,10 @@ export default async function Home() {
       <div className="hr" />
 
       {on("writing") && latestArticle && (
-        <section style={css("padding:var(--space-8) var(--space-6);display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--space-6);")}>
-          <Link href={`/writing/${latestArticle.slug}`} style={css("display:block;")}>
-            <div className="card">
-              <div className="card-kicker">{latestArticle.featured ? "FEATURED WRITING" : "LATEST WRITING"}</div>
-              <div className="card-title">{latestArticle.title}</div>
-              <ReadMoreExcerpt text={latestArticle.excerpt} className="card-body" />
-              <div className="card-meta"><span>{latestArticle.date}</span></div>
-            </div>
-          </Link>
+        <section style={css("padding:var(--space-6) var(--space-6);")}>
+          <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-2);")}>{latestArticle.featured ? "FEATURED WRITING" : "LATEST WRITING"}</div>
+          <ArticleCard variant="lead" href={`/writing/${latestArticle.slug}`} title={latestArticle.title} excerpt={latestArticle.excerpt} category={latestArticle.category} subcategory={latestArticle.subcategory}
+            date={latestArticle.date} readTime={latestArticle.readTime} imageUrl={latestArticle.featuredImageUrl} />
         </section>
       )}
 
@@ -188,43 +184,11 @@ export default async function Home() {
 
       <section style={css("padding:var(--space-8) var(--space-6);")}>
         <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-4);")}>THE ECOSYSTEM</div>
-        <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--space-6);")}>
-          {on("omini-nfawa") && (
-          <EcosystemItem
-            kicker="WRITER · RESEARCHER · MEDIA & COMMUNICATIONS"
-            title="Omini Nfawa"
-            description="Books, essays, fiction, research, film and photography from the ecosystem's founder."
-            href="/omini-nfawa"
-            cta="Explore Omini Nfawa"
-          />
-          )}
-          {on("profile") && (
-          <EcosystemItem
-            kicker="PROFESSIONAL IDENTITY"
-            title="PROFILE"
-            description="A professional identity built from verified activity."
-            href="/profile"
-            cta="Explore Profile"
-          />
-          )}
-          {on("media") && (
-          <EcosystemItem
-            kicker="VIDEO · PHOTOGRAPHY"
-            title="Media"
-            description="Video, photography and documentary work."
-            href="/media"
-            cta="Watch & view"
-          />
-          )}
-          {on("cortexa-office") && (
-          <EcosystemItem
-            kicker="EMERGING PRODUCT"
-            title="Cortexa Office"
-            description="An emerging Ominet Digital product and office."
-            href="/cortexa-office"
-            cta="Learn more"
-          />
-          )}
+        <div className="eco-grid">
+          {on("omini-nfawa") && <EcosystemCard id="omini-nfawa" index={0} kicker="WRITER · RESEARCHER · MEDIA & COMMUNICATIONS" title="Omini Nfawa" description="Books, essays, fiction, research, film and photography from the ecosystem's founder." href="/omini-nfawa" cta="Explore Omini Nfawa" />}
+          {on("profile") && <EcosystemCard id="profile" index={1} kicker="PROFESSIONAL IDENTITY" title="PROFILE" description="A professional identity built from verified activity." href="/profile" cta="Explore Profile" />}
+          {on("media") && <EcosystemCard id="media" index={2} kicker="VIDEO · PHOTOGRAPHY" title="Media" description="Video, photography and documentary work." href="/media" cta="Watch & view" />}
+          {on("cortexa-office") && <EcosystemCard id="cortexa-office" index={3} kicker="EMERGING PRODUCT" title="Cortexa Office" description="An emerging Ominet Digital product and office." href="/cortexa-office" cta="Learn more" />}
         </div>
       </section>
 

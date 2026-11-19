@@ -6,6 +6,7 @@ import { getArticles } from "@/lib/data";
 import { pageMetadata } from "@/lib/seo";
 import { collectionPageSchema } from "@/lib/schema";
 import type { Article } from "@/lib/content";
+import ArticleCard from "@/components/cards/ArticleCard";
 import ReadMoreExcerpt from "@/components/ReadMoreExcerpt";
 
 export const generateMetadata = () => pageMetadata(
@@ -111,26 +112,23 @@ export default async function WritingPage({
         </section>
       )}
 
-      {articles.map((a) => (
-        <div key={a.slug}>
-          <Link href={`/writing/${a.slug}`} style={css("display:block;")}>
-            <section style={css("padding:var(--space-6);display:flex;flex-wrap:wrap;gap:var(--space-4);align-items:baseline;")}>
-              <div style={css("font-size:12px;opacity:0.5;")}>{a.date}</div>
-              <div>
-                <div style={css("display:flex;gap:var(--space-2);align-items:center;margin-bottom:var(--space-2);")}>
-                  <span className="tag tag-neutral">{a.category}</span>
-                  {a.subcategory && <span className="tag tag-outline">{a.subcategory}</span>}
-                  <span className={a.access === "paid" ? "tag tag-accent" : "tag tag-outline"}>{a.access === "paid" ? "PAID" : "FREE"}</span>
-                </div>
-                <div style={css("font-family:var(--font-heading);font-size:26px;margin-bottom:var(--space-1);")}>{a.title}</div>
-                <ReadMoreExcerpt text={a.excerpt} style={css("font-size:14px;opacity:0.7;margin:0;max-width:70ch;")} />
-              </div>
-              <div style={css("font-size:12px;opacity:0.5;text-align:right;")}>{a.readTime}</div>
-            </section>
-          </Link>
-          <div className="hr" />
-        </div>
-      ))}
+      {articles.length > 0 && (
+        <section style={css("padding:var(--space-4) var(--space-6) var(--space-8);")}>
+          {(() => {
+            const [first, ...rest] = articles;
+            const card = (a: Article, variant: "lead" | "row") => (
+              <ArticleCard key={a.slug} variant={variant} href={`/writing/${a.slug}`} title={a.title} excerpt={a.excerpt} category={a.category} subcategory={a.subcategory}
+                date={a.date} readTime={a.readTime} imageUrl={a.featuredImageUrl} paid={a.access === "paid"} />
+            );
+            return (
+              <>
+                {card(first, "lead")}
+                {rest.length > 0 && <div className="ar-grid">{rest.map((a) => card(a, "row"))}</div>}
+              </>
+            );
+          })()}
+        </section>
+      )}
 
       <Footer />
     </div>
