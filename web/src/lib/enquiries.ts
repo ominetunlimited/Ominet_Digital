@@ -10,6 +10,7 @@ import { brandedEmail } from "@/lib/email-template";
 import { SITE_URL } from "@/lib/seo";
 import { OFFICIAL_EMAIL } from "@/lib/links";
 import { groupForService } from "@/lib/enquiry-fields";
+import { MAX_FILES } from "@/lib/enquiry-upload";
 
 export type EnquiryInput = {
   name: string;
@@ -32,6 +33,7 @@ export type EnquiryInput = {
   consent: boolean;
   serviceDetails: Record<string, string>;
   website: string; // honeypot
+  uploadIds?: string[]; // files already uploaded through /api/enquiry-upload
 };
 
 export type EnquiryResult =
@@ -161,6 +163,14 @@ export async function submitEnquiry(input: EnquiryInput): Promise<EnquiryResult>
   }
   if (!id) return { ok: false, error: `We couldn't save your enquiry. Please try again, or email ${OFFICIAL_EMAIL}.` };
 
+  // Attach files this visitor uploaded earlier. Only their own, still-unattached uploads can be claimed.
+  const wanted = (input.uploadIds ?? []).filter((u) => /^[0-9a-f-]{36}$/i.test(u)).slice(0, MAX_FILES);
+  let fileNames: string[] = [];
+  if (wanted.length) {
+    const { data: att } = await admin.from("enquiry_uploads").update({ booking_id: id }).in("id", wanted).eq("uploader", guestKey).is("booking_id", null).select("original_name");
+    fileNames = (att ?? []).map((a) => a.original_name as string);
+  }
+
   await admin.from("analytics_events").insert({ event_type: "booking", metadata: { service_id: services[0].id, kind: "project_enquiry" } }).then(() => {}, () => {});
   revalidatePath("/admin/bookings");
   queueAlert("booking", "New project enquiry", [`Ref: ${reference}`, `Services: ${serviceTitles.join(", ")}`, `From: ${name}`], { dedupeKey: `enquiry:${id}`, link: adminLink("/admin/bookings") });
@@ -177,7 +187,7 @@ export async function submitEnquiry(input: EnquiryInput): Promise<EnquiryResult>
       ["Reference", reference], ["Name", name], ["Email", email], ["Phone / WhatsApp", input.phone], ["Organisation", details.organisation],
       ["Location", [details.city, details.country].filter(Boolean).join(", ")],
       ["Project", projectTitle], ["Services", serviceTitles.join(", ")], ["Summary", summary], ["Requirements", requirements],
-      ["Deliverables", deliverables], ["Delivery timeline", timeline], ["Start date", details.startDate], ["Budget", details.budget],
+      ["Attachments", fileNames.join(", ")], ["Deliverables", deliverables], ["Delivery timeline", timeline], ["Start date", details.startDate], ["Budget", details.budget],
       ["Preferred contact", details.contactMethod], ["Heard about us", details.heardFrom], ["Comments", details.comments],
       ...Object.entries(serviceDetails).map(([k, v]) => [k, v] as [string, string]),
       ["Received (UTC)", received],
@@ -193,7 +203,7 @@ export async function submitEnquiry(input: EnquiryInput): Promise<EnquiryResult>
       "We have received your enquiry and our team will review the project details. Following our assessment, we will contact you with next steps, including the proposed scope, quotation and delivery arrangements.",
       "Please note that this acknowledgement is not a confirmed quotation or booking. Final pricing, delivery dates and project arrangements will be agreed with you before work begins.",
     ],
-    rows: [["Enquiry reference", reference], ["Project", projectTitle], ["Services", serviceTitles.join(", ")], ["Summary", summary], ["Received (UTC)", received]],
+    rows: [["Enquiry reference", reference], ["Project", projectTitle], ["Services", serviceTitles.join(", ")], ["Files received", fileNames.join(", ")], ["Summary", summary], ["Received (UTC)", received]],
     button: { label: "Chat on WhatsApp", href: "https://wa.me/2349026057899" },
   });
 
@@ -201,6 +211,10 @@ export async function submitEnquiry(input: EnquiryInput): Promise<EnquiryResult>
     sendTransactional({ to: OFFICIAL_EMAIL, subject: `New project enquiry ${reference}: ${projectTitle}`.slice(0, 200), ...internal, replyTo: email }),
     sendTransactional({ to: email, subject: "Your Ominet Digital Quotation Request Has Been Received", ...ack, replyTo: OFFICIAL_EMAIL }),
   ]);
+  await admin.from("email_log").insert([
+    { booking_id: id, kind: "enquiry_internal", recipient: OFFICIAL_EMAIL, subject: `New project enquiry ${reference}`.slice(0, 250), r: r1 },
+    { booking_id: id, kind: "enquiry_acknowledgement", recipient: email, subject: "Your Ominet Digital Quotation Request Has Been Received", r: r2 },
+  ].map(({ r, ...row }) => ({ ...row, status: r.ok ? "accepted" : r.notConfigured ? "not_configured" : "failed", provider_id: r.ok ? r.providerId : null, error: r.ok ? null : r.error.slice(0, 300) }))).then(() => {}, () => {});
   const status = (r: typeof r1) => (r.ok ? "accepted" : r.notConfigured ? "not_configured" : "failed");
   await admin
     .from("bookings")

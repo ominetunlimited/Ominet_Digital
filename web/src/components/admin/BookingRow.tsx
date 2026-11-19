@@ -5,6 +5,7 @@ import { css } from "@/lib/css";
 import { setBookingStatus, updateBooking, deleteBooking, type BookingStatus } from "@/lib/admin/booking-actions";
 import { useAdminAction } from "@/lib/admin/useAdminAction";
 import SaveButton from "@/components/admin/SaveButton";
+import EnquiryFiles, { type EnquiryFile } from "@/components/admin/EnquiryFiles";
 import WorkflowPanel, { type QuotationItem, type EventItem, type PaymentItem, type DocItem } from "@/components/admin/WorkflowPanel";
 import { STAGE_LABEL, type Stage } from "@/lib/workflow";
 
@@ -32,6 +33,7 @@ export type BookingItem = {
   events?: EventItem[];
   payments?: PaymentItem[];
   documents?: DocItem[];
+  files?: EnquiryFile[];
 };
 
 const DETAIL_LABELS: Record<string, string> = {
@@ -143,6 +145,7 @@ export default function BookingRow({ item }: { item: BookingItem }) {
                   )}
                 </div>
               )}
+              <EnquiryFiles files={item.files ?? []} />
               {workflow && item.stage && (
                 <WorkflowPanel bookingId={item.id} stage={item.stage} bookingRef={item.bookingRef ?? null} details={item.details ?? {}} quotations={item.quotations ?? []} events={item.events ?? []} payments={item.payments ?? []} documents={item.documents ?? []} />
               )}

@@ -231,9 +231,9 @@ export async function retryEmail(logId: string): Promise<ActionResult> {
   const auth = await requireStaff();
   if (!auth.ok) return { ok: false, error: auth.error };
   const db = auth.supabase;
-  const { data: log } = await db.from("email_log").select("id,kind,status,booking_id,quotation_id").eq("id", logId).maybeSingle();
+  const { data: log } = await db.from("email_log").select("id,kind,status,booking_id,quotation_id,delivery_status").eq("id", logId).maybeSingle();
   if (!log) return { ok: false, error: "That log entry no longer exists." };
-  if (log.status === "accepted") return { ok: false, error: "That email was already accepted by Mailgun." };
+  if (log.status === "accepted" && !["bounced", "rejected"].includes(String(log.delivery_status))) return { ok: false, error: "That email was already accepted by Mailgun." };
   if (!log.booking_id) return { ok: false, error: "The booking for this email no longer exists." };
   const b = await loadBooking(db, log.booking_id as string);
   if (!b) return { ok: false, error: "The booking for this email no longer exists." };

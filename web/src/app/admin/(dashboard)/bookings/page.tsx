@@ -38,14 +38,15 @@ export default async function AdminBookingsPage({ searchParams }: { searchParams
 
   const { data } = query ? await query : { data: [] };
   const ids = (data ?? []).map((r) => r.id as string);
-  const [qRes, eRes, pRes, dRes] = ids.length && supabase
+  const [qRes, eRes, pRes, dRes, fRes] = ids.length && supabase
     ? await Promise.all([
         supabase.from("quotations").select("*").in("booking_id", ids).order("version", { ascending: false }),
         supabase.from("enquiry_events").select("id,booking_id,kind,from_stage,to_stage,note,created_at").in("booking_id", ids).order("created_at", { ascending: false }).limit(500),
         supabase.from("booking_payments").select("id,booking_id,kind,amount_cents,currency,method,reference,paid_on,status").in("booking_id", ids).order("created_at", { ascending: true }),
         supabase.from("documents").select("id,booking_id,kind,number,status,payment_id").in("booking_id", ids).order("created_at", { ascending: false }),
+        supabase.from("enquiry_uploads").select("id,booking_id,original_name,size_bytes").in("booking_id", ids).order("created_at", { ascending: true }),
       ])
-    : [{ data: [] }, { data: [] }, { data: [] }, { data: [] }];
+    : [{ data: [] }, { data: [] }, { data: [] }, { data: [] }, { data: [] }];
   const quotesBy = new Map<string, QuotationItem[]>();
   for (const q of qRes.data ?? []) {
     const list = quotesBy.get(q.booking_id) ?? [];
@@ -69,6 +70,8 @@ export default async function AdminBookingsPage({ searchParams }: { searchParams
     list.push({ id: x.id, kind: x.kind, number: x.number, status: x.status, paymentId: x.payment_id });
     docsBy.set(x.booking_id, list);
   }
+  const filesBy = new Map<string, { id: string; name: string; size: number }[]>();
+  for (const x of fRes.data ?? []) filesBy.set(x.booking_id, [...(filesBy.get(x.booking_id) ?? []), { id: x.id, name: x.original_name, size: Number(x.size_bytes) }]);
   const eventsBy = new Map<string, EventItem[]>();
   for (const e of eRes.data ?? []) {
     const list = eventsBy.get(e.booking_id) ?? [];
@@ -98,6 +101,7 @@ export default async function AdminBookingsPage({ searchParams }: { searchParams
     quotations: quotesBy.get(r.id) ?? [],
     events: eventsBy.get(r.id) ?? [],
     payments: paysBy.get(r.id) ?? [],
+    files: filesBy.get(r.id) ?? [],
     documents: docsBy.get(r.id) ?? [],
   }));
 

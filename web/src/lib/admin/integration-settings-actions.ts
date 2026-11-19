@@ -62,3 +62,24 @@ export async function clearMailgunConfig(): Promise<ActionResult> {
   revalidatePath("/admin/newsletter");
   return { ok: true };
 }
+
+/** Admin-only. The webhook signing key lets us verify that delivery events really come from Mailgun. */
+export async function saveWebhookSigningKey(key: string): Promise<ActionResult> {
+  const check = await adminClient();
+  if (!check.ok) return check;
+  const signingKey = key.trim();
+  if (signingKey.length < 16) return { ok: false, error: "Paste the HTTP webhook signing key from Mailgun (Sending, Webhooks)." };
+  const { error } = await check.supabase
+    .from("integration_settings")
+    .upsert({ key: "mailgun_webhook", value: { signingKey }, updated_by: check.user?.id ?? null, updated_at: new Date().toISOString() }, { onConflict: "key" });
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin/newsletter");
+  return { ok: true };
+}
+
+export async function hasWebhookSigningKey(): Promise<boolean> {
+  const check = await adminClient();
+  if (!check.ok) return false;
+  const { data } = await check.supabase.from("integration_settings").select("value").eq("key", "mailgun_webhook").maybeSingle();
+  return Boolean((data?.value as { signingKey?: string } | null)?.signingKey);
+}
