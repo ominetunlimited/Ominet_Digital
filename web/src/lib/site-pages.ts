@@ -10,6 +10,7 @@ export type SitePage = { key: string; label: string; path: string; inNav: boolea
 export const SITE_PAGES: SitePage[] = [
   { key: "omini-nfawa", label: "Omini Nfawa", path: "/omini-nfawa", inNav: true, group: "main" },
   { key: "writing", label: "Writing", path: "/writing", inNav: true, group: "main", note: "Articles, essays and blog posts" },
+  { key: "blog", label: "Blog", path: "/blog", inNav: true, group: "main", note: "News, events, features and updates" },
   { key: "books", label: "Books", path: "/books", inNav: true, group: "main" },
   { key: "media", label: "Media", path: "/media", inNav: true, group: "main" },
   { key: "services", label: "Services", path: "/services", inNav: true, group: "main" },

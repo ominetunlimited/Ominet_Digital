@@ -22,10 +22,15 @@ function safeTerm(q: string) {
   return q.replace(/[,()%*\\]/g, " ").trim();
 }
 
-export default async function AdminBookingsPage({ searchParams }: { searchParams: Promise<{ status?: string; q?: string }> }) {
+export default async function AdminBookingsPage({ searchParams }: { searchParams: Promise<{ status?: string; q?: string; kind?: string; option?: string; from?: string; to?: string }> }) {
   const params = await searchParams;
   const status = (params.status as BookingStatus | "all") || "pending";
   const q = safeTerm(params.q ?? "");
+  const kind = ["project_enquiry", "nysc_request", "cac_request"].includes(params.kind ?? "") ? (params.kind as string) : "";
+  const optionKey = /^[a-z0-9-]{1,40}$/.test(params.option ?? "") ? (params.option as string) : "";
+  const DATE = /^\d{4}-\d{2}-\d{2}$/;
+  const from = DATE.test(params.from ?? "") ? (params.from as string) : "";
+  const to = DATE.test(params.to ?? "") ? (params.to as string) : "";
 
   const supabase = await createClient();
   let query = supabase
@@ -34,7 +39,23 @@ export default async function AdminBookingsPage({ searchParams }: { searchParams
     .order("created_at", { ascending: false })
     .limit(200);
   if (status !== "all") query = query?.eq("status", status);
-  if (q) query = query?.or(`name.ilike.%${q}%,email.ilike.%${q}%,service_title.ilike.%${q}%`);
+  if (q) query = query?.or(`name.ilike.%${q}%,email.ilike.%${q}%,service_title.ilike.%${q}%,reference.ilike.%${q}%`);
+  if (kind) query = query?.eq("enquiry_kind", kind);
+  if (from) query = query?.gte("created_at", `${from}T00:00:00Z`);
+  if (to) query = query?.lte("created_at", `${to}T23:59:59Z`);
+  let optionList: { key: string; label: string; ids: string[] }[] = [];
+  if (supabase) {
+    const { data: opts } = await supabase.from("service_options").select("id,key,label");
+    const by = new Map<string, { key: string; label: string; ids: string[] }>();
+    for (const o of opts ?? []) { const e = by.get(o.key as string) ?? { key: o.key as string, label: o.label as string, ids: [] }; e.ids.push(o.id as string); by.set(o.key as string, e); }
+    optionList = [...by.values()];
+    const chosen = optionList.find((o) => o.key === optionKey);
+    if (chosen) query = query?.overlaps("service_option_ids", chosen.ids);
+  }
+  const qs = (over: Record<string, string>) => {
+    const m: Record<string, string> = { status, q, kind, option: optionKey, from, to, ...over };
+    return "/admin/bookings?" + Object.entries(m).filter(([, v]) => v).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join("&");
+  };
 
   const { data } = query ? await query : { data: [] };
   const ids = (data ?? []).map((r) => r.id as string);
@@ -55,6 +76,7 @@ export default async function AdminBookingsPage({ searchParams }: { searchParams
       currency: q.currency, duration: q.duration, startDate: q.start_date, completionDate: q.completion_date, location: q.location, eventDate: q.event_date,
       deliverables: q.deliverables, milestones: (q.milestones ?? []) as QuotationItem["milestones"], paymentTerms: q.payment_terms, revisionTerms: q.revision_terms,
       conditions: q.conditions, expiryDate: q.expiry_date, sentAt: q.sent_at,
+      lineItems: ((q.line_items ?? []) as { kind: string; label: string; amount_cents: number }[]).map((l) => ({ kind: l.kind, label: l.label, amountCents: Number(l.amount_cents) })),
     });
     quotesBy.set(q.booking_id, list);
   }
@@ -121,7 +143,7 @@ export default async function AdminBookingsPage({ searchParams }: { searchParams
         {TABS.map((t) => (
           <Link
             key={t.key}
-            href={`/admin/bookings?status=${t.key}${q ? `&q=${encodeURIComponent(q)}` : ""}`}
+            href={qs({ status: t.key })}
             className={t.key === status ? "btn btn-primary" : "btn btn-secondary"}
             style={css("font-size:12px;padding:6px 10px;")}
           >
@@ -130,10 +152,22 @@ export default async function AdminBookingsPage({ searchParams }: { searchParams
         ))}
       </div>
 
-      <form action="/admin/bookings" method="get" style={css("display:flex;gap:var(--space-2);margin-bottom:var(--space-4);max-width:400px;")}>
+      <div style={css("display:flex;gap:var(--space-2);flex-wrap:wrap;margin-bottom:var(--space-3);")} aria-label="Filter by service">
+        {[["", "All services"], ["nysc_request", "NYSC"], ["cac_request", "CAC"], ["project_enquiry", "Project enquiries"]].map(([k, l]) => (
+          <Link key={k || "all"} href={qs({ kind: k, option: "" })} className={k === kind ? "btn btn-primary" : "btn btn-secondary"} style={css("font-size:12px;padding:6px 10px;")}>{l}</Link>
+        ))}
+      </div>
+      <form action="/admin/bookings" method="get" style={css("display:flex;gap:var(--space-2);flex-wrap:wrap;margin-bottom:var(--space-4);align-items:flex-end;")}>
         <input type="hidden" name="status" value={status} />
-        <input className="input" name="q" defaultValue={q} placeholder="Search name, email or service…" />
-        <button type="submit" className="btn btn-secondary">Search</button>
+        <input type="hidden" name="kind" value={kind} />
+        <input className="input" style={css("max-width:260px;")} name="q" defaultValue={q} placeholder="Name, email, service or reference…" aria-label="Search" />
+        <select className="input" style={css("max-width:260px;")} name="option" defaultValue={optionKey} aria-label="Sub-service">
+          <option value="">Any sub-service</option>
+          {optionList.map((o) => <option key={o.key} value={o.key}>{o.label}</option>)}
+        </select>
+        <label style={css("font-size:12px;")}>From<input className="input" type="date" name="from" defaultValue={from} /></label>
+        <label style={css("font-size:12px;")}>To<input className="input" type="date" name="to" defaultValue={to} /></label>
+        <button type="submit" className="btn btn-secondary">Filter</button>
       </form>
 
       {items.length === 0 ? (

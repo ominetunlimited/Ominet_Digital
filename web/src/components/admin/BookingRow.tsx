@@ -40,6 +40,7 @@ const DETAIL_LABELS: Record<string, string> = {
   projectTitle: "Project", organisation: "Organisation", country: "Country", city: "City / state", requirements: "Requirements",
   deliverables: "Deliverables", deliveryTimeline: "Delivery timeline", startDate: "Start date", budget: "Budget",
   contactMethod: "Preferred contact", heardFrom: "Heard about us via", comments: "Comments",
+  optionLabels: "Selected option(s)", estimatedDuration: "Estimated processing/effect time", whatsapp: "WhatsApp",
 };
 
 const STATUS_LABEL: Record<BookingStatus, string> = {
@@ -60,7 +61,7 @@ export default function BookingRow({ item }: { item: BookingItem }) {
   const noteSave = useAdminAction();
   const del = useAdminAction();
   // Enquiries that go through quotations use the workflow below; the quick Confirm buttons would bypass it.
-  const workflow = item.enquiryKind === "project_enquiry" || (item.quotations?.length ?? 0) > 0;
+  const workflow = ["project_enquiry", "nysc_request", "cac_request"].includes(item.enquiryKind ?? "") || (item.quotations?.length ?? 0) > 0;
   const busy = status.busy || reschedule.busy || noteSave.busy || del.busy;
   const error = status.error || reschedule.error || noteSave.error || del.error;
 

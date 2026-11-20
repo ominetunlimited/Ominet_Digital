@@ -1,6 +1,7 @@
 import RichText from "@/components/RichText";
 import Image from "next/image";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 import Nav from "@/components/Nav";
 import PreviewBanner from "@/components/PreviewBanner";
 import Footer from "@/components/Footer";
@@ -49,6 +50,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  // Blog articles have one home, /blog/<slug>; the old path forwards there.
+  const db = await createClient();
+  const { data: flag } = db ? await db.from("content").select("in_blog").eq("slug", slug).maybeSingle() : { data: null };
+  if (flag?.in_blog) redirect(`/blog/${slug}`);
   const article = await getArticle(slug);
   if (!article) notFound();
 

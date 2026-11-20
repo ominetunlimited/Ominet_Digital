@@ -19,3 +19,14 @@ export function ogImage(rawUrl?: string | null): { url: string; width?: number; 
   const absolute = rawUrl.startsWith("/") ? `${SITE_URL}${rawUrl}` : rawUrl;
   return { url: `${SITE_URL}/api/og-image?url=${encodeURIComponent(absolute)}` };
 }
+
+/**
+ * Share-image variants of an uploaded image, cropped on the fly so the original is never changed.
+ * square = 1080x1080 (Facebook, WhatsApp, LinkedIn, Telegram), landscape = 1200x630 (X large card).
+ */
+export function ogVariant(rawUrl: string | null | undefined, shape: "square" | "landscape"): { url: string; width: number; height: number } {
+  const [width, height] = shape === "square" ? [1080, 1080] : [1200, 630];
+  if (!rawUrl) return { url: `${SITE_URL}/images/og-default.png`, width: 1200, height: 630 };
+  const absolute = rawUrl.startsWith("/") ? `${SITE_URL}${rawUrl}` : rawUrl;
+  return { url: `${SITE_URL}/api/og-image?shape=${shape}&url=${encodeURIComponent(absolute)}`, width, height };
+}

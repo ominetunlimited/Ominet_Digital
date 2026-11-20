@@ -12,6 +12,8 @@ import BookingForm from "@/components/BookingForm";
 import RelatedSection from "@/components/RelatedSection";
 import { css } from "@/lib/css";
 import { getService } from "@/lib/data";
+import { createClient } from "@/lib/supabase/server";
+import { flavourOf, mapOption, optionPriceLabel, OPTION_COLS, type OptionRow } from "@/lib/service-options";
 import { SITE_URL } from "@/lib/seo";
 import { ogImage } from "@/lib/og-image";
 import { getSiteSettings } from "@/lib/site-settings";
@@ -51,6 +53,14 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
   if (!service) notFound();
 
   const { identity: siteIdentity, contact } = await getSiteSettings();
+  const flavour = flavourOf(service.slug);
+  let options: ReturnType<typeof mapOption>[] = [];
+  if (flavour) {
+    const db = await createClient();
+    const { data } = await db!.from("service_options").select(OPTION_COLS).eq("service_id", service.id).eq("active", true).order("display_order");
+    options = ((data ?? []) as OptionRow[]).map(mapOption);
+  }
+  const optionGroups = Array.from(new Set(options.map((o) => o.group ?? "")));
   const ctaLabel = service.ctaLabel || (service.pricingMode === "quote" ? "Request a quote" : "Book this service");
 
   const jsonLd = jsonLdGraph([
@@ -63,6 +73,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
       areaServed: service.locationMode === "remote" ? "Remote" : undefined,
       url: `${SITE_URL}/services/${service.slug}`,
     },
+    ...(service.faq.length ? [{ "@type": "FAQPage", mainEntity: service.faq.map((f) => ({ "@type": "Question", name: f.question, acceptedAnswer: { "@type": "Answer", text: f.answer } })) }] : []),
     breadcrumbSchema([
       { name: "Home", path: "/" },
       { name: "Services", path: "/services" },
@@ -96,7 +107,9 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
             <div><strong style={css("display:block;font-size:11px;opacity:0.6;")}>LOCATION</strong>{service.locationMode === "in_person" ? "In person" : service.locationMode === "hybrid" ? "Hybrid" : "Remote"}</div>
           </div>
 
-          {service.bookingEnabled ? (
+          {service.bookingEnabled && options.length > 0 ? (
+            <Link className="btn btn-primary" href={`/services/${service.slug}/request`}>{service.ctaLabel || "Make a request"}</Link>
+          ) : service.bookingEnabled ? (
             service.externalBookingUrl ? (
               <TrackedLink
                 href={service.externalBookingUrl}
@@ -113,15 +126,39 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           ) : (
             <p style={css("font-size:13px;opacity:0.5;")}>Not currently bookable.</p>
           )}
-          <p style={css("font-size:14px;margin:var(--space-3) 0 0;")}>
+          {!options.length && <p style={css("font-size:14px;margin:var(--space-3) 0 0;")}>
             Have a bigger brief? <Link href={`/discuss-a-project?service=${service.slug}`}>Send a detailed project enquiry</Link>.
-          </p>
+          </p>}
 
           <div style={css("margin-top:var(--space-6);")}>
             <ShareBar url={`${SITE_URL}/services/${service.slug}`} title={service.title} />
           </div>
         </div>
       </section>
+
+      {options.length > 0 && (
+        <section aria-labelledby="options-h" style={css("max-width:860px;margin:0 auto;padding:0 var(--space-6) var(--space-8);")}>
+          <h2 id="options-h" style={css("font-family:var(--font-heading);font-size:26px;margin:0 0 var(--space-4);")}>Available options</h2>
+          {optionGroups.map((g) => (
+            <div key={g || "all"} style={css("margin-bottom:var(--space-5);")}>
+              {g && flavour === "cac" && <h3 style={css("font-size:13px;letter-spacing:0.08em;opacity:0.6;margin:0 0 var(--space-2);")}>{g.toUpperCase()}</h3>}
+              <ul style={css("list-style:none;margin:0;padding:0;display:grid;gap:var(--space-2);")}>
+                {options.filter((o) => (o.group ?? "") === g).map((o) => (
+                  <li key={o.key} style={css("display:flex;gap:var(--space-3);justify-content:space-between;align-items:center;flex-wrap:wrap;padding:12px 14px;border:1px solid var(--color-border,#d9d3f0);border-radius:var(--radius-md);")}>
+                    <div style={css("flex:1 1 260px;")}>
+                      <div style={css("font-weight:600;font-size:15px;")}>{o.label}</div>
+                      {o.description && <div style={css("font-size:13px;opacity:0.7;")}>{o.description}</div>}
+                      <div style={css("font-size:12px;opacity:0.7;margin-top:2px;")}>{o.duration ? `Estimated time: ${o.duration}. ` : ""}Professional fee: {optionPriceLabel(o)}{o.officialFeeCents != null ? `. Official charge shown separately in your quotation.` : ""}</div>
+                    </div>
+                    {service.bookingEnabled && <Link className="btn btn-secondary" href={`/services/${service.slug}/request?option=${o.key}`}>Select</Link>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+          <p style={css("font-size:12px;opacity:0.65;margin:0;")}>Estimated times are estimates, not guarantees. Ominet Digital is an independent business and is not a government body.</p>
+        </section>
+      )}
 
       {service.fullDescription && (
         <>

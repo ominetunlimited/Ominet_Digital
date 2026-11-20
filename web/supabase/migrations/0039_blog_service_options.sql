@@ -38,14 +38,7 @@ begin
   return n;
 end $$;
 
-do $$ begin
-  begin
-    create extension if not exists pg_cron;
-    perform cron.schedule('publish-due-content', '*/5 * * * *', 'select public.publish_due_content()');
-  exception when others then
-    raise notice 'pg_cron not enabled; scheduled posts are promoted lazily by the app (%).', sqlerrm;
-  end;
-end $$;
+-- No scheduler extension is enabled here: the app calls publish_due_content() whenever blog pages or the sitemap are built.
 
 -- ── Service options (NYSC: 4 options under one service; CAC: sub-services) ─
 create table if not exists public.service_options (

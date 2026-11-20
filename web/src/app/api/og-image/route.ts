@@ -58,6 +58,18 @@ export async function GET(request: NextRequest) {
 
   try {
     const img = await loadImage(bytes);
+    const shape = request.nextUrl.searchParams.get("shape");
+    if (shape === "square" || shape === "landscape") {
+      // Centre-crop (cover) into a fixed share size without touching the original upload.
+      const w = shape === "square" ? 1080 : 1200, h = shape === "square" ? 1080 : 630;
+      const k = Math.max(w / img.width, h / img.height);
+      const sw = w / k, sh = h / k;
+      const c2 = createCanvas(w, h), x2 = c2.getContext("2d");
+      x2.fillStyle = "#ffffff"; x2.fillRect(0, 0, w, h);
+      x2.drawImage(img, (img.width - sw) / 2, (img.height - sh) / 2, sw, sh, 0, 0, w, h);
+      const out = c2.toBuffer("image/jpeg", 78);
+      return new NextResponse(new Blob([out as unknown as BlobPart]), { headers: { "Content-Type": "image/jpeg", "Cache-Control": "public, max-age=31536000, immutable" } });
+    }
     const scale = Math.min(1, MAX_WIDTH / img.width);
     const width = Math.max(1, Math.round(img.width * scale));
     const height = Math.max(1, Math.round(img.height * scale));
