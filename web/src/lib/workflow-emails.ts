@@ -7,6 +7,7 @@ export type QuotationRow = {
   id: string; reference: string; version: number; scope: string | null; price_cents: number; discount_cents: number; currency: string;
   duration: string | null; start_date: string | null; completion_date: string | null; location: string | null; event_date: string | null;
   deliverables: string | null; milestones: Milestone[]; payment_terms: string | null; revision_terms: string | null; conditions: string | null; expiry_date: string | null;
+  line_items?: { kind: string; label: string; amount_cents: number }[] | null;
 };
 export type BookingLite = { id: string; name: string; email: string; service_title: string; reference: string | null; booking_ref: string | null; details: Record<string, unknown> | null };
 
@@ -26,9 +27,11 @@ export function quotationRows(q: QuotationRow, b: BookingLite): EmailRow[] {
     ["Service", b.service_title],
     ["Agreed scope", q.scope],
     ["Deliverables", q.deliverables],
-    ["Professional fee", formatMoney(Number(q.price_cents), q.currency)],
+    ...((q.line_items?.length
+      ? q.line_items.map((li) => [`${li.kind === "official" ? "Official charge" : li.kind === "professional" ? "Professional fee" : "Other charge"}: ${li.label}`, formatMoney(Number(li.amount_cents), q.currency)])
+      : [["Professional fee", formatMoney(Number(q.price_cents), q.currency)]]) as EmailRow[]),
     ["Discount", Number(q.discount_cents) > 0 ? `-${formatMoney(Number(q.discount_cents), q.currency)}` : null],
-    ["Total", Number(q.discount_cents) > 0 ? formatMoney(total, q.currency) : null],
+    ["Total", Number(q.discount_cents) > 0 || q.line_items?.length ? formatMoney(total, q.currency) : null],
     ["Currency", q.currency],
     ["Estimated duration", q.duration],
     ["Proposed start date", fmtDate(q.start_date)],

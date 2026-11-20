@@ -88,6 +88,7 @@ export async function getArticles(): Promise<Article[]> {
     .from("content")
     .select("id,slug,title,dek,excerpt,type,access,price_cents,currency,published_at,read_minutes,attachment_format,featured,external_url,external_label,subcategory")
     .eq("status", "published")
+    .eq("in_blog", false) // blog articles live at /blog
     .order("published_at", { ascending: false });
   // 42703 = undefined column — attachment_format (0021_content_attachments.sql),
   // featured/external_url/external_label (0022_content_extras.sql), or
@@ -236,7 +237,7 @@ export async function getAllSlugs() {
   }
   const supabase = await createClient();
   const [{ data: articleRows }, { data: bookRows }, { data: serviceRows }] = await Promise.all([
-    supabase!.from("content").select("slug").eq("status", "published"),
+    supabase!.from("content").select("slug").eq("status", "published").eq("in_blog", false),
     supabase!.from("books").select("slug"),
     supabase!.from("services").select("slug").eq("status", "published"),
   ]);

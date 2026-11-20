@@ -30,6 +30,15 @@ export type ContentInput = {
   featured: boolean;
   external_url: string;
   external_label: string;
+  in_blog: boolean;
+  blog_featured: boolean;
+  category_id: string;
+  featured_image_alt: string;
+  social_image_url: string;
+  social_image_alt: string;
+  author_name: string;
+  author_bio: string;
+  tags: string;
 };
 
 export type ActionResult = { ok: true; id?: string } | { ok: false; error: string };
@@ -74,7 +83,21 @@ export async function saveContent(input: ContentInput): Promise<ActionResult> {
     featured: input.featured ?? false,
     external_url: input.external_url || null,
     external_label: input.external_label || null,
+    in_blog: !!input.in_blog,
+    blog_featured: !!input.in_blog && !!input.blog_featured,
+    category_id: /^[0-9a-f-]{36}$/i.test(input.category_id ?? "") ? input.category_id : null,
+    featured_image_alt: input.featured_image_alt || null,
+    social_image_url: input.social_image_url || null,
+    social_image_alt: input.social_image_alt || null,
+    author_name: input.author_name || null,
+    author_bio: input.author_bio || null,
   };
+  if (input.status === "scheduled") {
+    const when = input.published_at ? new Date(input.published_at) : null;
+    if (!when || Number.isNaN(when.getTime())) return { ok: false, error: "Choose the date and time this article should be published." };
+    if (when.getTime() <= Date.now()) return { ok: false, error: "A scheduled time must be in the future. Use Publish to go live now." };
+    row.published_at = when.toISOString();
+  }
 
   let { data, error } = input.id
     ? await supabase.from("content").update(row).eq("id", input.id).select("id,slug").single()
@@ -95,6 +118,7 @@ export async function saveContent(input: ContentInput): Promise<ActionResult> {
     delete row.external_url;
     delete row.external_label;
     delete row.subcategory;
+    for (const k of ["in_blog", "blog_featured", "category_id", "featured_image_alt", "social_image_url", "social_image_alt", "author_name", "author_bio"]) delete row[k];
     ({ data, error } = input.id
       ? await supabase.from("content").update(row).eq("id", input.id).select("id,slug").single()
       : await supabase.from("content").insert(row).select("id,slug").single());
@@ -102,8 +126,21 @@ export async function saveContent(input: ContentInput): Promise<ActionResult> {
 
   if (error || !data) return { ok: false, error: error?.message ?? "Save failed unexpectedly." };
 
+  // Tags: comma-separated names. Found by slug or created, then the post's set is replaced.
+  const names = Array.from(new Set((input.tags ?? "").split(",").map((t) => t.trim().slice(0, 40)).filter(Boolean))).slice(0, 12);
+  const tagRows = names.map((name) => ({ name, slug: slugify(name) })).filter((t) => t.slug);
+  await supabase.from("content_tags").delete().eq("content_id", data.id);
+  if (tagRows.length) {
+    await supabase.from("tags").upsert(tagRows, { onConflict: "slug", ignoreDuplicates: true });
+    const { data: found } = await supabase.from("tags").select("id").in("slug", tagRows.map((t) => t.slug));
+    if (found?.length) await supabase.from("content_tags").insert(found.map((t) => ({ content_id: data.id, tag_id: t.id })));
+  }
+
   revalidatePath("/admin/content");
   revalidatePath("/writing");
+  revalidatePath("/blog");
+  revalidatePath(`/blog/${data.slug}`);
+  if (previousSlug && previousSlug !== data.slug) revalidatePath(`/blog/${previousSlug}`);
   revalidatePath(`/writing/${data.slug}`);
   if (previousSlug && previousSlug !== data.slug) revalidatePath(`/writing/${previousSlug}`);
   revalidatePath("/");
@@ -118,5 +155,6 @@ export async function deleteContent(id: string): Promise<ActionResult> {
   if (error) return { ok: false, error: error.message };
   revalidatePath("/admin/content");
   revalidatePath("/writing");
+  revalidatePath("/blog");
   redirect("/admin/content");
 }

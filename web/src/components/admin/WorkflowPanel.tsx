@@ -14,7 +14,7 @@ export type QuotationItem = {
   id: string; reference: string; version: number; status: string; scope: string | null; priceCents: number; discountCents: number; currency: string;
   duration: string | null; startDate: string | null; completionDate: string | null; location: string | null; eventDate: string | null;
   deliverables: string | null; milestones: Milestone[]; paymentTerms: string | null; revisionTerms: string | null; conditions: string | null;
-  expiryDate: string | null; sentAt: string | null;
+  expiryDate: string | null; sentAt: string | null; lineItems?: { kind: string; label: string; amountCents: number }[];
 };
 export type PaymentItem = { id: string; kind: string; amountCents: number; currency: string; method: string | null; reference: string | null; paidOn: string; status: string };
 export type DocItem = { id: string; kind: DocKind; number: string; status: string; paymentId: string | null };
@@ -32,13 +32,14 @@ function blank(latest: QuotationItem | undefined, details: Record<string, unknow
       duration: latest.duration ?? "", startDate: latest.startDate ?? "", completionDate: latest.completionDate ?? "", location: latest.location ?? "",
       eventDate: latest.eventDate ?? "", deliverables: latest.deliverables ?? "", milestones: latest.milestones ?? [], paymentTerms: latest.paymentTerms ?? "",
       revisionTerms: latest.revisionTerms ?? "", conditions: latest.conditions ?? "", expiryDate: latest.expiryDate ?? "",
+      lineItems: (latest.lineItems ?? []).map((l) => ({ kind: l.kind as "professional" | "official" | "other", label: l.label, amount: major(l.amountCents) })),
     };
   }
   // Starting points come from what the client wrote. The price is never pre-filled.
   return {
     scope: "", price: "", discount: "", currency: "NGN", duration: "", startDate: typeof details.startDate === "string" ? details.startDate : "", completionDate: "",
     location: [details.city, details.country].filter(Boolean).join(", "), eventDate: "", deliverables: typeof details.deliverables === "string" ? details.deliverables : "",
-    milestones: [], paymentTerms: "", revisionTerms: "", conditions: "", expiryDate: "",
+    milestones: [], paymentTerms: "", revisionTerms: "", conditions: "", expiryDate: "", lineItems: [],
   };
 }
 
@@ -207,7 +208,8 @@ export default function WorkflowPanel({ bookingId, stage, bookingRef, details, q
         <div>
           <div style={sec}>{latest && latest.status !== "draft" ? `REVISE QUOTATION (saves as version ${latest.version + 1})` : "PREPARE QUOTATION"}</div>
           <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--space-3);")}>
-            <div><label style={label("")} htmlFor="q-price">Professional fee *</label><input id="q-price" className="input" inputMode="decimal" value={form.price} onChange={(e) => set("price", e.target.value)} placeholder="e.g. 150000" /></div>
+            <div><label style={label("")} htmlFor="q-price">{(form.lineItems?.length ?? 0) > 0 ? "Total of itemised charges" : "Professional fee *"}</label>
+              <input id="q-price" className="input" inputMode="decimal" disabled={(form.lineItems?.length ?? 0) > 0} value={(form.lineItems?.length ?? 0) > 0 ? ((form.lineItems ?? []).reduce((a, l) => a + (Number(String(l.amount).replace(/,/g, "")) || 0), 0)).toFixed(2) : form.price} onChange={(e) => set("price", e.target.value)} placeholder="e.g. 150000" /></div>
             <div><label style={label("")} htmlFor="q-cur">Currency</label><input id="q-cur" className="input" maxLength={3} value={form.currency} onChange={(e) => set("currency", e.target.value.toUpperCase())} /></div>
             <div><label style={label("")} htmlFor="q-disc">Approved discount</label><input id="q-disc" className="input" inputMode="decimal" value={form.discount} onChange={(e) => set("discount", e.target.value)} /></div>
             <div><label style={label("")} htmlFor="q-dur">Estimated duration *</label><input id="q-dur" className="input" value={form.duration} onChange={(e) => set("duration", e.target.value)} placeholder="e.g. 6 weeks" /></div>
@@ -216,6 +218,20 @@ export default function WorkflowPanel({ bookingId, stage, bookingRef, details, q
             <div><label style={label("")} htmlFor="q-loc">Location</label><input id="q-loc" className="input" value={form.location} onChange={(e) => set("location", e.target.value)} /></div>
             <div><label style={label("")} htmlFor="q-ev">Event date (if any)</label><input id="q-ev" className="input" type="date" value={form.eventDate} onChange={(e) => set("eventDate", e.target.value)} /></div>
             <div><label style={label("")} htmlFor="q-exp">Valid until</label><input id="q-exp" className="input" type="date" value={form.expiryDate} onChange={(e) => set("expiryDate", e.target.value)} /></div>
+          </div>
+          <div style={css("margin-top:var(--space-3);")}>
+            <div style={label("")}>Itemised charges (optional). Keep official charges (for example CAC) separate from our professional fees.</div>
+            {(form.lineItems ?? []).map((li, i) => (
+              <div key={i} style={css("display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;")}>
+                <select className="input" aria-label={`Charge ${i + 1} type`} style={css("flex:1 1 150px;")} value={li.kind} onChange={(e) => set("lineItems", (form.lineItems ?? []).map((x, j) => (j === i ? { ...x, kind: e.target.value as "professional" | "official" | "other" } : x)))}>
+                  <option value="professional">Professional fee</option><option value="official">Official charge</option><option value="other">Other charge</option>
+                </select>
+                <input className="input" aria-label={`Charge ${i + 1} description`} style={css("flex:2 1 200px;")} placeholder="Description" value={li.label} onChange={(e) => set("lineItems", (form.lineItems ?? []).map((x, j) => (j === i ? { ...x, label: e.target.value } : x)))} />
+                <input className="input" aria-label={`Charge ${i + 1} amount`} inputMode="decimal" style={css("flex:1 1 110px;")} placeholder="Amount" value={li.amount} onChange={(e) => set("lineItems", (form.lineItems ?? []).map((x, j) => (j === i ? { ...x, amount: e.target.value } : x)))} />
+                <button type="button" className="btn btn-ghost" aria-label={`Remove charge ${i + 1}`} onClick={() => set("lineItems", (form.lineItems ?? []).filter((_, j) => j !== i))}>Remove</button>
+              </div>
+            ))}
+            <button type="button" className="btn btn-secondary" style={css("font-size:12px;")} onClick={() => set("lineItems", [...(form.lineItems ?? []), { kind: (form.lineItems?.length ?? 0) === 0 ? "professional" : "official", label: "", amount: "" }])}>Add a charge</button>
           </div>
           <div style={{ ...fieldBox, marginTop: "var(--space-3)" }}>
             <div><label style={label("")} htmlFor="q-scope">Agreed scope</label><textarea id="q-scope" className="input" rows={3} value={form.scope} onChange={(e) => set("scope", e.target.value)} /></div>

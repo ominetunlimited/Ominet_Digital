@@ -86,7 +86,9 @@ export async function changeStage(bookingId: string, to: Stage, opts: { note?: s
 
 // ---------------------------------------------------------------- quotations
 
+export type LineItemInput = { kind: "professional" | "official" | "other"; label: string; amount: string };
 export type QuotationInput = {
+  lineItems?: LineItemInput[];
   scope: string; price: string; discount: string; currency: string; duration: string; startDate: string; completionDate: string;
   location: string; eventDate: string; deliverables: string; milestones: Milestone[]; paymentTerms: string; revisionTerms: string; conditions: string; expiryDate: string;
 };
@@ -107,8 +109,16 @@ export async function saveQuotation(bookingId: string, input: QuotationInput): P
     return { ok: false, error: "This booking is past the quotation stage." };
   }
 
-  const price = toCents(input.price);
-  if (price === null || input.price.trim() === "") return { ok: false, error: "Enter the professional fee. Prices are never filled in for you." };
+  // Itemised charges (professional fee, official charges, other) add up to the quotation total. Nothing is pre-filled.
+  const lineItems: { kind: string; label: string; amount_cents: number }[] = [];
+  for (const li of (Array.isArray(input.lineItems) ? input.lineItems : []).slice(0, 20)) {
+    if (!clip(li?.label, 160) && !String(li?.amount ?? "").trim()) continue;
+    const cents = toCents(String(li?.amount ?? ""));
+    if (!clip(li?.label, 160) || cents === null || String(li?.amount ?? "").trim() === "") return { ok: false, error: "Each charge needs a description and an amount." };
+    lineItems.push({ kind: ["professional", "official", "other"].includes(li.kind) ? li.kind : "other", label: clip(li.label, 160), amount_cents: cents });
+  }
+  const price = lineItems.length ? lineItems.reduce((a, x) => a + x.amount_cents, 0) : toCents(input.price);
+  if (price === null || (!lineItems.length && input.price.trim() === "")) return { ok: false, error: "Enter the professional fee, or add itemised charges. Prices are never filled in for you." };
   const discount = input.discount.trim() ? toCents(input.discount) : 0;
   if (discount === null) return { ok: false, error: "The discount isn't a valid amount." };
   if (discount > price) return { ok: false, error: "The discount can't be larger than the fee." };
@@ -119,7 +129,7 @@ export async function saveQuotation(bookingId: string, input: QuotationInput): P
     .map((m) => ({ title: clip(m?.title, 160), due: clip(m?.due, 60), amount: clip(m?.amount, 60) })).filter((m) => m.title);
 
   const row = {
-    scope: clip(input.scope, 4000) || null, price_cents: price, discount_cents: discount, currency,
+    scope: clip(input.scope, 4000) || null, line_items: lineItems, price_cents: price, discount_cents: discount, currency,
     duration: clip(input.duration, 200) || null, start_date: dateOrNull(input.startDate), completion_date: dateOrNull(input.completionDate),
     location: clip(input.location, 200) || null, event_date: dateOrNull(input.eventDate), deliverables: clip(input.deliverables, 4000) || null,
     milestones, payment_terms: clip(input.paymentTerms, 2000) || null, revision_terms: clip(input.revisionTerms, 1000) || null,

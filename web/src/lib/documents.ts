@@ -17,6 +17,7 @@ export type DocQuote = {
   id: string; reference: string; version: number; scope: string | null; price_cents: number; discount_cents: number; currency: string;
   duration: string | null; start_date: string | null; completion_date: string | null; location: string | null; event_date: string | null;
   deliverables: string | null; milestones: Milestone[]; payment_terms: string | null; revision_terms: string | null; conditions: string | null; expiry_date: string | null;
+  line_items?: { kind: string; label: string; amount_cents: number }[] | null;
 };
 export type DocBooking = { id: string; name: string; email: string; phone: string | null; service_title: string; reference: string | null; booking_ref: string | null; details: Record<string, unknown> | null };
 export type DocPayment = { id: string; kind: string; amount_cents: number; currency: string; method: string | null; reference: string | null; paid_on: string; note: string | null; status: string; created_at: string };
@@ -79,7 +80,11 @@ export function buildData(c: BuildCtx): DocData {
       if (c.kind === "quotation" && q.expiry_date) rows.push(["Valid until", docDate(q.expiry_date)]);
     }
     if (["quotation", "agreement", "invoice", "booking_confirmation"].includes(c.kind)) {
-      totals.push(["Professional fee", docMoney(Number(q.price_cents), cur)]);
+      const items = q.line_items ?? [];
+      if (items.length) {
+        const tag = (k: string) => (k === "official" ? "Official charge: " : k === "professional" ? "Professional fee: " : "Other: ");
+        for (const li of items) totals.push([`${tag(li.kind)}${li.label}`, docMoney(Number(li.amount_cents), cur)]);
+      } else totals.push(["Professional fee", docMoney(Number(q.price_cents), cur)]);
       if (Number(q.discount_cents) > 0) totals.push(["Discount", `- ${docMoney(Number(q.discount_cents), cur)}`]);
       totals.push(["Total", docMoney(net(q), cur), true]);
     }
