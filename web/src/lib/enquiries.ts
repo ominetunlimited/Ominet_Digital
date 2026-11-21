@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { randomBytes } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { saveContactToList } from "@/lib/contact-capture";
+import { rateLimit, actionKey } from "@/lib/rate-limit";
 import { getOrCreateAnonKey } from "@/lib/anon-key";
 import { queueAlert, adminLink } from "@/lib/notify/telegram";
 import { sendTransactional } from "@/lib/mailgun";
@@ -55,6 +56,7 @@ function makeReference(): string {
 
 export async function submitEnquiry(input: EnquiryInput): Promise<EnquiryResult> {
   if (input.website) return { ok: true, reference: "RECEIVED", acknowledgementSent: false };
+  if (!rateLimit(await actionKey("enquiry"), 5, 10 * 60_000).ok) return { ok: false, error: "Too many requests. Please try again in a few minutes." };
 
   const name = clip(input.name, 120);
   const email = clip(input.email, 200).toLowerCase();

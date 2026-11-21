@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { randomBytes } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { saveContactToList } from "@/lib/contact-capture";
+import { rateLimit, actionKey } from "@/lib/rate-limit";
 import { getOrCreateAnonKey } from "@/lib/anon-key";
 import { queueAlert, adminLink } from "@/lib/notify/telegram";
 import { sendTransactional } from "@/lib/mailgun";
@@ -38,6 +39,7 @@ function makeRef(prefix: string) {
 
 export async function submitOptionEnquiry(input: OptionEnquiryInput): Promise<OptionEnquiryResult> {
   if (input.website) return { ok: true, reference: "RECEIVED", acknowledgementSent: false };
+  if (!rateLimit(await actionKey("option-enquiry"), 5, 10 * 60_000).ok) return { ok: false, error: "Too many requests. Please try again in a few minutes." };
   const flavour = flavourOf(input.serviceSlug);
   if (!flavour) return { ok: false, error: "This service doesn't take requests through this form." };
   const copy = FLAVOUR_COPY[flavour];
