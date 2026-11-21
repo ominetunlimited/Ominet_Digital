@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { SITE_URL } from "@/lib/seo";
-import { isMailgunConfigured } from "@/lib/mailgun";
+import { isMailgunConfigured, isSmtpConfigured } from "@/lib/mailgun";
 
 export type IntegrationStatus = {
   name: string;
@@ -66,6 +66,13 @@ export async function getIntegrationStatus(): Promise<IntegrationStatus[]> {
     state: mailgunReady ? "ok" : "warn",
     summary: `${subscribers === null ? "Subscribers stored here" : `${subscribers} subscriber${subscribers === 1 ? "" : "s"}`} · ${mailgunReady ? "sending is connected" : "sending not set up"}`,
     detail: mailgunReady ? "Manage in Admin → Newsletter." : "Set up Mailgun in Admin → Newsletter — no Vercel access needed.",
+  });
+
+  out.push({
+    name: "Transactional email (SMTP)",
+    state: mailgunReady || isSmtpConfigured() ? "ok" : "warn",
+    summary: mailgunReady ? "Sending through the Mailgun API" : isSmtpConfigured() ? "Sending through Mailgun SMTP" : "Not configured",
+    detail: "Enquiry acknowledgements, notifications, quotations and PDFs. Credentials live only in Vercel environment variables. Accepted by the mail server does not mean delivered.",
   });
 
   out.push({ name: "Site address", state: SITE_URL.startsWith("https://") ? "ok" : "warn", summary: SITE_URL, detail: "Set by NEXT_PUBLIC_SITE_URL in Vercel." });

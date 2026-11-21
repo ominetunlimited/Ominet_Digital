@@ -1,4 +1,5 @@
 import { SITE_URL } from "@/lib/seo";
+import nodemailer from "nodemailer";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 // Newsletter sending via Mailgun's plain HTTP API — no SDK, just fetch and
@@ -99,7 +100,11 @@ export type TransactionalResult = { ok: true; providerId: string | null } | { ok
  */
 export async function sendTransactional(mail: TransactionalMail): Promise<TransactionalResult> {
   const config = await getMailgunConfig();
-  if (!config) return { ok: false, error: "Mailgun isn't configured.", notConfigured: true };
+  if (!config) {
+    const smtp = getSmtpConfig();
+    if (smtp) return sendViaSmtp(smtp, mail);
+    return { ok: false, error: "Mailgun isn't configured.", notConfigured: true };
+  }
   const form = new FormData();
   form.set("from", FROM);
   form.set("to", mail.to);
@@ -123,5 +128,41 @@ export async function sendTransactional(mail: TransactionalMail): Promise<Transa
     return { ok: true, providerId: json?.id ?? null };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Couldn't reach Mailgun." };
+  }
+}
+
+
+// ── SMTP route ──────────────────────────────────────────────────────────────
+// Mailgun also accepts mail over SMTP (smtp.mailgun.org). If no Mailgun API key is set but SMTP_* variables are,
+// one-to-one transactional mail (acknowledgements, notifications, quotations, PDFs) goes this way.
+// The API key route, when configured, takes precedence. Newsletter batches still need the API key because
+// per-recipient batch sending is an API feature. Credentials come only from server-side environment variables.
+export type SmtpConfig = { host: string; port: number; user: string; pass: string };
+
+export function getSmtpConfig(): SmtpConfig | null {
+  const host = process.env.SMTP_HOST, user = process.env.SMTP_USER, pass = process.env.SMTP_PASSWORD;
+  if (!host || !user || !pass) return null;
+  return { host, port: Number(process.env.SMTP_PORT) || 587, user, pass };
+}
+
+export function isSmtpConfigured(): boolean {
+  return getSmtpConfig() !== null;
+}
+
+async function sendViaSmtp(cfg: SmtpConfig, mail: TransactionalMail): Promise<TransactionalResult> {
+  const from = process.env.MAIL_FROM_ADDRESS ? `${process.env.MAIL_FROM_NAME || "Ominet Digital"} <${process.env.MAIL_FROM_ADDRESS}>` : FROM;
+  try {
+    const transport = nodemailer.createTransport({
+      host: cfg.host, port: cfg.port, secure: cfg.port === 465, requireTLS: cfg.port !== 465,
+      auth: { user: cfg.user, pass: cfg.pass }, connectionTimeout: 10_000, greetingTimeout: 10_000, socketTimeout: 20_000,
+    });
+    const info = await transport.sendMail({
+      from, to: mail.to, subject: mail.subject, html: mail.html, text: mail.text, replyTo: mail.replyTo,
+      attachments: (mail.attachments ?? []).map((a) => ({ filename: a.filename, content: Buffer.from(a.content), contentType: a.contentType })),
+    });
+    // "accepted" by the SMTP server is still not "delivered"; the delivery webhook moves it on.
+    return { ok: true, providerId: info.messageId ?? null };
+  } catch (e) {
+    return { ok: false, error: `SMTP: ${e instanceof Error ? e.message : "could not send"}`.slice(0, 240) };
   }
 }
