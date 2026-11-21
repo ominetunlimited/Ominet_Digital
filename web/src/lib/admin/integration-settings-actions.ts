@@ -19,6 +19,10 @@ export async function getMailgunStatus(): Promise<MailgunStatus | { error: strin
   if (!check.ok) return { error: check.error };
   const { data } = await check.supabase.from("integration_settings").select("value").eq("key", "mailgun").maybeSingle();
   const v = (data?.value ?? {}) as { apiKey?: string; domain?: string; region?: string };
+  if (!(v.apiKey && v.domain) && process.env.MAILGUN_API_KEY && process.env.MAILGUN_DOMAIN) {
+    // Configured through server environment variables (Vercel). Show that honestly instead of "Not connected".
+    return { configured: true, domain: process.env.MAILGUN_DOMAIN, region: process.env.MAILGUN_REGION === "eu" ? "eu" : "us", apiKeyHint: "set in server settings" };
+  }
   return {
     configured: Boolean(v.apiKey && v.domain),
     domain: v.domain ?? "",
