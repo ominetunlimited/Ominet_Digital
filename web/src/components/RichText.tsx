@@ -1,4 +1,4 @@
-import { sanitizeRichHtml } from "@/lib/rich-text";
+import { sanitizeRichHtml, withHeadingAnchors } from "@/lib/rich-text";
 
 /**
  * Renders stored rich text safely. The HTML is sanitised again here (not only
@@ -6,8 +6,8 @@ import { sanitizeRichHtml } from "@/lib/rich-text";
  * directly in the database, can never inject script into a public page.
  * Plain-text records from before the rich editor are shown as paragraphs.
  */
-export default function RichText({ html, className = "", style }: { html: string | null | undefined; className?: string; style?: React.CSSProperties }) {
-  const clean = sanitizeRichHtml(html);
+export default function RichText({ html, className = "", style, anchors = false }: { html: string | null | undefined; className?: string; style?: React.CSSProperties; anchors?: boolean }) {
+  const clean = anchors ? withHeadingAnchors(html).html : sanitizeRichHtml(html);
   if (!clean) return null;
   return <div className={`rte-body ${className}`.trim()} style={style} dangerouslySetInnerHTML={{ __html: clean }} />;
 }

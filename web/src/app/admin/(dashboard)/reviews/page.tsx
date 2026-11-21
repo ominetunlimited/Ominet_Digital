@@ -56,7 +56,7 @@ export default async function AdminReviewsPage({ searchParams }: { searchParams:
     const content = one(r.content);
     const book = one(r.books);
     const target = content
-      ? { label: `Writing: ${content.title}`, href: `/writing/${content.slug}` }
+      ? { label: `Writing: ${content.title}`, href: `/articles/${content.slug}` }
       : book
         ? { label: `Book: ${book.title}`, href: `/books/${book.slug}` }
         : { label: "(deleted target)", href: null };

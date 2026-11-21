@@ -92,7 +92,7 @@ export default function SearchPage() {
           <div style={css("font-size:13px;opacity:0.6;margin-bottom:var(--space-4);")}>{total} result{total === 1 ? "" : "s"} for &ldquo;{query}&rdquo;</div>
           <div style={css("display:grid;gap:var(--space-4);")}>
             {shownArticles.map((a) => (
-              <a key={a.slug} href={`/writing/${a.slug}`} style={css("display:flex;gap:var(--space-4);flex-wrap:wrap;")}>
+              <a key={a.slug} href={`/articles/${a.slug}`} style={css("display:flex;gap:var(--space-4);flex-wrap:wrap;")}>
                 <span className="tag tag-neutral" style={css("flex-shrink:0;")}>{a.category}</span>
                 <div><div style={css("font-family:var(--font-heading);font-size:18px;")}>{a.title}</div><div style={css("font-size:13px;opacity:0.6;")}>{a.date}</div></div>
               </a>

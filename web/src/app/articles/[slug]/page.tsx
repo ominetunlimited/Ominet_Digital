@@ -26,6 +26,8 @@ import CommentSection from "@/components/CommentSection";
 import ReviewSection from "@/components/ReviewSection";
 import ReadMoreExcerpt from "@/components/ReadMoreExcerpt";
 import RelatedSection from "@/components/RelatedSection";
+import { getArticleExtras, EDITORIAL_LABELS } from "@/lib/article-extras";
+import { withHeadingAnchors } from "@/lib/rich-text";
 
 export const revalidate = 60;
 
@@ -36,7 +38,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { identity } = await getSiteSettings();
   const title = article.seoTitle || `${article.title} — ${identity.siteName}`;
   const description = article.seoDescription || article.excerpt;
-  const url = `${SITE_URL}/writing/${article.slug}`;
+  const url = `${SITE_URL}/articles/${article.slug}`;
   const image = ogImage(article.ogImageUrl || article.featuredImageUrl);
   return {
     title: { absolute: title },
@@ -57,15 +59,18 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
   const article = await getArticle(slug);
   if (!article) notFound();
 
-  const [unlocked, user, engagement, reviewSummary, featuredBook, otherArticles] = await Promise.all([
+  const [unlocked, user, engagement, reviewSummary, featuredBook, otherArticles, extras] = await Promise.all([
     article.access !== "paid" ? Promise.resolve(true) : hasEntitlement(article.id),
     getCurrentUser(),
     article.id ? getEngagement({ contentId: article.id }) : Promise.resolve({ likeCount: 0, likedByMe: false, comments: [] }),
     article.id ? getReviewSummary({ contentId: article.id }) : Promise.resolve({ average: 0, count: 0, reviews: [], myReview: null }),
     getFeaturedBook(),
     getArticles(),
+    getArticleExtras(slug),
   ]);
-  const currentPath = `/writing/${article.slug}`;
+  const anchored = extras?.showToc !== false && article.body ? withHeadingAnchors(article.body) : null;
+  const toc = anchored && anchored.toc.length >= 3 ? anchored.toc : [];
+  const currentPath = `/articles/${article.slug}`;
   const moreFromOmini = otherArticles.find((a) => a.slug !== article.slug);
 
   // Body is rich HTML from the admin editor (RichTextEditor). A locked
@@ -80,20 +85,22 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
   const jsonLd = jsonLdGraph([
     {
       "@type": isResearch ? "ScholarlyArticle" : "Article",
-      "@id": `${SITE_URL}/writing/${article.slug}#article`,
+      "@id": `${SITE_URL}/articles/${article.slug}#article`,
       headline: article.title,
       description: article.excerpt,
-      datePublished: article.date,
+      ...(extras?.publishedAt ? { datePublished: extras.publishedAt } : {}),
+      ...(extras?.updatedAt ? { dateModified: extras.updatedAt } : {}),
+      ...(article.featuredImageUrl ? { image: [article.featuredImageUrl] } : {}),
       author: personSchema,
       publisher: getOrganizationSchema(siteIdentity.siteName),
-      mainEntityOfPage: `${SITE_URL}/writing/${article.slug}`,
+      mainEntityOfPage: `${SITE_URL}/articles/${article.slug}`,
       ...(article.externalUrl ? { sameAs: [article.externalUrl] } : {}),
     },
     personSchema,
     breadcrumbSchema([
       { name: "Home", path: "/" },
-      { name: "Writing", path: "/writing" },
-      { name: article.title, path: `/writing/${article.slug}` },
+      { name: "Articles", path: "/articles" },
+      { name: article.title, path: `/articles/${article.slug}` },
     ]),
   ]);
 
@@ -108,6 +115,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
 
       <article style={css("max-width:720px;margin:0 auto;padding:var(--space-8) var(--space-6);")}>
         <div style={css("display:flex;gap:var(--space-3);align-items:center;font-size:12px;opacity:0.6;margin-bottom:var(--space-4);")}>
+          {extras?.editorialLabel && <span className="tag tag-neutral" style={css("background:var(--om-navy);color:#fff;")}>{EDITORIAL_LABELS[extras.editorialLabel] ?? extras.editorialLabel}</span>}
           <span className="tag tag-neutral">{article.category}</span>
           {article.subcategory && <span className="tag tag-outline">{article.subcategory}</span>}
           <span>{article.date}</span>
@@ -116,15 +124,27 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
         </div>
         <h1 style={css("font-family:var(--font-heading);font-size:44px;line-height:1.1;margin:0 0 var(--space-3);")}>{article.title}</h1>
         {article.dek && <p style={css("font-size:19px;line-height:1.5;opacity:0.75;margin:0 0 var(--space-4);")}>{article.dek}</p>}
-        <div style={css("font-size:13px;opacity:0.6;margin-bottom:var(--space-6);")}>By {article.author}</div>
+        <div style={css("font-size:13px;opacity:0.6;margin-bottom:var(--space-4);")}>By {article.author}{extras?.contributors ? ` · With ${extras.contributors}` : ""}{extras?.updatedAt && article.date && new Date(extras.updatedAt).getTime() - new Date(article.date).getTime() > 2 * 86400000 ? ` · Updated ${new Date(extras.updatedAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "Africa/Lagos" })}` : ""}</div>
+        {extras?.abstract && <div style={css("font-size:16px;line-height:1.7;padding:var(--space-4);background:var(--color-surface);border-radius:var(--radius-md);margin-bottom:var(--space-5);")}><strong style={css("display:block;font-size:11px;letter-spacing:0.1em;opacity:0.6;margin-bottom:6px;")}>ABSTRACT</strong>{extras.abstract}</div>}
+        {toc.length > 0 && (
+          <nav aria-label="Table of contents" style={css("margin-bottom:var(--space-6);font-size:14px;")}>
+            <strong style={css("display:block;font-size:11px;letter-spacing:0.1em;opacity:0.6;margin-bottom:6px;")}>CONTENTS</strong>
+            <ol style={css("margin:0;padding-left:1.2em;display:grid;gap:4px;")}>
+              {toc.map((t) => <li key={t.id} style={css(t.level === 3 ? "margin-left:1em;list-style:circle;" : "")}><a href={`#${t.id}`}>{t.text}</a></li>)}
+            </ol>
+          </nav>
+        )}
 
         <div style={css("aspect-ratio:16/9;position:relative;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-6);")}>
           {article.featuredImageUrl ? (
-            <Image src={article.featuredImageUrl} alt="" fill sizes="(max-width: 760px) 100vw, 720px" style={{ objectFit: "cover" }} priority />
+            <Image src={article.featuredImageUrl} alt={extras?.featuredImageAlt ?? ""} fill sizes="(max-width: 760px) 100vw, 720px" style={{ objectFit: "cover" }} priority />
           ) : (
             <PlaceholderImage label="Hero image" />
           )}
         </div>
+
+        {extras?.imageCredit && <p style={css("font-size:12px;opacity:0.6;margin:calc(var(--space-4) * -1) 0 var(--space-5);")}>Image: {extras.imageCredit}</p>}
+        {extras?.disclosure && <p role="note" style={css("font-size:14px;line-height:1.6;padding:var(--space-3);border-left:3px solid var(--om-cyan);background:var(--color-surface);margin:0 0 var(--space-5);")}><strong>Disclosure.</strong> {extras.disclosure}</p>}
 
         {article.videoUrl && (
           <div style={css("margin-bottom:var(--space-6);")}>
@@ -133,7 +153,16 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
         )}
 
         {unlocked && article.body && (
-          <RichText html={article.body} style={css("font-size:18px;line-height:1.8;")} />
+          <RichText html={article.body} anchors={toc.length > 0} style={css("font-size:18px;line-height:1.8;")} />
+        )}
+
+        {unlocked && extras?.correctionNote && <p role="note" style={css("font-size:14px;line-height:1.6;padding:var(--space-3);border-left:3px solid #D4AF37;background:var(--color-surface);margin:var(--space-5) 0 0;")}><strong>Correction.</strong> {extras.correctionNote}</p>}
+
+        {unlocked && extras?.referencesHtml && (
+          <section aria-labelledby="refs" style={css("margin-top:var(--space-6);padding-top:var(--space-4);border-top:1px solid var(--color-divider);")}>
+            <h2 id="refs" style={css("font-family:var(--font-heading);font-size:20px;margin:0 0 var(--space-3);")}>References and notes</h2>
+            <RichText html={extras.referencesHtml} style={css("font-size:15px;line-height:1.7;")} />
+          </section>
         )}
 
         {((article.attachmentFormat && unlocked && article.id) || article.externalUrl) && (
@@ -152,14 +181,14 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
         )}
 
         {!unlocked && (
-          <PaywallGate contentId={article.id ?? article.slug} price={article.price} userEmail={user?.email ?? null} currentPath={`/writing/${article.slug}`} />
+          <PaywallGate contentId={article.id ?? article.slug} price={article.price} userEmail={user?.email ?? null} currentPath={`/articles/${article.slug}`} />
         )}
 
         <AdSlot slotKey="article_inline" />
 
         {isResearch && <ResearchProfileSection placement="research" title="THE AUTHOR'S RESEARCH PROFILES" padded={false} />}
 
-        <ShareBar url={`${SITE_URL}/writing/${article.slug}`} title={article.title} />
+        <ShareBar url={`${SITE_URL}/articles/${article.slug}`} title={article.title} />
 
         {(featuredBook || moreFromOmini) && (
           <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--space-4);margin-bottom:var(--space-8);")}>
@@ -173,7 +202,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
               </Link>
             )}
             {moreFromOmini && (
-              <Link href={`/writing/${moreFromOmini.slug}`} style={css("display:block;")}>
+              <Link href={`/articles/${moreFromOmini.slug}`} style={css("display:block;")}>
                 <div className="card">
                   <div className="card-kicker">MORE FROM OMINI</div>
                   <div className="card-title">{moreFromOmini.title}</div>

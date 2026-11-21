@@ -67,7 +67,7 @@ function Row({ draft, onChange, onRemoved }: { draft: Draft; onChange: (d: Draft
         </div>
         <div className="field" style={css("flex:1;min-width:200px;")}>
           <label>Redirect to</label>
-          <input className="input" value={draft.toPath} onChange={(e) => set("toPath", e.target.value)} placeholder="/writing/my-new-post or https://…" />
+          <input className="input" value={draft.toPath} onChange={(e) => set("toPath", e.target.value)} placeholder="/articles/my-new-post or https://…" />
         </div>
         <div className="field" style={css("width:150px;flex-shrink:0;")}>
           <label>Type</label>

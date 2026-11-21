@@ -38,7 +38,7 @@ export const SECTION_KEYS: Record<SectionName, string> = {
   pages: "site_pages",
 };
 
-const DESCRIPTION = "A digital ecosystem for publishing, creativity, professional identity and technology, founded by Omini Nfawa.";
+const DESCRIPTION = "Ominet Digital is a Nigerian digital company working across publishing, media production, design, technology and professional services. We develop digital products, produce creative work and provide practical services for individuals, businesses and organisations.";
 
 // What the About page has always said — kept as the default here so nothing
 // on the live page changes until an admin edits it in Site settings.
@@ -67,10 +67,10 @@ export const DEFAULT_SETTINGS: SiteSettings = {
     { platform: "linkedin", label: "LinkedIn", url: "https://www.linkedin.com/in/ominet", enabled: true },
   ],
   seo: { faviconUrl: "", defaultOgImageUrl: "", googleVerification: "" },
-  footer: { blurb: DESCRIPTION, copyrightName: "Ominet Digital", privacyUrl: "/privacy", termsUrl: "" },
+  footer: { blurb: DESCRIPTION, copyrightName: "Ominet Digital", privacyUrl: "/privacy", termsUrl: "/terms" },
   homepage: {
     heroImageUrl: "",
-    heroHeading: "Writer. Researcher.\nMedia & Communications Specialist.",
+    heroHeading: "Publishing, Creative Production\nand Digital Services.",
     heroSubheading: DESCRIPTION,
     showRecentWriting: true,
   },

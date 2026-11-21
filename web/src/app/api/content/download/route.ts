@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
   await admin.from("content_downloads").insert({ content_id: article.id, guest_key: guestKey });
   await admin.from("analytics_events").insert({
     event_type: "download",
-    path: `/writing/${article.slug}`,
+    path: `/articles/${article.slug}`,
     content_id: article.id,
     metadata: { format: article.attachment_format },
   });

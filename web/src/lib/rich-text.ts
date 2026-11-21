@@ -108,3 +108,25 @@ export function splitRichBlocks(html: string | null | undefined): string[] {
   }
   return blocks.filter((b) => b.trim());
 }
+
+export type TocItem = { id: string; text: string; level: 2 | 3 };
+
+/**
+ * Adds stable ids to h2/h3 headings of already-sanitised HTML and returns the matching table of contents.
+ * Ids are generated here from the heading text, never taken from stored content, so they cannot carry markup.
+ */
+export function withHeadingAnchors(html: string | null | undefined): { html: string; toc: TocItem[] } {
+  const clean = sanitizeRichHtml(html);
+  const toc: TocItem[] = [];
+  const used = new Map<string, number>();
+  const out = clean.replace(/<h([23])([^>]*)>([\s\S]*?)<\/h\1>/gi, (_m, lvl: string, attrs: string, inner: string) => {
+    const text = sanitizeHtml(inner, { allowedTags: [], allowedAttributes: {} }).replace(/&amp;/g, "&").replace(/\s+/g, " ").trim();
+    let base = text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "section";
+    const n = used.get(base) ?? 0;
+    used.set(base, n + 1);
+    if (n > 0) base = `${base}-${n + 1}`;
+    toc.push({ id: base, text, level: Number(lvl) as 2 | 3 });
+    return `<h${lvl}${attrs} id="${base}">${inner}</h${lvl}>`;
+  });
+  return { html: out, toc };
+}

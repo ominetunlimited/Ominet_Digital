@@ -58,6 +58,13 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "10mb",
     },
   },
+  async redirects() {
+    // The Writing section is now Articles. Permanent, so search engines transfer the old URLs.
+    return [
+      { source: "/writing", destination: "/articles", permanent: true },
+      { source: "/writing/:slug", destination: "/articles/:slug", permanent: true },
+    ];
+  },
   async headers() {
     // Development keeps the framework's own relaxed behaviour (React needs
     // eval there); the policy is enforced in production builds.

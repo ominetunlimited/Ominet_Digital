@@ -34,10 +34,11 @@ export default async function Footer() {
           </div>
         </div>
         <div>
-          <div style={{ fontSize: 11, letterSpacing: "0.1em", opacity: 0.6, marginBottom: "var(--space-3)" }}>OMINI NFAWA</div>
+          <div style={{ fontSize: 11, letterSpacing: "0.1em", opacity: 0.6, marginBottom: "var(--space-3)" }}>OMINET DIGITAL</div>
           <div style={{ display: "grid", gap: "var(--space-2)", fontSize: 13 }}>
             {on("omini-nfawa") && <Link href="/omini-nfawa">Overview</Link>}
-            {on("writing") && <Link href="/writing">Writing</Link>}
+            {on("blog") && <Link href="/blog">Blog</Link>}
+            {on("writing") && <Link href="/articles">Articles</Link>}
             {on("books") && <Link href="/books">Books</Link>}
             <a href={AMAZON_AUTHOR_URL} target="_blank" rel="noopener noreferrer">Amazon author page</a>
             {on("media") && <Link href="/media">Media</Link>}
@@ -64,11 +65,12 @@ export default async function Footer() {
           <div style={{ display: "grid", gap: "var(--space-2)", fontSize: 13 }}>
             {on("search") && <Link href="/search">Search</Link>}
             <Link href="/omini-nfawa#newsletter">Newsletter</Link>
-            <a href={`mailto:${contact.supportEmail}`}>Contact</a>
+            <Link href="/contact">Contact</Link>
             <WhatsAppButton label="WhatsApp" />
             <a href="https://selar.com/showlove/ominet" target="_blank" rel="noopener noreferrer">Support on Selar</a>
             {footer.privacyUrl && <a href={footer.privacyUrl}>Privacy policy</a>}
             {footer.termsUrl && <a href={footer.termsUrl}>Terms</a>}
+            <Link href="/cookies">Cookies and ads</Link>
           </div>
         </div>
       </div>

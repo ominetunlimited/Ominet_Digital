@@ -96,7 +96,7 @@ export default async function CheckoutCallbackPage({
             <button type="button" className="btn btn-secondary">Back to the book</button>
           </Link>
         ) : (
-          <Link href={contentSlug ? `/writing/${contentSlug}` : "/writing"}>
+          <Link href={contentSlug ? `/articles/${contentSlug}` : "/articles"}>
             <button type="button" className="btn btn-primary">Back to Writing</button>
           </Link>
         )}

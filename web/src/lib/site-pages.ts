@@ -8,8 +8,8 @@
 export type SitePage = { key: string; label: string; path: string; inNav: boolean; group: "main" | "ecosystem" | "utility"; note?: string };
 
 export const SITE_PAGES: SitePage[] = [
-  { key: "omini-nfawa", label: "Omini Nfawa", path: "/omini-nfawa", inNav: true, group: "main" },
-  { key: "writing", label: "Writing", path: "/writing", inNav: true, group: "main", note: "Articles, essays and blog posts" },
+  { key: "omini-nfawa", label: "Founder", path: "/omini-nfawa", inNav: true, group: "main" },
+  { key: "writing", label: "Articles", path: "/articles", inNav: true, group: "main", note: "Long-form articles, essays and research (Blog posts live under Blog)" },
   { key: "blog", label: "Blog", path: "/blog", inNav: true, group: "main", note: "News, events, features and updates" },
   { key: "books", label: "Books", path: "/books", inNav: true, group: "main" },
   { key: "media", label: "Media", path: "/media", inNav: true, group: "main" },
