@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { randomBytes } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { saveContactToList } from "@/lib/contact-capture";
 import { getOrCreateAnonKey } from "@/lib/anon-key";
 import { queueAlert, adminLink } from "@/lib/notify/telegram";
 import { sendTransactional } from "@/lib/mailgun";
@@ -19,6 +20,7 @@ export type OptionEnquiryInput = {
   name: string; email: string; phone: string; whatsapp: string; location: string; contactMethod: string;
   values: Record<string, string>;
   consent: boolean;
+  newsletterOptIn?: boolean;
   website: string; // honeypot
   uploadIds?: string[];
 };
@@ -115,6 +117,7 @@ export async function submitOptionEnquiry(input: OptionEnquiryInput): Promise<Op
     fileNames = (att ?? []).map((a) => a.original_name as string);
   }
 
+  await saveContactToList(admin, { email, name, phone: input.phone || input.whatsapp, source: copy.kind, optIn: input.newsletterOptIn === true });
   await admin.from("analytics_events").insert({ event_type: "booking", metadata: { service_id: svc.id, kind: copy.kind } }).then(() => {}, () => {});
   revalidatePath("/admin/bookings");
   queueAlert("booking", `New ${copy.short} request`, [`Ref: ${reference}`, `Option: ${labels.join(", ")}`, `From: ${name}`], { dedupeKey: `enquiry:${id}`, link: adminLink("/admin/bookings") });

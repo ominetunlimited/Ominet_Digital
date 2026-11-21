@@ -14,7 +14,7 @@ export default async function AdminNewsletterPage() {
   const supabase = await createClient();
   const [{ data: subscriberData }, { data: campaignData }, mailgunReady, mailgunStatus] = supabase
     ? await Promise.all([
-        supabase.from("newsletter_subscribers").select("email,status,subscribed_at").order("subscribed_at", { ascending: false }),
+        supabase.from("newsletter_subscribers").select("email,name,status,source,subscribed_at").order("subscribed_at", { ascending: false }),
         supabase.from("newsletter_campaigns").select("id,subject,status,recipient_count,error,created_at,sent_at").order("created_at", { ascending: false }).limit(20),
         isMailgunConfigured(),
         getMailgunStatus(),
@@ -28,7 +28,7 @@ export default async function AdminNewsletterPage() {
     <div>
       <h1 style={css("font-family:var(--font-heading);font-size:28px;margin:0 0 var(--space-2);")}>Newsletter</h1>
       <p style={css("font-size:13px;opacity:0.6;margin:0 0 var(--space-6);")}>
-        {subscribers.length} subscriber{subscribers.length === 1 ? "" : "s"} ({activeCount} active). Sent via Mailgun as info@ominetdigital.com.ng.
+        {activeCount} subscribed (will receive campaigns), {subscribers.filter((s) => s.status === "contact").length} saved contacts from enquiries (never mailed by a campaign unless they opt in). Sent via Mailgun as info@ominetdigital.com.ng.
       </p>
 
       {"error" in mailgunStatus ? (
@@ -69,14 +69,16 @@ export default async function AdminNewsletterPage() {
       {subscribers.length === 0 ? (
         <p style={css("font-size:14px;opacity:0.6;")}>No subscribers yet.</p>
       ) : (
-        <table className="table table-responsive" style={css("width:100%;max-width:480px;")}>
-          <thead><tr><th>Email</th><th>Status</th><th>Subscribed</th></tr></thead>
+        <table className="table table-responsive" style={css("width:100%;max-width:780px;")}>
+          <thead><tr><th>Email</th><th>Name</th><th>Status</th><th>Source</th><th>Added</th></tr></thead>
           <tbody>
             {subscribers.map((s) => (
               <tr key={s.email}>
                 <td data-label="Email">{s.email}</td>
+                <td data-label="Name">{s.name ?? "—"}</td>
                 <td data-label="Status">{s.status}</td>
-                <td data-label="Subscribed">{new Date(s.subscribed_at).toLocaleDateString()}</td>
+                <td data-label="Source">{String(s.source ?? "").replace(/_/g, " ")}</td>
+                <td data-label="Added">{new Date(s.subscribed_at).toLocaleDateString()}</td>
               </tr>
             ))}
           </tbody>

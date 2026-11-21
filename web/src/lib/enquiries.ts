@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { randomBytes } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { saveContactToList } from "@/lib/contact-capture";
 import { getOrCreateAnonKey } from "@/lib/anon-key";
 import { queueAlert, adminLink } from "@/lib/notify/telegram";
 import { sendTransactional } from "@/lib/mailgun";
@@ -31,6 +32,7 @@ export type EnquiryInput = {
   heardFrom: string;
   comments: string;
   consent: boolean;
+  newsletterOptIn?: boolean;
   serviceDetails: Record<string, string>;
   website: string; // honeypot
   uploadIds?: string[]; // files already uploaded through /api/enquiry-upload
@@ -171,6 +173,7 @@ export async function submitEnquiry(input: EnquiryInput): Promise<EnquiryResult>
     fileNames = (att ?? []).map((a) => a.original_name as string);
   }
 
+  await saveContactToList(admin, { email, name, phone: input.phone, source: "project_enquiry", optIn: input.newsletterOptIn === true });
   await admin.from("analytics_events").insert({ event_type: "booking", metadata: { service_id: services[0].id, kind: "project_enquiry" } }).then(() => {}, () => {});
   revalidatePath("/admin/bookings");
   queueAlert("booking", "New project enquiry", [`Ref: ${reference}`, `Services: ${serviceTitles.join(", ")}`, `From: ${name}`], { dedupeKey: `enquiry:${id}`, link: adminLink("/admin/bookings") });
