@@ -3,12 +3,14 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { supabaseConfigured } from "@/lib/supabase/env";
+import { rateLimit, actionKey } from "@/lib/rate-limit";
 import { queueAlert, adminLink } from "@/lib/notify/telegram";
 
 export type ActionResult = { ok: true; message: string } | { ok: false; error: string };
 
 export async function subscribeToNewsletter(email: string): Promise<ActionResult> {
   if (!email || !email.includes("@")) return { ok: false, error: "Enter a valid email." };
+  if (!rateLimit(await actionKey("newsletter"), 5, 10 * 60_000).ok) return { ok: false, error: "Too many attempts. Please try again shortly." };
   if (!supabaseConfigured) return { ok: false, error: "Newsletter signup isn't configured yet." };
 
   const supabase = await createClient();

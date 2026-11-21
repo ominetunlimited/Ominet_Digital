@@ -56,3 +56,11 @@ export function clientKey(request: Request, route: string): string {
   const ip = forwarded || request.headers.get("x-real-ip") || "anon";
   return `${route}:${ip}`.slice(0, 128);
 }
+
+/** Same idea as clientKey, for Server Actions where there is no Request object. */
+export async function actionKey(route: string): Promise<string> {
+  const { headers } = await import("next/headers");
+  const h = await headers();
+  const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || "anon";
+  return `${route}:${ip}`.slice(0, 128);
+}
