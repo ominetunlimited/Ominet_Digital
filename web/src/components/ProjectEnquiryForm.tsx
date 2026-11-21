@@ -13,7 +13,7 @@ type Svc = { id: string; slug: string; title: string };
 
 const EMPTY: Omit<EnquiryInput, "serviceIds" | "serviceDetails"> = {
   name: "", email: "", phone: "", organisation: "", country: "", city: "", projectTitle: "", summary: "", requirements: "",
-  deliverables: "", deliveryDate: "", startDate: "", budget: "", contactMethod: "Email", heardFrom: "", comments: "", consent: false, website: "",
+  deliverables: "", deliveryDate: "", startDate: "", budget: "", contactMethod: "Email", heardFrom: "", comments: "", newsletterOptIn: false, consent: false, website: "",
 };
 
 export default function ProjectEnquiryForm({ services, preselect }: { services: Svc[]; preselect?: string }) {
@@ -164,6 +164,10 @@ export default function ProjectEnquiryForm({ services, preselect }: { services: 
         <label style={css("display:flex;gap:10px;align-items:flex-start;font-size:14px;min-height:44px;")}>
           <input type="checkbox" checked={v.consent} onChange={(e) => set("consent", e.target.checked)} style={css("margin-top:3px;")} />
           <span>I agree that Ominet Digital may contact me about this enquiry. *</span>
+        </label>
+        <label style={css("display:flex;gap:10px;align-items:flex-start;font-size:14px;min-height:44px;")}>
+          <input type="checkbox" checked={v.newsletterOptIn} onChange={(e) => set("newsletterOptIn", e.target.checked)} style={css("margin-top:3px;")} />
+          <span>Also send me occasional news and updates from Ominet Digital (optional). You can unsubscribe at any time.</span>
         </label>
       </fieldset>
 

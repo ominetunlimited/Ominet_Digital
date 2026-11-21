@@ -15,7 +15,7 @@ type Attached = { key: string; name: string; size: number; state: "uploading" | 
 export default function ServiceOptionForm({ serviceSlug, flavour, options, preselect }: { serviceSlug: string; flavour: Flavour; options: FormOption[]; preselect?: string }) {
   const copy = FLAVOUR_COPY[flavour];
   const [picked, setPicked] = useState<string[]>(() => (preselect && options.some((o) => o.key === preselect) ? [preselect] : []));
-  const [c, setC] = useState({ name: "", email: "", phone: "", whatsapp: "", location: "", contactMethod: "Email", consent: false, website: "" });
+  const [c, setC] = useState({ name: "", email: "", phone: "", whatsapp: "", location: "", contactMethod: "Email", newsletterOptIn: false, consent: false, website: "" });
   const [vals, setVals] = useState<Record<string, string>>({});
   const [files, setFiles] = useState<Attached[]>([]);
   const [done, setDone] = useState<{ reference: string; ack: boolean } | null>(null);
@@ -145,6 +145,10 @@ export default function ServiceOptionForm({ serviceSlug, flavour, options, prese
               <input type="checkbox" checked={c.consent} onChange={(e) => set("consent", e.target.checked)} style={css("margin-top:3px;")} />
               <span>I agree that Ominet Digital may process the information I submit to handle this request and contact me about it, as described in the <Link href="/privacy">privacy policy</Link>. *</span>
             </label>
+        <label style={css("display:flex;gap:10px;align-items:flex-start;font-size:14px;min-height:44px;")}>
+          <input type="checkbox" checked={c.newsletterOptIn} onChange={(e) => set("newsletterOptIn", e.target.checked)} style={css("margin-top:3px;")} />
+          <span>Also send me occasional news and updates from Ominet Digital (optional). You can unsubscribe at any time.</span>
+        </label>
           </fieldset>
 
           <div aria-hidden="true" style={{ position: "absolute", left: "-9999px", width: 1, height: 1, overflow: "hidden" }}>
