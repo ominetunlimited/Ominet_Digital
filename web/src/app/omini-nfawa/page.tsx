@@ -43,7 +43,7 @@ export default async function OminiNfawaPage() {
           <h1 style={css("font-family:var(--font-heading);font-size:clamp(48px,7vw,96px);line-height:0.98;font-weight:700;margin:0 0 var(--space-4);letter-spacing:-0.01em;")}>Omini Nfawa</h1>
           <p style={css("font-size:20px;line-height:1.5;max-width:56ch;opacity:0.8;margin:0 0 var(--space-6);")}>Essays, research and fiction, alongside media and digital work &mdash; and the studio and platform built to carry them further.</p>
           <div style={css("display:flex;gap:var(--space-3);flex-wrap:wrap;")}>
-            <Link href="/writing"><button type="button" className="btn btn-primary">Read the latest writing</button></Link>
+            <Link href="/articles"><button type="button" className="btn btn-primary">Read the latest writing</button></Link>
             <Link href="/books"><button type="button" className="btn btn-secondary">Browse books</button></Link>
             <a className="btn btn-secondary" href={AMAZON_AUTHOR_URL} target="_blank" rel="noopener noreferrer">Find my books on Amazon</a>
           </div>
@@ -64,7 +64,7 @@ export default async function OminiNfawaPage() {
               <span>&middot;</span>
               <span>{featuredArticle.readTime} read</span>
             </div>
-            <Link href={`/writing/${featuredArticle.slug}`}>Read the essay &rarr;</Link>
+            <Link href={`/articles/${featuredArticle.slug}`}>Read the essay &rarr;</Link>
           </div>
           <div style={css("aspect-ratio:4/3;position:relative;border-radius:var(--radius-md);overflow:hidden;flex:1 1 320px;")}>
             {featuredArticle.featuredImageUrl ? (
@@ -110,7 +110,7 @@ export default async function OminiNfawaPage() {
       {secondArticle && (
         <>
           <section style={css("padding:var(--space-8) var(--space-6);display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--space-6);")}>
-            <Link href={`/writing/${secondArticle.slug}`} style={css("display:block;")}>
+            <Link href={`/articles/${secondArticle.slug}`} style={css("display:block;")}>
               <div className="card">
                 <div className="card-kicker">LATEST ESSAY</div>
                 <div className="card-title">{secondArticle.title}</div>

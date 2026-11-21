@@ -44,7 +44,7 @@ export default function SocialComposer({ items }: { items: ContentItem[] }) {
     return <p style={css("font-size:14px;opacity:0.6;")}>Publish something in Content first.</p>;
   }
 
-  const url = item ? `${SITE_URL}/writing/${item.slug}` : "";
+  const url = item ? `${SITE_URL}/articles/${item.slug}` : "";
 
   return (
     <div style={css("max-width:640px;")}>

@@ -44,7 +44,7 @@ export default async function MediaPage() {
         ) : (
           <div className="md-grid">
             {videos.map((v) => (
-              <MediaCard key={v.slug} href={`/writing/${v.slug}`} title={v.title} thumbUrl={v.videoThumbnailUrl} label="Video" meta={v.readMinutes ? `${v.readMinutes} min` : undefined} />
+              <MediaCard key={v.slug} href={`/articles/${v.slug}`} title={v.title} thumbUrl={v.videoThumbnailUrl} label="Video" meta={v.readMinutes ? `${v.readMinutes} min` : undefined} />
             ))}
           </div>
         )}

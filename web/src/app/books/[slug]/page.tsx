@@ -166,7 +166,7 @@ export default async function BookDetailPage({ params }: { params: Promise<{ slu
         )}
 
         <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>MORE WRITING</div>
-        <Link href="/writing">Browse all writing &rarr;</Link>
+        <Link href="/articles">Browse all writing &rarr;</Link>
 
         {book.id && (
           <>

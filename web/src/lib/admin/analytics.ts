@@ -86,7 +86,7 @@ type EventRow = {
 };
 
 const EVENT_ROW_LIMIT = 10000;
-const SECTION_PREFIXES = ["/writing", "/books", "/media", "/store", "/profile", "/cortexa-office", "/omini-nfawa", "/ominet-digital"];
+const SECTION_PREFIXES = ["/articles", "/writing", "/blog", "/books", "/media", "/store", "/profile", "/cortexa-office", "/omini-nfawa", "/ominet-digital"];
 
 function sectionFor(path: string | null): string | null {
   if (!path) return null;

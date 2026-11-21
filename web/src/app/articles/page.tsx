@@ -9,9 +9,9 @@ import type { Article } from "@/lib/content";
 import ArticleCard from "@/components/cards/ArticleCard";
 
 export const generateMetadata = () => pageMetadata(
-  "Writing",
-  "Articles, essays, research, fiction and interviews from Omini Nfawa.",
-  "/writing"
+  "Articles",
+  "Long-form articles, essays, research, fiction and interviews from Ominet Digital.",
+  "/articles"
 );
 export const revalidate = 60;
 
@@ -37,7 +37,7 @@ function sortArticles(articles: Article[], sort: string): Article[] {
   return articles; // "newest" — getArticles() already orders by published_at desc
 }
 
-export default async function WritingPage({
+export default async function ArticlesPage({
   searchParams,
 }: {
   searchParams: Promise<{ category?: string; sort?: string }>;
@@ -45,7 +45,7 @@ export default async function WritingPage({
   const { category, sort = "newest" } = await searchParams;
   const allArticles = await getArticles();
   const articles = sortArticles(category ? allArticles.filter((a) => a.category === category) : allArticles, sort);
-  const jsonLd = collectionPageSchema("Writing", "/writing", articles.map((a) => a.title));
+  const jsonLd = collectionPageSchema("Articles", "/articles", articles.map((a) => a.title));
 
   function withParams(next: { category?: string; sort?: string }) {
     const params = new URLSearchParams();
@@ -54,7 +54,7 @@ export default async function WritingPage({
     if (nextCategory) params.set("category", nextCategory);
     if (nextSort && nextSort !== "newest") params.set("sort", nextSort);
     const qs = params.toString();
-    return qs ? `/writing?${qs}` : "/writing";
+    return qs ? `/articles?${qs}` : "/articles";
   }
 
   return (
@@ -72,7 +72,7 @@ export default async function WritingPage({
 
       <section style={css("padding:var(--space-8) var(--space-6) var(--space-6);")}>
         <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>ARCHIVE</div>
-        <h1 style={css("font-family:var(--font-heading);font-size:56px;margin:0;")}>Writing</h1>
+        <h1 style={css("font-family:var(--font-heading);font-size:56px;margin:0;")}>Articles</h1>
       </section>
 
       <div className="hr" />
@@ -116,7 +116,7 @@ export default async function WritingPage({
           {(() => {
             const [first, ...rest] = articles;
             const card = (a: Article, variant: "lead" | "row") => (
-              <ArticleCard key={a.slug} variant={variant} href={`/writing/${a.slug}`} title={a.title} excerpt={a.excerpt} category={a.category} subcategory={a.subcategory}
+              <ArticleCard key={a.slug} variant={variant} href={`/articles/${a.slug}`} title={a.title} excerpt={a.excerpt} category={a.category} subcategory={a.subcategory}
                 date={a.date} readTime={a.readTime} imageUrl={a.featuredImageUrl} paid={a.access === "paid"} />
             );
             return (

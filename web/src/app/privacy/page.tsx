@@ -442,6 +442,11 @@ export default async function PrivacyPage() {
               advertising involves third-party tracking technologies, those technologies are documented in the Cookie Policy and managed through
               the website&apos;s consent mechanism where required.
             </p>
+            <p style={p}>
+              Where Google AdSense is enabled, Google and its partners use cookies to serve ads based on a visitor&apos;s visits to this and other
+              websites. Visitors can manage personalised advertising in Google Ads Settings (adssettings.google.com). See the Cookie notice at
+              /cookies for the current position.
+            </p>
           </section>
 
           <section id="analytics" style={section}>

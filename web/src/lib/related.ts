@@ -23,7 +23,7 @@ export type RelatedItem = {
 
 export const RELATED_KICKER: Record<LinkableType, string> = { content: "ARTICLE", book: "BOOK", service: "SERVICE" };
 const ROUTE: Record<LinkableType, (slug: string) => string> = {
-  content: (slug) => `/writing/${slug}`,
+  content: (slug) => `/articles/${slug}`,
   book: (slug) => `/books/${slug}`,
   service: (slug) => `/services/${slug}`,
 };

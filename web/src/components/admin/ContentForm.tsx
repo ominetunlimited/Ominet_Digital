@@ -14,6 +14,7 @@ import ContentFilePanel, { type ContentAttachment } from "@/components/admin/Con
 import RelatedItemsPanel from "@/components/admin/RelatedItemsPanel";
 import RichTextEditor from "@/components/admin/RichTextEditor";
 import SquareImageField from "@/components/admin/SquareImageField";
+import CategoryPicker, { type CatOption } from "@/components/admin/CategoryPicker";
 
 const TYPES = ["article", "essay", "research", "poem", "fiction", "review", "interview", "note"];
 const ACCESS = ["free", "paid", "members", "preview"];
@@ -46,7 +47,7 @@ export default function ContentForm({
 }: {
   initial?: Partial<ContentInput> & { id?: string };
   attachment?: ContentAttachment | null;
-  categories?: { id: string; name: string }[];
+  categories?: CatOption[];
 }) {
   const [values, setValues] = useState<ContentInput>({
     id: initial?.id,
@@ -81,7 +82,21 @@ export default function ContentForm({
     author_name: initial?.author_name ?? "",
     author_bio: initial?.author_bio ?? "",
     tags: initial?.tags ?? "",
+    category_ids: initial?.category_ids ?? [],
+    subcategory_ids: initial?.subcategory_ids ?? [],
+    primary_category_id: initial?.primary_category_id ?? "",
+    abstract: initial?.abstract ?? "",
+    references_html: initial?.references_html ?? "",
+    show_toc: initial?.show_toc ?? true,
+    image_credit: initial?.image_credit ?? "",
+    contributors: initial?.contributors ?? "",
+    editorial_label: initial?.editorial_label ?? "",
+    disclosure: initial?.disclosure ?? "",
+    correction_note: initial?.correction_note ?? "",
   });
+  // The editor must choose Blog Post or Article on purpose; nothing is guessed from length or topic.
+  const [kindChosen, setKindChosen] = useState(Boolean(initial?.id) || initial?.in_blog === true);
+  const [kindError, setKindError] = useState("");
   const [slugTouched, setSlugTouched] = useState(Boolean(initial?.slug));
   const [savedSlug, setSavedSlug] = useState(initial?.slug ?? "");
   const { busy, saved, error, run } = useAdminAction();
@@ -95,6 +110,8 @@ export default function ContentForm({
   // Save as draft / Preview on a new item); a brand-new item moves to its own edit
   // page after "Saved" has shown, unless a draft is created quietly for Preview.
   async function persist(status?: string, navigate = true): Promise<string | null> {
+    if (!kindChosen) { setKindError("Choose whether this is a Blog Post or an Article before saving."); return null; }
+    setKindError("");
     const payload = status ? { ...values, status } : values;
     const result = await run(() => saveContent(payload));
     if (!result?.ok) return null;
@@ -108,7 +125,7 @@ export default function ContentForm({
   }
 
   const submit = () => void persist();
-  const base = values.in_blog ? "/blog" : "/writing";
+  const base = values.in_blog ? "/blog" : "/articles";
   const previewNew = async () => ((await persist("draft", false)) ? `${base}/${slugify(values.slug || values.title)}` : null);
   const ensureContent = async () => values.id ?? (await persist("draft", false));
 
@@ -131,7 +148,7 @@ export default function ContentForm({
         />
       </div>
       <div className="field" style={css("margin-bottom:var(--space-4);")}>
-        <label>Slug (this is the URL — /writing/your-slug)</label>
+        <label>Slug (this is the URL — /articles/your-slug)</label>
         <input
           className="input"
           value={values.slug}
@@ -186,21 +203,23 @@ export default function ContentForm({
       </div>
 
       <div style={css("border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:var(--space-4);margin-bottom:var(--space-4);")}>
-        <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>BLOG</div>
-        <label className="radio" style={css("margin-bottom:var(--space-3);")}>
-          <input type="checkbox" checked={values.in_blog} onChange={(e) => set("in_blog", e.target.checked)} style={{ position: "static", width: "auto", height: "auto", opacity: 1 }} />
-          Publish this in the Blog (/blog/{values.slug || "your-slug"})
-        </label>
+        <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>CONTENT TYPE</div>
+        <div role="radiogroup" aria-label="Content type" style={css("display:grid;gap:var(--space-2);margin-bottom:var(--space-3);")}>
+          <label className="radio" style={css("margin:0;")}>
+            <input type="radio" name="content-kind" checked={kindChosen && !values.in_blog} onChange={() => { setKindChosen(true); set("in_blog", false); }} style={{ position: "static", width: "auto", height: "auto", opacity: 1 }} />
+            Article: substantial, structured, lasting writing. Lives at /articles/{values.slug || "your-slug"}
+          </label>
+          <label className="radio" style={css("margin:0;")}>
+            <input type="radio" name="content-kind" checked={kindChosen && values.in_blog} onChange={() => { setKindChosen(true); set("in_blog", true); }} style={{ position: "static", width: "auto", height: "auto", opacity: 1 }} />
+            Blog post: timely, flexible, regularly updated. Lives at /blog/{values.slug || "your-slug"}
+          </label>
+        </div>
+        {kindError && <p role="alert" style={css("color:var(--color-danger,#b3261e);font-size:14px;margin:0 0 var(--space-3);")}>{kindError}</p>}
         {values.in_blog && (
           <>
+            <CategoryPicker options={categories} categoryIds={values.category_ids ?? []} subcategoryIds={values.subcategory_ids ?? []} primaryId={values.primary_category_id ?? ""}
+              onChange={(n) => setValues((v) => ({ ...v, category_ids: n.categoryIds, subcategory_ids: n.subcategoryIds, primary_category_id: n.primaryId }))} />
             <div style={css("display:flex;gap:var(--space-4);flex-wrap:wrap;margin-bottom:var(--space-3);")}>
-              <div className="field" style={css("flex:1;min-width:200px;")}>
-                <label>Blog category</label>
-                <select className="input" value={values.category_id} onChange={(e) => set("category_id", e.target.value)}>
-                  <option value="">&mdash; None &mdash;</option>
-                  {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-                </select>
-              </div>
               <div className="field" style={css("flex:2;min-width:220px;")}>
                 <label>Tags (comma separated)</label>
                 <input className="input" value={values.tags} onChange={(e) => set("tags", e.target.value)} placeholder="lagos, startups, interview" />
@@ -218,6 +237,50 @@ export default function ContentForm({
             <div className="field" style={css("margin-top:var(--space-2);")}>
               <label>Social image description (alt text)</label>
               <input className="input" value={values.social_image_alt} onChange={(e) => set("social_image_alt", e.target.value)} />
+            </div>
+          </>
+        )}
+      </div>
+
+      <div style={css("border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:var(--space-4);margin-bottom:var(--space-4);")}>
+        <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>EDITORIAL INTEGRITY</div>
+        <div className="field" style={css("margin-bottom:var(--space-3);")}>
+          <label>Label (shown on the piece)</label>
+          <select className="input" value={values.editorial_label ?? ""} onChange={(e) => set("editorial_label", e.target.value)}>
+            <option value="">None</option>
+            <option value="news">News report</option><option value="analysis">Analysis</option><option value="explainer">Explainer</option>
+            <option value="opinion">Opinion</option><option value="review">Review</option><option value="sponsored">Sponsored content</option><option value="fiction">Fiction</option>
+          </select>
+        </div>
+        <div className="field" style={css("margin-bottom:var(--space-3);")}>
+          <label>Disclosure (sponsorship, free products, material connections)</label>
+          <textarea className="input" rows={2} value={values.disclosure ?? ""} onChange={(e) => set("disclosure", e.target.value)} />
+        </div>
+        <div className="field" style={css("margin-bottom:var(--space-3);")}>
+          <label>Correction note (shown at the end of the piece)</label>
+          <textarea className="input" rows={2} value={values.correction_note ?? ""} onChange={(e) => set("correction_note", e.target.value)} />
+        </div>
+        <div className="field" style={css("margin-bottom:var(--space-3);")}>
+          <label>Image credit</label>
+          <input className="input" value={values.image_credit ?? ""} onChange={(e) => set("image_credit", e.target.value)} />
+        </div>
+        {!values.in_blog && (
+          <>
+            <div className="field" style={css("margin-bottom:var(--space-3);")}>
+              <label>Abstract or introduction (articles)</label>
+              <textarea className="input" rows={3} value={values.abstract ?? ""} onChange={(e) => set("abstract", e.target.value)} />
+            </div>
+            <div className="field" style={css("margin-bottom:var(--space-3);")}>
+              <label>Contributors</label>
+              <input className="input" value={values.contributors ?? ""} onChange={(e) => set("contributors", e.target.value)} />
+            </div>
+            <label className="radio" style={css("margin-bottom:var(--space-3);")}>
+              <input type="checkbox" checked={values.show_toc ?? true} onChange={(e) => set("show_toc", e.target.checked)} style={{ position: "static", width: "auto", height: "auto", opacity: 1 }} />
+              Show a table of contents on long pieces
+            </label>
+            <div className="field">
+              <label>References, notes and citations</label>
+              <RichTextEditor value={values.references_html ?? ""} onChange={(h) => set("references_html", h)} />
             </div>
           </>
         )}

@@ -16,6 +16,8 @@ import { getSiteSettings } from "@/lib/site-settings";
 import { getBlogPost, getRelatedPosts, fmtDate, readLabel, DEFAULT_AUTHOR } from "@/lib/blog";
 import { getPersonSchema, getOrganizationSchema, breadcrumbSchema, jsonLdGraph } from "@/lib/schema";
 
+const LABELS: Record<string, string> = { news: "News report", analysis: "Analysis", opinion: "Opinion", review: "Review", sponsored: "Sponsored content", fiction: "Fiction", explainer: "Explainer" };
+
 export const revalidate = 60;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
@@ -62,11 +64,11 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       "@type": "BlogPosting", "@id": `${url}#article`, headline: post.title, description: post.seoDescription || post.excerpt || post.dek || undefined,
       image: [square.url, wide.url], datePublished: post.publishedAt ?? undefined, dateModified: post.updatedAt ?? post.publishedAt ?? undefined,
       author, publisher: getOrganizationSchema(identity.siteName), mainEntityOfPage: url,
-      articleSection: post.category?.name, keywords: post.tags.length ? post.tags.map((t) => t.name).join(", ") : undefined, inLanguage: "en",
+      articleSection: post.category?.name, about: post.categories.filter((c) => !c.primary).map((c) => ({ "@type": "Thing", name: c.name })), keywords: post.tags.length ? post.tags.map((t) => t.name).join(", ") : undefined, inLanguage: "en",
     },
     breadcrumbSchema([
       { name: "Home", path: "/" }, { name: "Blog", path: "/blog" },
-      ...(post.category ? [{ name: post.category.name, path: `/blog?category=${post.category.slug}` }] : []), { name: post.title, path: `/blog/${post.slug}` },
+      ...(post.category ? [{ name: post.category.name, path: `/blog/category/${post.category.slug}` }] : []), { name: post.title, path: `/blog/${post.slug}` },
     ]),
   ]);
 
@@ -79,11 +81,14 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         <nav className="bl-crumbs" aria-label="Breadcrumb">
           <ol>
             <li><Link href="/">Home</Link></li><li><Link href="/blog">Blog</Link></li>
-            {post.category && <li><Link href={`/blog?category=${post.category.slug}`}>{post.category.name}</Link></li>}
+            {post.category && <li><Link href={`/blog/category/${post.category.slug}`}>{post.category.name}</Link></li>}
             <li aria-current="page">{post.title.length > 48 ? `${post.title.slice(0, 46)}…` : post.title}</li>
           </ol>
         </nav>
-        {post.category && <div className="bl-cat" style={css("margin-bottom:var(--space-2);")}>{post.category.name}</div>}
+        <div style={css("display:flex;flex-wrap:wrap;gap:8px;margin-bottom:var(--space-2);")}>
+          {post.editorialLabel && <span className="bl-cat" style={css("background:var(--om-navy);color:#fff;padding:2px 8px;border-radius:4px;")}>{LABELS[post.editorialLabel] ?? post.editorialLabel}</span>}
+          {post.category && <Link href={`/blog/category/${post.category.slug}`} className="bl-cat">{post.category.name}</Link>}
+        </div>
         <h1>{post.title}</h1>
         {post.dek && <p style={css("font-size:20px;line-height:1.5;opacity:0.78;margin:0 0 var(--space-4);")}>{post.dek}</p>}
         <div className="bl-meta" style={css("margin-bottom:var(--space-5);")}>
@@ -95,7 +100,15 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         <div style={css("position:relative;aspect-ratio:16/9;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-6);")}>
           {post.featuredImageUrl ? <Image src={post.featuredImageUrl} alt={post.featuredImageAlt ?? ""} fill priority sizes="(max-width: 760px) 100vw, 720px" style={{ objectFit: "cover" }} /> : <PlaceholderImage kind="article" title={post.title} />}
         </div>
+        {post.imageCredit && <p style={css("font-size:12px;opacity:0.6;margin:calc(var(--space-4) * -1) 0 var(--space-5);")}>Image: {post.imageCredit}</p>}
+        {post.disclosure && <p role="note" style={css("font-size:14px;line-height:1.6;padding:var(--space-3);border-left:3px solid var(--om-cyan);background:var(--color-surface);margin:0 0 var(--space-5);")}><strong>Disclosure.</strong> {post.disclosure}</p>}
         <RichText html={post.body} className="bl-body" />
+        {(post.categories.length > 1 || post.subcategories.length > 0) && (
+          <p style={css("font-size:13px;opacity:0.65;margin:var(--space-5) 0 0;")}>
+            Filed under: {[...post.categories.filter((c) => !c.primary), ...post.subcategories].map((c, i) => <span key={c.id}>{i > 0 ? ", " : ""}<Link href={`/blog/category/${c.slug}`}>{c.name}</Link></span>)}
+          </p>
+        )}
+        {post.correctionNote && <p role="note" style={css("font-size:14px;line-height:1.6;padding:var(--space-3);border-left:3px solid var(--om-gold,#D4AF37);background:var(--color-surface);margin:var(--space-5) 0 0;")}><strong>Correction.</strong> {post.correctionNote}</p>}
         {post.tags.length > 0 && (
           <ul aria-label="Tags" style={css("list-style:none;display:flex;flex-wrap:wrap;gap:8px;padding:0;margin:var(--space-6) 0 0;")}>
             {post.tags.map((t) => <li key={t.slug} className="tag tag-outline">{t.name}</li>)}

@@ -20,17 +20,19 @@ import ArtCard from "@/components/ArtCard";
 import { isPageOn } from "@/lib/site-pages";
 import { getPersonSchema, getOrganizationSchema, jsonLdGraph, WEBSITE_ID, ORG_ID } from "@/lib/schema";
 import { getSiteSettings } from "@/lib/site-settings";
+import BlogCard from "@/components/cards/BlogCard";
+import { getBlogIndex, fmtDate, readLabel } from "@/lib/blog";
 
 export const revalidate = 60;
 
 export const generateMetadata = () => pageMetadata(
   "Ominet Digital",
-  "A digital ecosystem for publishing, creativity, professional identity and technology, founded by Omini Nfawa.",
+  "Ominet Digital is a Nigerian digital company working across publishing, media production, design, technology and professional services.",
   "/"
 );
 
 export default async function Home() {
-  const [featuredBook, articles, personSchema, { identity, homepage, pages }, heroSlides, partnerApps, services] = await Promise.all([
+  const [featuredBook, articles, personSchema, { identity, homepage, pages }, heroSlides, partnerApps, services, blogLatest] = await Promise.all([
     getFeaturedBook(),
     getArticles(),
     getPersonSchema(),
@@ -38,6 +40,7 @@ export default async function Home() {
     getHeroSlides(),
     getPartnerApps(),
     getServices(),
+    getBlogIndex({ page: 1 }),
   ]);
   const on = (k: string) => isPageOn(pages, k);
   const homeServices = services.filter((x) => x.featured).concat(services.filter((x) => !x.featured)).slice(0, 6);
@@ -45,7 +48,7 @@ export default async function Home() {
   // published piece, same as before.
   const logoUrl = identity.logoUrl;
   const latestArticle = articles.find((a) => a.featured) ?? articles[0];
-  const heroArticles = homepage.showRecentWriting ? articles.slice(0, 3) : [];
+  const latestPosts = blogLatest.posts.slice(0, 3);
   const jsonLd = jsonLdGraph([
     { "@type": "WebSite", "@id": WEBSITE_ID, name: SITE_NAME, url: SITE_URL, publisher: { "@id": ORG_ID } },
     getOrganizationSchema(SITE_NAME),
@@ -61,7 +64,7 @@ export default async function Home() {
         <div style={css("max-width:1280px;margin:0 auto;border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-lg);display:flex;flex-wrap:wrap;min-height:520px;")}>
           <div style={css("flex:1 1 380px;background:var(--om-navy);color:#f1eefb;padding:var(--space-8);display:flex;flex-direction:column;justify-content:center;gap:var(--space-4);")}>
             <Image src={logoUrl || "/images/ominet-digital-logo.svg"} alt="Ominet Digital" width={72} height={70} priority style={css("display:block;height:70px;width:auto;")} />
-            <div style={css("font-family:var(--font-heading);font-size:13px;letter-spacing:0.14em;color:var(--om-cyan);font-weight:800;")}>OMINI NFAWA</div>
+            <div style={css("font-family:var(--font-heading);font-size:clamp(28px,3.6vw,40px);letter-spacing:0.1em;color:#fff;font-weight:900;line-height:1;margin-top:calc(var(--space-2) * -1);")}>OMINET DIGITAL</div>
             <h1 style={css("font-family:var(--font-heading);font-size:clamp(34px,4.5vw,48px);line-height:1.08;margin:0;color:#fff;")}>
               {homepage.heroHeading.split("\n").map((line, i, arr) => (
                 <span key={i}>
@@ -72,23 +75,9 @@ export default async function Home() {
             </h1>
             <p style={css("font-size:16px;line-height:1.6;opacity:0.85;max-width:40ch;margin:0;")}>{homepage.heroSubheading}</p>
             <div style={css("display:flex;gap:var(--space-3);flex-wrap:wrap;margin-top:var(--space-2);")}>
-              <Link href="/discuss-a-project"><button type="button" className="btn btn-primary" style={css("border-radius:var(--radius-md);")}>Discuss a project</button></Link>
-              {on("writing") && <Link href="/writing"><button type="button" className="btn btn-secondary" style={css("border-radius:var(--radius-md);border-color:rgba(255,255,255,0.4);color:#fff;")}>Read the writing</button></Link>}
-              {on("services") && <Link href="/services"><button type="button" className="btn btn-secondary" style={css("border-radius:var(--radius-md);border-color:rgba(255,255,255,0.4);color:#fff;")}>Our services</button></Link>}
-              {on("about") && <Link href="/about"><button type="button" className="btn btn-secondary" style={css("border-radius:var(--radius-md);border-color:rgba(255,255,255,0.4);color:#fff;")}>About Omini</button></Link>}
-            </div>
-            {heroArticles.length > 0 && (
-              <div style={css("margin-top:var(--space-3);")}>
-                <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.6;margin-bottom:var(--space-2);")}>RECENT WRITING</div>
-                <div style={css("display:grid;gap:6px;")}>
-                  {heroArticles.map((a) => (
-                    <Link key={a.slug} href={`/writing/${a.slug}`} style={css("font-size:14px;opacity:0.9;color:#f1eefb;")}>
-                      {a.title} &rarr;
-                    </Link>
-                  ))}
-                </div>
+              {on("services") && <Link href="/services"><button type="button" className="btn btn-primary" style={css("border-radius:var(--radius-md);")}>Explore Our Services</button></Link>}
+              <Link href={on("media") ? "/media" : on("books") ? "/books" : "/discuss-a-project"}><button type="button" className="btn btn-secondary" style={css("border-radius:var(--radius-md);border-color:rgba(255,255,255,0.4);color:#fff;")}>Explore Our Work</button></Link>
               </div>
-            )}
             <div style={css("margin-top:var(--space-2);opacity:0.85;display:flex;align-items:center;gap:var(--space-3);")}>
               <SocialLinks />
               <WhatsAppButton />
@@ -101,6 +90,42 @@ export default async function Home() {
       </section>
 
       <AdSlot slotKey="home_top" />
+
+      <div className="hr" />
+
+      <section style={css("padding:var(--space-8) var(--space-6);display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--space-6);align-items:start;")}>
+        <div>
+          <div style={css("font-size:11px;letter-spacing:0.12em;color:var(--om-azure);font-weight:600;margin-bottom:var(--space-2);")}>ABOUT OMINET DIGITAL</div>
+          <h2 style={css("font-family:var(--font-heading);font-size:clamp(26px,3.6vw,36px);margin:0;max-width:20ch;")}>A digital company built around making and publishing real work.</h2>
+        </div>
+        <div style={css("font-size:16px;line-height:1.7;opacity:0.8;")}>
+          <p style={css("margin:0 0 var(--space-3);")}>Ominet Digital is a Nigerian digital company working across publishing, media production, design, technology and professional services. We develop digital products, produce creative work and provide practical services for individuals, businesses and organisations.</p>
+          <div style={css("display:flex;gap:var(--space-3);flex-wrap:wrap;")}>
+            {on("ominet-digital") && <Link href="/ominet-digital">Studio and capabilities &rarr;</Link>}
+            <Link href="/contact">Contact us &rarr;</Link>
+          </div>
+        </div>
+      </section>
+
+      <div className="hr" />
+
+      <section style={css("padding:var(--space-6) var(--space-6) var(--space-8);")}>
+        <div style={css("font-size:11px;letter-spacing:0.12em;color:var(--om-azure);font-weight:600;margin-bottom:var(--space-4);")}>MAIN BUSINESS AREAS</div>
+        <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--space-5);")}>
+          {[
+            ["Publishing", "Books, manuscripts, formats and promotion.", "/books"],
+            ["Creative production", "Video, photography, graphic and presentation design.", "/media"],
+            ["Professional services", "Writing, research support, business registration and related services.", "/services"],
+            ["Technology and platforms", "Digital products built and run by Ominet Digital.", "/profile"],
+            ["Editorial", "A blog for timely posts and a separate home for long-form articles.", "/blog"],
+          ].map(([t, d, h]) => (
+            <Link key={t} href={h} style={css("display:block;border-top:2px solid var(--om-cyan);padding-top:var(--space-3);")}>
+              <div style={css("font-family:var(--font-heading);font-size:18px;margin-bottom:6px;")}>{t}</div>
+              <div style={css("font-size:14px;line-height:1.6;opacity:0.7;")}>{d}</div>
+            </Link>
+          ))}
+        </div>
+      </section>
 
       <div className="hr" />
 
@@ -134,7 +159,7 @@ export default async function Home() {
             )}
           </div>
           <div style={css("flex:2 1 380px;display:flex;flex-direction:column;justify-content:center;")}>
-            <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>FEATURED BOOK &middot; OMINI NFAWA</div>
+            <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>BOOKS AND PUBLISHING</div>
             <h2 style={css("font-family:var(--font-heading);font-size:36px;margin:0 0 var(--space-2);")}>{featuredBook.title}</h2>
             <ReadMoreExcerpt
               text={featuredBook.excerpt}
@@ -151,11 +176,29 @@ export default async function Home() {
 
       <div className="hr" />
 
+      {on("blog") && latestPosts.length > 0 && (
+        <section style={css("padding:var(--space-8) var(--space-6);")}>
+          <div style={css("display:flex;justify-content:space-between;align-items:flex-end;gap:var(--space-4);flex-wrap:wrap;margin-bottom:var(--space-5);")}>
+            <div>
+              <div style={css("font-size:11px;letter-spacing:0.12em;color:var(--om-azure);font-weight:600;margin-bottom:var(--space-2);")}>FROM THE BLOG</div>
+              <h2 style={css("font-family:var(--font-heading);font-size:clamp(26px,3.6vw,36px);margin:0;")}>Latest posts</h2>
+            </div>
+            <Link href="/blog" className="btn btn-secondary">All blog posts</Link>
+          </div>
+          <div className="bl-grid">
+            {latestPosts.map((p) => <BlogCard key={p.id} href={`/blog/${p.slug}`} title={p.title} excerpt={p.excerpt || p.dek} category={p.category?.name} date={fmtDate(p.publishedAt)} readTime={readLabel(p.readMinutes)} author={p.authorName} imageUrl={p.featuredImageUrl} imageAlt={p.featuredImageAlt} />)}
+          </div>
+        </section>
+      )}
+
+      {on("blog") && latestPosts.length > 0 && <div className="hr" />}
+
       {on("writing") && latestArticle && (
         <section style={css("padding:var(--space-6) var(--space-6);")}>
-          <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-2);")}>{latestArticle.featured ? "FEATURED WRITING" : "LATEST WRITING"}</div>
-          <ArticleCard variant="lead" href={`/writing/${latestArticle.slug}`} title={latestArticle.title} excerpt={latestArticle.excerpt} category={latestArticle.category} subcategory={latestArticle.subcategory}
+          <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-2);")}>{latestArticle.featured ? "FEATURED ARTICLE" : "LATEST ARTICLE"}</div>
+          <ArticleCard variant="lead" href={`/articles/${latestArticle.slug}`} title={latestArticle.title} excerpt={latestArticle.excerpt} category={latestArticle.category} subcategory={latestArticle.subcategory}
             date={latestArticle.date} readTime={latestArticle.readTime} imageUrl={latestArticle.featuredImageUrl} />
+          <div style={css("margin-top:var(--space-3);")}><Link href="/articles">Browse all articles &rarr;</Link></div>
         </section>
       )}
 
@@ -183,7 +226,7 @@ export default async function Home() {
       <div className="hr" />
 
       <section style={css("padding:var(--space-8) var(--space-6);")}>
-        <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-4);")}>THE ECOSYSTEM</div>
+        <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-4);")}>PLATFORMS AND PRODUCTS</div>
         <div className="eco-grid">
           {on("omini-nfawa") && <EcosystemCard id="omini-nfawa" index={0} kicker="WRITER · RESEARCHER · MEDIA & COMMUNICATIONS" title="Omini Nfawa" description="Books, essays, fiction, research, film and photography from the ecosystem's founder." href="/omini-nfawa" cta="Explore Omini Nfawa" />}
           {on("profile") && <EcosystemCard id="profile" index={1} kicker="PROFESSIONAL IDENTITY" title="PROFILE" description="A professional identity built from verified activity." href="/profile" cta="Explore Profile" />}
@@ -210,11 +253,28 @@ export default async function Home() {
 
       <div className="hr" />
 
-      <section style={css("padding:var(--space-8) var(--space-6);")}>
-        <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>CORTEXA OFFICE</div>
-        <div style={css("display:flex;justify-content:space-between;align-items:center;gap:var(--space-6);flex-wrap:wrap;")}>
-          <div style={css("font-family:var(--font-heading);font-size:26px;max-width:44ch;")}>An emerging office and product within Ominet Digital.</div>
-          <Link href="/cortexa-office"><button type="button" className="btn btn-secondary">Learn more</button></Link>
+      <section style={css("padding:var(--space-8) var(--space-6);display:flex;flex-wrap:wrap;gap:var(--space-6);justify-content:space-between;align-items:center;")}>
+        <div style={css("flex:1 1 320px;max-width:60ch;")}>
+          <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-2);")}>THE FOUNDER</div>
+          <p style={css("font-family:var(--font-heading);font-size:22px;line-height:1.4;margin:0 0 var(--space-3);")}>Ominet Digital was founded by Omini Nfawa Eyong, a Nigerian writer, researcher and media professional.</p>
+          <div style={css("display:flex;gap:var(--space-3);flex-wrap:wrap;")}>
+            {on("about") && <Link href="/about">Read the founder&apos;s profile &rarr;</Link>}
+            <a href={AMAZON_AUTHOR_URL} target="_blank" rel="noopener noreferrer">Find my books on Amazon &rarr;</a>
+          </div>
+        </div>
+      </section>
+
+      <div className="hr" />
+
+      <section style={css("padding:var(--space-8) var(--space-6);background:var(--om-navy);color:#f1eefb;")}>
+        <div style={css("max-width:640px;")}>
+          <div style={css("font-family:var(--font-heading);font-size:14px;font-weight:800;letter-spacing:0.08em;color:var(--om-cyan);margin-bottom:var(--space-3);")}>START A PROJECT</div>
+          <h2 style={css("font-family:var(--font-heading);font-size:32px;margin:0 0 var(--space-3);color:#fff;")}>Tell us what you are working on.</h2>
+          <p style={css("font-size:16px;line-height:1.7;opacity:0.85;margin:0 0 var(--space-4);")}>Send a project enquiry and we will respond with the next steps, or reach us directly by email or WhatsApp.</p>
+          <div style={css("display:flex;gap:var(--space-3);flex-wrap:wrap;")}>
+            <Link href="/discuss-a-project"><button type="button" className="btn btn-primary" style={css("border-radius:var(--radius-md);")}>Discuss a project</button></Link>
+            <Link href="/contact"><button type="button" className="btn btn-secondary" style={css("border-radius:var(--radius-md);border-color:rgba(255,255,255,0.4);color:#fff;")}>Contact us</button></Link>
+          </div>
         </div>
       </section>
 
