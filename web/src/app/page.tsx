@@ -258,7 +258,7 @@ export default async function Home() {
           <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-2);")}>THE FOUNDER</div>
           <p style={css("font-family:var(--font-heading);font-size:22px;line-height:1.4;margin:0 0 var(--space-3);")}>Ominet Digital was founded by Omini Nfawa Eyong, a Nigerian writer, researcher and media professional.</p>
           <div style={css("display:flex;gap:var(--space-3);flex-wrap:wrap;")}>
-            {on("about") && <Link href="/about">Read the founder&apos;s profile &rarr;</Link>}
+            {on("founder") && <Link href="/founder">Read the founder&apos;s profile &rarr;</Link>}
             <a href={AMAZON_AUTHOR_URL} target="_blank" rel="noopener noreferrer">Find my books on Amazon &rarr;</a>
           </div>
         </div>
