@@ -13,6 +13,7 @@ export const SITE_PAGES: SitePage[] = [
   { key: "blog", label: "Blog", path: "/blog", inNav: true, group: "main", note: "News, events, features and updates" },
   { key: "books", label: "Books", path: "/books", inNav: true, group: "main" },
   { key: "media", label: "Media", path: "/media", inNav: true, group: "main" },
+  { key: "work", label: "Work", path: "/work", inNav: false, group: "main", note: "Portfolio of projects. Appears in the menu only once a project is published" },
   { key: "services", label: "Services", path: "/services", inNav: true, group: "main" },
   { key: "profile", label: "PROFILE", path: "/profile", inNav: true, group: "ecosystem" },
   { key: "cortexa-office", label: "Cortexa Office", path: "/cortexa-office", inNav: true, group: "ecosystem" },

@@ -28,7 +28,7 @@ export type NavItem = { label: string; href?: string; external?: boolean; childr
  * The header menu as visitors see it: a few clear groups instead of ten equal links.
  * Every entry still respects the on/off switches in Admin → Pages, and tabs added there appear at the end.
  */
-export function structuredNav(p: PagesSettings, live: { profile: boolean; cortexa: boolean } = { profile: true, cortexa: true }): NavItem[] {
+export function structuredNav(p: PagesSettings, live: { profile: boolean; cortexa: boolean; work?: boolean } = { profile: true, cortexa: true }): NavItem[] {
   const page = (key: string, label?: string): NavLink | null => {
     const x = SITE_PAGES.find((s) => s.key === key);
     return x && isPageOn(p, key) ? { href: x.path, label: label ?? x.label } : null;
@@ -40,6 +40,8 @@ export function structuredNav(p: PagesSettings, live: { profile: boolean; cortex
   const items: (NavItem | null)[] = [
     group("Explore", list([page("blog"), page("writing"), page("books"), page("media")])),
     page("services") ? { label: "Services", href: "/services" } : null,
+    // Work appears only once at least one project is published.
+    live.work && page("work") ? { label: "Work", href: "/work" } : null,
     // Unlaunched products stay out of the header until they are switched on in Admin → Site settings → Ecosystem pages.
     group("Products", list([live.profile ? page("profile") : null, live.cortexa ? page("cortexa-office") : null])),
     group("About", list([page("about", "About Ominet Digital"), page("founder", "The Founder"), page("omini-nfawa", "Omini Nfawa, author"), { href: "/contact", label: "Contact" }])),
