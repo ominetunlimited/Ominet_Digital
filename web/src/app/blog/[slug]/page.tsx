@@ -14,6 +14,10 @@ import { SITE_URL } from "@/lib/seo";
 import { ogVariant } from "@/lib/og-image";
 import { getSiteSettings } from "@/lib/site-settings";
 import { getBlogPost, getRelatedPosts, fmtDate, readLabel, DEFAULT_AUTHOR } from "@/lib/blog";
+import LikeButton from "@/components/LikeButton";
+import CommentSection from "@/components/CommentSection";
+import { getEngagement } from "@/lib/engagement";
+import { createClient } from "@/lib/supabase/server";
 import { getPersonSchema, getOrganizationSchema, breadcrumbSchema, jsonLdGraph } from "@/lib/schema";
 
 const LABELS: Record<string, string> = { news: "News report", analysis: "Analysis", opinion: "Opinion", review: "Review", sponsored: "Sponsored content", fiction: "Fiction", explainer: "Explainer" };
@@ -52,7 +56,13 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   const { slug } = await params;
   const post = await getBlogPost(slug);
   if (!post) notFound();
-  const [related, { identity }] = await Promise.all([getRelatedPosts(post), getSiteSettings()]);
+  const [related, { identity, comments: commentSettings }, engagement, authUser] = await Promise.all([
+    getRelatedPosts(post),
+    getSiteSettings(),
+    getEngagement({ contentId: post.id }),
+    createClient().then(async (sb) => (sb ? (await sb.auth.getUser()).data.user : null)).catch(() => null),
+  ]);
+  const currentPath = `/blog/${post.slug}`;
   const url = `${SITE_URL}/blog/${post.slug}`;
   const square = ogVariant(post.socialImageUrl || post.featuredImageUrl || post.ogImageUrl, "square");
   const wide = ogVariant(post.featuredImageUrl || post.ogImageUrl || post.socialImageUrl, "landscape");
@@ -122,6 +132,11 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           </div>
         </div>
         <ShareBar url={url} title={post.title} />
+
+        <LikeButton target={{ contentId: post.id }} initialCount={engagement.likeCount} initialLiked={engagement.likedByMe} currentPath={currentPath} />
+        <div className="hr" style={css("margin:var(--space-6) 0;")} />
+        <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>COMMENTS</div>
+        <CommentSection target={{ contentId: post.id }} comments={engagement.comments} signedIn={Boolean(authUser)} currentPath={currentPath} requireSignIn={commentSettings.requireSignIn} />
       </article>
 
       {related.length > 0 && (
