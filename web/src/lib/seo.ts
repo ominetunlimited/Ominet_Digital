@@ -10,6 +10,8 @@ const ENV_URL = (process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/+$/, "");
 export const SITE_URL = ENV_URL && !/\.vercel\.app$/i.test(ENV_URL) ? ENV_URL : process.env.NODE_ENV === "development" && !ENV_URL ? "http://localhost:3000" : CANONICAL_URL;
 /** Built-in fallback name; the live name comes from Admin → Site settings. */
 export const SITE_NAME = "Ominet Digital";
+/** Home page title: brand plus what people search for. Kept near 60 characters so search results do not cut it off. */
+const HOME_TITLE = "Ominet Digital | Publishing, Design and Media Services in Nigeria";
 
 /**
  * Consistent title/description/OG/canonical for a static page. The site name is
@@ -19,10 +21,10 @@ export const SITE_NAME = "Ominet Digital";
 export async function pageMetadata(title: string, description: string, path: string): Promise<Metadata> {
   const { identity, seo } = await getSiteSettings();
   const home = path === "/";
-  const shownTitle = home ? identity.siteName : `${title} — ${identity.siteName}`;
+  const shownTitle = home ? HOME_TITLE : `${title} | ${identity.siteName}`;
   const images = [ogImage(seo.defaultOgImageUrl)];
   return {
-    title: home ? { absolute: identity.siteName } : title,
+    title: home ? { absolute: HOME_TITLE } : title,
     description: home ? identity.description : description,
     alternates: { canonical: `${SITE_URL}${path}` },
     openGraph: { title: shownTitle, description: home ? identity.description : description, url: `${SITE_URL}${path}`, siteName: identity.siteName, type: "website", images },

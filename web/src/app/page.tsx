@@ -99,7 +99,7 @@ export default async function Home() {
           <h2 style={css("font-family:var(--font-heading);font-size:clamp(26px,3.6vw,36px);margin:0;max-width:20ch;")}>A digital company built around making and publishing real work.</h2>
         </div>
         <div style={css("font-size:16px;line-height:1.7;opacity:0.8;")}>
-          <p style={css("margin:0 0 var(--space-3);")}>Ominet Digital is a Nigerian digital company working across publishing, media production, design, technology and professional services. We develop digital products, produce creative work and provide practical services for individuals, businesses and organisations.</p>
+          <p style={css("margin:0 0 var(--space-3);")}>We publish books and written work, produce design, photography and video, build digital tools, and handle selected business and documentation services. Whether you arrive with a manuscript, a brand to shape or a project to scope, we start by understanding what you need and agree the work before it begins.</p>
           <div style={css("display:flex;gap:var(--space-3);flex-wrap:wrap;")}>
             {on("ominet-digital") && <Link href="/ominet-digital">Studio and capabilities &rarr;</Link>}
             <Link href="/contact">Contact us &rarr;</Link>
@@ -246,7 +246,7 @@ export default async function Home() {
         <div style={css("max-width:640px;")}>
           <div style={css("font-family:var(--font-heading);font-size:14px;font-weight:800;letter-spacing:0.08em;color:var(--om-cyan);margin-bottom:var(--space-3);")}>PROFILE</div>
           <h2 style={css("font-family:var(--font-heading);font-size:32px;margin:0 0 var(--space-3);color:#fff;")}>Your professional identity should be more than a CV.</h2>
-          <p style={css("font-size:16px;line-height:1.7;opacity:0.85;margin:0 0 var(--space-4);")}>Activity, verification and attribution &mdash; built into one identity you carry between opportunities.</p>
+          <p style={css("font-size:16px;line-height:1.7;opacity:0.85;margin:0 0 var(--space-4);")}>Activity, verification and attribution, built into one identity you carry between opportunities.</p>
           <Link href="/profile"><button type="button" className="btn btn-primary" style={css("border-radius:var(--radius-md);")}>Explore Profile</button></Link>
         </div>
       </section>
