@@ -21,7 +21,10 @@ const csp = [
   "img-src 'self' data: blob: https:",
   "media-src 'self' blob: https:",
   `connect-src 'self' ${supabaseOrigin}${adsenseOn ? " https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com" : ""}`.trim(),
-  adsenseOn ? "frame-src https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com" : "frame-src 'none'",
+  // Embeds the owner can add to portfolio items (videos, slides). Nothing else may be framed.
+  adsenseOn
+    ? "frame-src https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com https://www.youtube-nocookie.com https://player.vimeo.com https://www.canva.com"
+    : "frame-src https://docs.google.com https://www.youtube-nocookie.com https://player.vimeo.com https://www.canva.com",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self' https://checkout.paystack.com",

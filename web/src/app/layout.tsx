@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Analytics from "@/components/Analytics";
 import { SiteSettingsProvider } from "@/components/SiteSettingsProvider";
+import { countPublishedPortfolio } from "@/lib/portfolio";
 import { getSiteSettings } from "@/lib/site-settings";
 import { SITE_URL } from "@/lib/seo";
 import "./globals.css";
@@ -40,6 +41,7 @@ try {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const { social, identity, contact, pages, ecosystem } = await getSiteSettings();
+  const workCount = await countPublishedPortfolio();
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -53,7 +55,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body>
         <Analytics />
         {/* Only links that are switched on are handed to the browser — hidden ones never appear in the page source. */}
-        <SiteSettingsProvider value={{ social: social.filter((s) => s.enabled && s.url), siteName: identity.siteName, whatsapp: contact.whatsapp, logoUrl: identity.logoUrl, pages, products: { profile: ecosystem.profileVisible, cortexa: ecosystem.cortexaVisible } }}>
+        <SiteSettingsProvider value={{ social: social.filter((s) => s.enabled && s.url), siteName: identity.siteName, whatsapp: contact.whatsapp, logoUrl: identity.logoUrl, pages, products: { profile: ecosystem.profileVisible, cortexa: ecosystem.cortexaVisible, work: workCount > 0 } }}>
           {children}
         </SiteSettingsProvider>
       </body>

@@ -4,7 +4,7 @@ import { createContext, useContext } from "react";
 import { DEFAULT_SETTINGS, type SocialLink } from "@/lib/site-settings-validate";
 import type { PagesSettings } from "@/lib/site-pages";
 
-type ClientSettings = { social: SocialLink[]; siteName: string; whatsapp: string; logoUrl: string; pages: PagesSettings; products: { profile: boolean; cortexa: boolean } };
+type ClientSettings = { social: SocialLink[]; siteName: string; whatsapp: string; logoUrl: string; pages: PagesSettings; products: { profile: boolean; cortexa: boolean; work?: boolean } };
 const Ctx = createContext<ClientSettings>({
   social: DEFAULT_SETTINGS.social,
   siteName: DEFAULT_SETTINGS.identity.siteName,

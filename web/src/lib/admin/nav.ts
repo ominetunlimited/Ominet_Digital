@@ -16,6 +16,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: "/admin/blog-categories", label: "Blog categories" },
       { href: "/admin/books", label: "Books" },
       { href: "/admin/services", label: "Services" },
+      { href: "/admin/portfolio", label: "Work (portfolio)" },
       { href: "/admin/store", label: "Store" },
       { href: "/admin/media", label: "Media Library" },
     ],
