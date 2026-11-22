@@ -8,7 +8,7 @@ import { getSiteSettings } from "@/lib/site-settings";
 import { isPageOn } from "@/lib/site-pages";
 
 export const generateMetadata = () => pageMetadata(
-  "About Ominet Digital",
+  "About us",
   "Ominet Digital is a Nigerian company working across publishing, creative production, technology and professional services. Learn what we do, who we serve and how we work.",
   "/about"
 );

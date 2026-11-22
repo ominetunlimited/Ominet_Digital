@@ -21,8 +21,8 @@ function Wordmark({ size = 20 }: { size?: number }) {
 }
 
 export default function Nav() {
-  const { logoUrl, pages } = useSiteSettings();
-  const items = structuredNav(pages);
+  const { logoUrl, pages, products } = useSiteSettings();
+  const items = structuredNav(pages, products);
   const groups = groupedNav(pages);
   const pathname = usePathname();
   const router = useRouter();

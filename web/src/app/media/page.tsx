@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import EmptyState from "@/components/EmptyState";
@@ -10,11 +11,16 @@ import { getMediaPhotos, getVideoPosts } from "@/lib/data";
 
 export const revalidate = 60;
 
-export const generateMetadata = () => pageMetadata(
-  "Media",
-  "Video, photography and documentary work from Omini Nfawa and the Ominet Digital ecosystem.",
-  "/media"
-);
+export async function generateMetadata() {
+  const meta = await pageMetadata(
+    "Media",
+    "Video, photography and documentary work from Omini Nfawa and the Ominet Digital ecosystem.",
+    "/media"
+  );
+  // An empty portfolio should not be offered to search engines.
+  const [videos, photos] = await Promise.all([getVideoPosts(), getMediaPhotos()]);
+  return videos.length === 0 && photos.length === 0 ? { ...meta, robots: { index: false, follow: true } } : meta;
+}
 
 export default async function MediaPage() {
   const [videos, photos] = await Promise.all([getVideoPosts(), getMediaPhotos()]);
@@ -33,10 +39,20 @@ export default async function MediaPage() {
         <h1 style={css("font-family:var(--font-heading);font-size:56px;margin:0;")}>Video &amp; Photography</h1>
       </section>
 
-      <AdSlot slotKey="media_page" />
+      {videos.length === 0 && photos.length === 0 && (
+        <section style={css("padding:0 var(--space-6) var(--space-8);")}>
+          <p style={css("font-size:18px;line-height:1.6;opacity:0.8;max-width:56ch;margin:0 0 var(--space-4);")}>Our video and photography portfolio is being assembled. Selected projects will appear here as they are published. In the meantime, you can see what we offer or tell us about a project.</p>
+          <div style={css("display:flex;gap:var(--space-3);flex-wrap:wrap;")}>
+            <Link href="/services" className="btn btn-secondary">See our services</Link>
+            <Link href="/discuss-a-project" className="btn btn-primary">Discuss a project</Link>
+          </div>
+        </section>
+      )}
+      {(videos.length > 0 || photos.length > 0) && <AdSlot slotKey="media_page" />}
 
-      <div className="hr" />
+      {(videos.length > 0 || photos.length > 0) && <div className="hr" />}
 
+      {(videos.length > 0 || photos.length > 0) && (<>
       <section style={css("padding:var(--space-8) var(--space-6);")}>
         <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-4);")}>VIDEOS</div>
         {videos.length === 0 ? (
@@ -64,6 +80,7 @@ export default async function MediaPage() {
           </div>
         )}
       </section>
+      </>)}
 
       <div className="hr" />
       <Footer />
