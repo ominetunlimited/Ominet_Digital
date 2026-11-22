@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import SocialLinks from "@/components/SocialLinks";
 import { useSiteSettings } from "@/components/SiteSettingsProvider";
-import { groupedNav, topNav } from "@/lib/nav-links";
+import { groupedNav, structuredNav } from "@/lib/nav-links";
 import { isPageOn } from "@/lib/site-pages";
 
 const LOGO = "/images/ominet-digital-logo.svg";
@@ -22,11 +22,13 @@ function Wordmark({ size = 20 }: { size?: number }) {
 
 export default function Nav() {
   const { logoUrl, pages } = useSiteSettings();
-  const links = topNav(pages);
+  const items = structuredNav(pages);
   const groups = groupedNav(pages);
   const pathname = usePathname();
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
+  const navRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const openButtonRef = useRef<HTMLButtonElement>(null);
   // Not rendered anywhere — only drives toggleTheme's direction — so lazily
@@ -41,11 +43,20 @@ export default function Nav() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && menuOpen) setMenuOpen(false);
+      if (e.key === "Escape") { setMenuOpen(false); setOpenGroup(null); }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [menuOpen]);
+  }, []);
+
+  // Close an open dropdown when the visitor clicks elsewhere.
+  useEffect(() => {
+    const onDown = (e: MouseEvent) => {
+      if (navRef.current && !navRef.current.contains(e.target as Node)) setOpenGroup(null);
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, []);
 
   // Lock background scroll while the mobile overlay is open, and move
   // focus in/out of it so keyboard users land somewhere sensible.
@@ -78,6 +89,13 @@ export default function Nav() {
         .omd-links a[aria-current=page]{color:var(--om-cyan);box-shadow:inset 0 -2px 0 var(--om-cyan);padding-bottom:4px;}
         .omd-links a.btn-primary,.omd-mobile-menu a.btn-primary{color:var(--om-indigo);}
         .omd-links a:hover{color:var(--om-cyan);}
+        .omd-group{position:relative;}
+        .omd-group > button{background:none;border:none;color:#f1eefb;font:inherit;font-size:13px;letter-spacing:0.06em;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:10px 0;}
+        .omd-group > button:hover,.omd-group > button:focus-visible,.omd-group > button[data-active=true]{color:var(--om-cyan);}
+        .omd-group > button[data-active=true]{box-shadow:inset 0 -2px 0 var(--om-cyan);}
+        .omd-group-panel{position:absolute;top:100%;left:-12px;min-width:230px;background:var(--om-navy);border:1px solid rgba(255,255,255,0.15);border-radius:var(--radius-md);padding:8px;display:grid;gap:2px;z-index:60;box-shadow:0 12px 30px rgba(0,0,0,0.35);}
+        .omd-group-panel a{padding:10px 12px;border-radius:6px;font-size:13px;white-space:normal;}
+        .omd-group-panel a:hover,.omd-group-panel a:focus-visible{background:rgba(255,255,255,0.08);}
         .omd-toggle{display:none;background:none;border:none;cursor:pointer;color:#f1eefb;padding:var(--space-2);min-width:44px;min-height:44px;align-items:center;justify-content:center;}
         @media (max-width: 980px){
           .omd-links{display:none;}
@@ -99,10 +117,24 @@ export default function Nav() {
           <Image src={logoUrl || LOGO} alt="" width={36} height={35} priority style={{ display: "block", height: 35, width: "auto" }} />
           <Wordmark />
         </Link>
-        <div className="omd-links">
-          {links.map((l) => (
-            <Link key={l.href + l.label} href={l.href} aria-current={isActive(l.href) ? "page" : undefined} {...(l.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
-              {l.label.toUpperCase()}
+        <div className="omd-links" ref={navRef}>
+          {items.map((it) => it.children ? (
+            <div key={it.label} className="omd-group" onMouseEnter={() => setOpenGroup(it.label)} onMouseLeave={() => setOpenGroup((g) => (g === it.label ? null : g))}>
+              <button type="button" aria-expanded={openGroup === it.label} aria-haspopup="true" data-active={it.children.some((c) => isActive(c.href))} onClick={(e) => setOpenGroup((g) => (e.detail === 0 && g === it.label ? null : it.label))}>
+                {it.label.toUpperCase()}
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+              </button>
+              {openGroup === it.label && (
+                <div className="omd-group-panel">
+                  {it.children.map((c) => (
+                    <Link key={c.href + c.label} href={c.href} aria-current={isActive(c.href) ? "page" : undefined} onClick={() => setOpenGroup(null)}>{c.label}</Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link key={(it.href ?? "") + it.label} href={it.href ?? "/"} aria-current={it.href && isActive(it.href) ? "page" : undefined} {...(it.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
+              {it.label.toUpperCase()}
             </Link>
           ))}          {isPageOn(pages, "search") && <button type="button" className="btn btn-ghost btn-icon" aria-label="Search" onClick={() => router.push("/search")} style={{ color: "#f1eefb" }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
@@ -142,12 +174,16 @@ export default function Nav() {
             </button>
           </div>
           <div style={{ display: "grid", gap: "var(--space-6)", fontSize: 22, fontFamily: "var(--font-heading)" }}>
-            {[["CONTENT", groups.main], ["ECOSYSTEM", groups.ecosystem], ["MORE", [...groups.custom, ...groups.utility]]].map(([title, items]) => {
-              const list = items as { href: string; label: string; external?: boolean }[];
+            {[
+              ["", [{ href: "/", label: "Home" }, ...items.filter((i) => !i.children && i.href).map((i) => ({ href: i.href as string, label: i.label, external: i.external }))]],
+              ...items.filter((i) => i.children).map((i) => [i.label.toUpperCase(), i.children] as const),
+              ["MORE", [...groups.utility]],
+            ].map(([title, list0]) => {
+              const list = list0 as { href: string; label: string; external?: boolean }[];
               if (list.length === 0) return null;
               return (
                 <div key={title as string}>
-                  <div style={{ fontSize: 11, fontFamily: "var(--font-body)", letterSpacing: "0.1em", opacity: 0.5, marginBottom: "var(--space-2)" }}>{title as string}</div>
+                  {title && <div style={{ fontSize: 11, fontFamily: "var(--font-body)", letterSpacing: "0.1em", opacity: 0.5, marginBottom: "var(--space-2)" }}>{title as string}</div>}
                   <div style={{ display: "grid", gap: "var(--space-3)" }}>
                     {list.map((l) => (
                       <Link key={l.href + l.label} href={l.href} onClick={() => setMenuOpen(false)} {...(l.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}>{l.label}</Link>
