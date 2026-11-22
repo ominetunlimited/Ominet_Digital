@@ -13,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
     // Absolute URLs (canonical, share images) always resolve to the real domain.
     metadataBase: new URL(SITE_URL),
     // Pages give a short title; the site name is added here in one place.
-    title: { default: identity.siteName, template: `%s — ${identity.siteName}` },
+    title: { default: identity.siteName, template: `%s | ${identity.siteName}` },
     description: identity.description,
     openGraph: { siteName: identity.siteName, ...(seo.defaultOgImageUrl ? { images: [seo.defaultOgImageUrl] } : {}) },
     manifest: "/site.webmanifest",
