@@ -15,7 +15,7 @@ async function staffClient(): Promise<{ ok: true; supabase: StaffSupabase } | { 
 
 function refreshPublic() {
   revalidatePath("/admin/about-work");
-  revalidatePath("/about");
+  revalidatePath("/founder");
 }
 
 const friendly = (message: string) =>
