@@ -4,13 +4,14 @@ import { createContext, useContext } from "react";
 import { DEFAULT_SETTINGS, type SocialLink } from "@/lib/site-settings-validate";
 import type { PagesSettings } from "@/lib/site-pages";
 
-type ClientSettings = { social: SocialLink[]; siteName: string; whatsapp: string; logoUrl: string; pages: PagesSettings };
+type ClientSettings = { social: SocialLink[]; siteName: string; whatsapp: string; logoUrl: string; pages: PagesSettings; products: { profile: boolean; cortexa: boolean } };
 const Ctx = createContext<ClientSettings>({
   social: DEFAULT_SETTINGS.social,
   siteName: DEFAULT_SETTINGS.identity.siteName,
   whatsapp: DEFAULT_SETTINGS.contact.whatsapp,
   logoUrl: DEFAULT_SETTINGS.identity.logoUrl,
   pages: DEFAULT_SETTINGS.pages,
+  products: { profile: DEFAULT_SETTINGS.ecosystem.profileVisible, cortexa: DEFAULT_SETTINGS.ecosystem.cortexaVisible },
 });
 
 /** Hands the few settings that client components (the nav bar) need down from the server layout. */

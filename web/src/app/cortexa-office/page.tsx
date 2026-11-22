@@ -44,10 +44,10 @@ export default async function CortexaOfficePage() {
 
       <section style={css("padding:var(--space-8) var(--space-6);")}>
         <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--space-4);")}>
-          <div className="card"><div className="card-kicker">OFFICE</div><p className="card-body">Information, mission and location &mdash; coming soon.</p></div>
-          <div className="card"><div className="card-kicker">SERVICES</div><p className="card-body">What Cortexa Office offers &mdash; to be defined.</p></div>
-          <div className="card"><div className="card-kicker">TOOLS</div><p className="card-body">Applications and tools built here &mdash; to be defined.</p></div>
-          <div className="card"><div className="card-kicker">CONTACT</div><p className="card-body">Reach the team &mdash; details to follow.</p></div>
+          <div className="card"><div className="card-kicker">OFFICE</div><p className="card-body">Information, mission and location will be published here.</p></div>
+          <div className="card"><div className="card-kicker">SERVICES</div><p className="card-body">What Cortexa Office offers will be published here.</p></div>
+          <div className="card"><div className="card-kicker">TOOLS</div><p className="card-body">Applications and tools will be listed here as they launch.</p></div>
+          <div className="card"><div className="card-kicker">CONTACT</div><p className="card-body">Contact details will be added here.</p></div>
         </div>
       </section>
 

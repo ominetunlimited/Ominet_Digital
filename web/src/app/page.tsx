@@ -32,7 +32,7 @@ export const generateMetadata = () => pageMetadata(
 );
 
 export default async function Home() {
-  const [featuredBook, articles, personSchema, { identity, homepage, pages }, heroSlides, partnerApps, services, blogLatest] = await Promise.all([
+  const [featuredBook, articles, personSchema, { identity, homepage, pages, ecosystem }, heroSlides, partnerApps, services, blogLatest] = await Promise.all([
     getFeaturedBook(),
     getArticles(),
     getPersonSchema(),
@@ -244,10 +244,10 @@ export default async function Home() {
 
       <section style={css("padding:var(--space-8) var(--space-6);background:var(--om-navy);color:#f1eefb;")}>
         <div style={css("max-width:640px;")}>
-          <div style={css("font-family:var(--font-heading);font-size:14px;font-weight:800;letter-spacing:0.08em;color:var(--om-cyan);margin-bottom:var(--space-3);")}>PROFILE</div>
+          <div style={css("font-family:var(--font-heading);font-size:14px;font-weight:800;letter-spacing:0.08em;color:var(--om-cyan);margin-bottom:var(--space-3);")}>PROFILE{!ecosystem.profileVisible && " · IN DEVELOPMENT"}</div>
           <h2 style={css("font-family:var(--font-heading);font-size:32px;margin:0 0 var(--space-3);color:#fff;")}>Your professional identity should be more than a CV.</h2>
           <p style={css("font-size:16px;line-height:1.7;opacity:0.85;margin:0 0 var(--space-4);")}>Activity, verification and attribution, built into one identity you carry between opportunities.</p>
-          <Link href="/profile"><button type="button" className="btn btn-primary" style={css("border-radius:var(--radius-md);")}>Explore Profile</button></Link>
+          <Link href="/profile"><button type="button" className="btn btn-primary" style={css("border-radius:var(--radius-md);")}>{ecosystem.profileVisible ? "Explore Profile" : "Find out more"}</button></Link>
         </div>
       </section>
 

@@ -4,7 +4,7 @@ import { pageMetadata } from "@/lib/seo";
 import { getSiteSettings } from "@/lib/site-settings";
 
 export const generateMetadata = () => pageMetadata(
-  "Contact Ominet Digital",
+  "Contact",
   "Contact Ominet Digital by email or WhatsApp, or send a detailed project enquiry for a quotation.",
   "/contact"
 );

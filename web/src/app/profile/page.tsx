@@ -10,7 +10,7 @@ import { getPartnerApps } from "@/lib/data";
 export async function generateMetadata() {
   const meta = await pageMetadata(
     "PROFILE",
-    "A verified record of activity, attribution and identity — carried between opportunities instead of rebuilt for each one.",
+    "A verified record of activity, attribution and identity, carried between opportunities instead of rebuilt for each one.",
     "/profile"
   );
   const { ecosystem } = await getSiteSettings();
@@ -45,7 +45,7 @@ export default async function ProfilePage() {
         <div style={css("position:relative;max-width:720px;")}>
           <div style={css("font-family:var(--font-heading);font-size:14px;font-weight:800;letter-spacing:0.1em;color:var(--om-blue);margin-bottom:var(--space-3);")}>PROFILE</div>
           <h1 style={css("font-family:var(--font-heading);font-size:clamp(36px,5vw,56px);line-height:1.05;margin:0 0 var(--space-4);")}>Your professional identity should be more than a CV.</h1>
-          <p style={css("font-size:18px;line-height:1.6;opacity:0.75;max-width:56ch;margin:0 0 var(--space-6);")}>A verified record of activity, attribution and identity &mdash; carried between opportunities instead of rebuilt for each one.</p>
+          <p style={css("font-size:18px;line-height:1.6;opacity:0.75;max-width:56ch;margin:0 0 var(--space-6);")}>A verified record of activity, attribution and identity, carried between opportunities instead of rebuilt for each one.</p>
           <div style={css("display:flex;gap:var(--space-3);flex-wrap:wrap;")}>
             <a href={PROFILE_APP_URL} target="_blank" rel="noopener noreferrer">
               <button type="button" className="btn btn-primary" style={css("background:var(--om-blue);border-color:var(--om-blue);")}>Explore Profile</button>
