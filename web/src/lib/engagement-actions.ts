@@ -46,7 +46,7 @@ export async function toggleLike(target: Target, path: string): Promise<ActionRe
   return { ok: true, liked: true };
 }
 
-export async function postComment(target: Target, body: string, path: string, guestName?: string): Promise<ActionResult & { message?: string }> {
+export async function postComment(target: Target, body: string, path: string, guestName?: string, parentId?: string): Promise<ActionResult & { message?: string }> {
   const supabase = await createClient();
   if (!supabase) return { ok: false, error: "Sign-in isn't configured yet." };
   const trimmed = body.trim();
@@ -58,6 +58,12 @@ export async function postComment(target: Target, body: string, path: string, gu
   } = await supabase.auth.getUser();
 
   const row: Record<string, unknown> = { body: trimmed, ...targetColumn(target) };
+  if (parentId) {
+    // Replies stay one level deep: replying to a reply attaches to the original comment.
+    const { data: parent } = await supabase.from("comments").select("id,parent_id").eq("id", parentId).maybeSingle();
+    if (!parent) return { ok: false, error: "That comment is no longer available." };
+    row.parent_id = parent.parent_id ?? parent.id;
+  }
   if (user) {
     row.user_id = user.id;
   } else {
@@ -74,7 +80,7 @@ export async function postComment(target: Target, body: string, path: string, gu
   const { error } = await supabase.from("comments").insert(row);
   if (error) return { ok: false, error: error.message };
   revalidatePath(path);
-  queueAlert("comment", "New comment awaiting moderation", [`On: ${path}`], { link: adminLink("/admin/comments") });
+  queueAlert("comment", parentId ? "New reply awaiting moderation" : "New comment awaiting moderation", [`On: ${path}`], { link: adminLink("/admin/comments") });
   return { ok: true, message: "Posted — awaiting moderation before it's visible to others." };
 }
 
@@ -156,4 +162,38 @@ export async function toggleCommentReaction(commentId: string, path: string): Pr
   if (error) return { ok: false, error: error.message };
   revalidatePath(path);
   return { ok: true, reacted: true };
+}
+
+/** Thumbs up (1) or down (-1). Pressing the same vote again removes it; pressing the other switches it. */
+export async function voteComment(commentId: string, value: 1 | -1, path: string): Promise<ActionResult & { myVote?: 1 | -1 | 0 }> {
+  if (value !== 1 && value !== -1) return { ok: false, error: "Invalid vote." };
+  const supabase = await createClient();
+  if (!supabase) return { ok: false, error: "Sign-in isn't configured yet." };
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Sign in first to vote." };
+
+  const { data: existing } = await supabase
+    .from("comment_reactions")
+    .select("id,value")
+    .eq("user_id", user.id)
+    .eq("comment_id", commentId)
+    .maybeSingle();
+
+  if (existing && (existing.value ?? 1) === value) {
+    const { error } = await supabase.from("comment_reactions").delete().eq("id", existing.id);
+    if (error) return { ok: false, error: error.message };
+    revalidatePath(path);
+    return { ok: true, myVote: 0 };
+  }
+  if (existing) {
+    const { error } = await supabase.from("comment_reactions").update({ value }).eq("id", existing.id);
+    if (error) return { ok: false, error: error.message };
+  } else {
+    const { error } = await supabase.from("comment_reactions").insert({ user_id: user.id, comment_id: commentId, value });
+    if (error) return { ok: false, error: error.message };
+  }
+  revalidatePath(path);
+  return { ok: true, myVote: value };
 }

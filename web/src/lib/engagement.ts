@@ -13,6 +13,12 @@ export type Comment = {
   isOwn: boolean;
   reactionCount: number;
   reactedByMe: boolean;
+  /** Thumbs up and down. reactionCount stays the up count for older callers. */
+  upCount: number;
+  downCount: number;
+  myVote: 1 | -1 | 0;
+  /** Set on a reply; null for a top-level comment. */
+  parentId: string | null;
   status: CommentStatus;
 };
 
@@ -73,7 +79,7 @@ export async function getEngagement(target: Target): Promise<Engagement> {
         : Promise.resolve({ data: null }),
     supabase
       .from("comments")
-      .select("id,body,created_at,user_id,anon_key,guest_name,status,profiles!comments_user_id_fkey(display_name),comment_reactions(user_id)")
+      .select("id,body,created_at,user_id,anon_key,guest_name,status,parent_id,profiles!comments_user_id_fkey(display_name),comment_reactions(user_id,value)")
       .eq(col, val)
       // RLS already restricts rows to approved + the viewer's own +
       // staff, but 'deleted' is a soft-moderation state that should never
@@ -91,8 +97,9 @@ export async function getEngagement(target: Target): Promise<Engagement> {
     anon_key: string | null;
     guest_name: string | null;
     status: CommentStatus;
+    parent_id: string | null;
     profiles: { display_name: string | null } | { display_name: string | null }[] | null;
-    comment_reactions: { user_id: string }[] | null;
+    comment_reactions: { user_id: string; value: number | null }[] | null;
   };
 
   const comments: Comment[] = ((commentsRes.data ?? []) as unknown as Row[]).map((c) => {
@@ -104,8 +111,12 @@ export async function getEngagement(target: Target): Promise<Engagement> {
       createdAt: c.created_at,
       authorName: c.user_id ? displayName(profile?.display_name) : (c.guest_name?.trim() || "Guest"),
       isOwn: user ? user.id === c.user_id : Boolean(anonKey) && c.anon_key === anonKey,
-      reactionCount: reactions.length,
-      reactedByMe: user ? reactions.some((r) => r.user_id === user.id) : false,
+      reactionCount: reactions.filter((r) => (r.value ?? 1) === 1).length,
+      reactedByMe: user ? reactions.some((r) => r.user_id === user.id && (r.value ?? 1) === 1) : false,
+      upCount: reactions.filter((r) => (r.value ?? 1) === 1).length,
+      downCount: reactions.filter((r) => r.value === -1).length,
+      myVote: user ? ((reactions.find((r) => r.user_id === user.id)?.value ?? 0) as 1 | -1 | 0) : 0,
+      parentId: c.parent_id,
       status: c.status,
     };
   });
