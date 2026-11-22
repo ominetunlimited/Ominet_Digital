@@ -1,5 +1,6 @@
 "use client";
 
+import { normaliseWhatsApp } from "@/lib/whatsapp-number";
 import { WhatsAppIcon } from "@/components/icons/SocialIcons";
 import { useSiteSettings } from "@/components/SiteSettingsProvider";
 
@@ -24,7 +25,8 @@ export default function WhatsAppButton({
 }) {
   const { whatsapp } = useSiteSettings();
   if (!whatsapp) return null;
-  const digits = whatsapp.replace(/[^\d]/g, "");
+  const digits = normaliseWhatsApp(whatsapp);
+  if (!digits) return null;
   const href = `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
 
   if (label) {

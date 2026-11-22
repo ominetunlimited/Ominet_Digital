@@ -1,3 +1,4 @@
+import { normaliseWhatsApp } from "@/lib/whatsapp-number";
 import Link from "next/link";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
@@ -45,7 +46,7 @@ function priceLabel(service: { pricingMode: string; priceCents: number | null; c
 export default async function ServicesPage() {
   const [services, { contact }] = await Promise.all([getServices(), getSiteSettings()]);
   const ordered = [...services.filter((s) => s.featured), ...services.filter((s) => !s.featured)];
-  const wa = (contact.whatsapp || "").replace(/\D/g, "");
+  const wa = normaliseWhatsApp(contact.whatsapp);
   const waLink = (text: string) => (wa ? `https://wa.me/${wa}?text=${encodeURIComponent(text)}` : "/contact");
 
   return (
