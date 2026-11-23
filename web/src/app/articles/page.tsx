@@ -58,7 +58,7 @@ export default async function ArticlesPage({
   }
 
   return (
-    <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>
+    <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:clip;")}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ "@context": "https://schema.org", ...jsonLd }) }} />
       <Nav />
       <svg width="480" height="480" viewBox="0 0 480 480" style={css("position:absolute;right:-140px;top:20px;pointer-events:none;")} aria-hidden="true">

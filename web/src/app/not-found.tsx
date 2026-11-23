@@ -5,7 +5,7 @@ import { css } from "@/lib/css";
 
 export default function NotFound() {
   return (
-    <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>
+    <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:clip;")}>
       <Nav />
       <svg width="280" height="280" viewBox="0 0 280 280" style={css("position:absolute;right:-90px;top:10px;pointer-events:none;")} aria-hidden="true">
         <circle cx="140" cy="140" r="139" fill="none" stroke="var(--color-accent)" strokeWidth="1" opacity="0.16" />

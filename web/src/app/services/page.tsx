@@ -50,7 +50,7 @@ export default async function ServicesPage() {
   const waLink = (text: string) => (wa ? `https://wa.me/${wa}?text=${encodeURIComponent(text)}` : "/contact");
 
   return (
-    <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>
+    <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:clip;")}>
       <Nav />
 
       <section style={css("padding:var(--space-8) var(--space-6) var(--space-6);max-width:1100px;")}>

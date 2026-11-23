@@ -84,17 +84,18 @@ export default function Nav() {
   return (
     <>
       <style>{`
-        .omd-links{display:flex;gap:var(--space-4);align-items:center;white-space:nowrap;}
-        .omd-links a{white-space:nowrap;color:#f1eefb;text-decoration:none;font-size:13px;letter-spacing:0.06em;}
+        .omd-bar{position:sticky;top:0;z-index:50;min-height:78px;box-shadow:0 2px 0 rgba(127,214,238,0.35),0 8px 24px rgba(8,10,40,0.28);background-image:linear-gradient(90deg,rgba(127,214,238,0.07) 0 1px,transparent 1px),linear-gradient(0deg,rgba(127,214,238,0.06) 0 1px,transparent 1px);background-size:44px 44px;}
+        .omd-links{display:flex;gap:var(--space-5);align-items:center;white-space:nowrap;}
+        .omd-links a{white-space:nowrap;color:#f1eefb;text-decoration:none;font-size:14.5px;font-weight:600;letter-spacing:0.07em;}
         .omd-links a[aria-current=page]{color:var(--om-cyan);box-shadow:inset 0 -2px 0 var(--om-cyan);padding-bottom:4px;}
         .omd-links a.btn-primary,.omd-mobile-menu a.btn-primary{color:var(--om-indigo);}
         .omd-links a:hover{color:var(--om-cyan);}
         .omd-group{position:relative;}
-        .omd-group > button{background:none;border:none;color:#f1eefb;font:inherit;font-size:13px;letter-spacing:0.06em;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:10px 0;}
+        .omd-group > button{background:none;border:none;color:#f1eefb;font:inherit;font-size:14.5px;font-weight:600;letter-spacing:0.07em;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:10px 0;}
         .omd-group > button:hover,.omd-group > button:focus-visible,.omd-group > button[data-active=true]{color:var(--om-cyan);}
         .omd-group > button[data-active=true]{box-shadow:inset 0 -2px 0 var(--om-cyan);}
-        .omd-group-panel{position:absolute;top:100%;left:-12px;min-width:230px;background:var(--om-navy);border:1px solid rgba(255,255,255,0.15);border-radius:var(--radius-md);padding:8px;display:grid;gap:2px;z-index:60;box-shadow:0 12px 30px rgba(0,0,0,0.35);}
-        .omd-group-panel a{padding:10px 12px;border-radius:6px;font-size:13px;white-space:normal;}
+        .omd-group-panel{position:absolute;top:100%;left:-12px;min-width:230px;background-color:var(--om-navy);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140' fill='none' stroke='%237fd6ee' stroke-opacity='.28'%3E%3Ccircle cx='140' cy='140' r='96'/%3E%3Ccircle cx='140' cy='140' r='64'/%3E%3Ccircle cx='140' cy='140' r='32'/%3E%3Cpath d='M44 140L140 44M76 140L140 76'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right bottom;border:1px solid rgba(127,214,238,0.35);border-radius:var(--radius-md);padding:8px;display:grid;gap:2px;z-index:60;box-shadow:0 14px 34px rgba(0,0,0,0.4);}
+        .omd-group-panel a{padding:11px 14px;border-radius:6px;font-size:14px;white-space:normal;}
         .omd-group-panel a:hover,.omd-group-panel a:focus-visible{background:rgba(255,255,255,0.08);}
         .omd-toggle{display:none;background:none;border:none;cursor:pointer;color:#f1eefb;padding:var(--space-2);min-width:44px;min-height:44px;align-items:center;justify-content:center;}
         @media (max-width: 980px){
@@ -112,10 +113,10 @@ export default function Nav() {
         .omd-mobile-menu .btn-secondary:hover{background:rgba(255,255,255,0.08);}
         .omd-mobile-menu .hr{background:rgba(255,255,255,0.15);}
       `}</style>
-      <nav className="nav" style={{ padding: "0 var(--space-6)", borderBottom: "none", position: "relative", background: "var(--om-navy)", color: "#f1eefb" }}>
+      <nav className="nav omd-bar" style={{ padding: "0 var(--space-6)", borderBottom: "none", background: "var(--om-navy)", color: "#f1eefb" }}>
         <Link href="/" className="nav-brand" aria-label="Ominet Digital, home" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 12, padding: "10px 0" }}>
-          <Image src={logoUrl || LOGO} alt="" width={36} height={35} priority style={{ display: "block", height: 35, width: "auto" }} />
-          <Wordmark />
+          <Image src={logoUrl || LOGO} alt="" width={46} height={45} priority style={{ display: "block", height: 45, width: "auto" }} />
+          <Wordmark size={24} />
         </Link>
         <div className="omd-links" ref={navRef}>
           {items.map((it) => it.children ? (

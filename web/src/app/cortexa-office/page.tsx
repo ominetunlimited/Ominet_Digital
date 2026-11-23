@@ -24,7 +24,7 @@ export default async function CortexaOfficePage() {
   const [{ ecosystem }, partnerApps] = await Promise.all([getSiteSettings(), getPartnerApps()]);
   if (!ecosystem.cortexaVisible) return <ComingSoon label="CORTEXA OFFICE" message={ecosystem.cortexaMessage} />;
   return (
-    <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>
+    <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:clip;")}>
       <Nav />
       <svg width="360" height="360" viewBox="0 0 360 360" style={css("position:absolute;right:-100px;top:10px;pointer-events:none;")} aria-hidden="true">
         <rect x="1" y="1" width="358" height="358" fill="none" stroke="var(--color-accent)" strokeWidth="1" opacity="0.14" />

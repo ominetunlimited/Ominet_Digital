@@ -40,7 +40,7 @@ export default function SearchPage() {
   const noMatchForFilter = hasQuery && !loading && !noResults && total === 0;
 
   return (
-    <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>
+    <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:clip;")}>
       <Nav />
       <svg width="240" height="150" viewBox="0 0 240 150" style={css("position:absolute;right:0;top:0;pointer-events:none;")} aria-hidden="true">
         <g stroke="var(--color-accent)" strokeWidth="1" opacity="0.12">
