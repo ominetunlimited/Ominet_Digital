@@ -40,14 +40,13 @@ export default async function Footer() {
             {on("blog") && <Link href="/blog">Blog</Link>}
             {on("writing") && <Link href="/articles">Articles</Link>}
             {on("books") && <Link href="/books">Books</Link>}
-            <a href={AMAZON_AUTHOR_URL} target="_blank" rel="noopener noreferrer">Amazon author page</a>
             {on("media") && <Link href="/media">Media</Link>}
             {on("services") && <Link href="/services">Services</Link>}
             <Link href="/discuss-a-project">Discuss a project</Link>
             {on("about") && <Link href="/about">About</Link>}
           </div>
         </div>
-        <ResearchFooterLinks />
+        <ResearchFooterLinks amazonUrl={AMAZON_AUTHOR_URL} />
         <div>
           <div style={{ fontSize: 11, letterSpacing: "0.1em", opacity: 0.6, marginBottom: "var(--space-3)" }}>ECOSYSTEM</div>
           <div style={{ display: "grid", gap: "var(--space-2)", fontSize: 13 }}>

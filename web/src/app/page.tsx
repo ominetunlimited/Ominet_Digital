@@ -3,7 +3,6 @@ import Image from "next/image";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import PlaceholderImage from "@/components/PlaceholderImage";
-import { AMAZON_AUTHOR_URL } from "@/lib/links";
 import EcosystemCard from "@/components/cards/EcosystemCard";
 import ArticleCard from "@/components/cards/ArticleCard";
 import AdSlot from "@/components/AdSlot";
@@ -16,7 +15,7 @@ import HeroSlideshow from "@/components/HeroSlideshow";
 import PartnersStrip from "@/components/PartnersStrip";
 import { css } from "@/lib/css";
 import { pageMetadata, SITE_URL, SITE_NAME } from "@/lib/seo";
-import { getFeaturedBook, getArticles, getHeroSlides, getPartnerApps, getServices } from "@/lib/data";
+import { getFeaturedBooks, getArticles, getHeroSlides, getPartnerApps, getServices } from "@/lib/data";
 import ArtCard from "@/components/ArtCard";
 import { isPageOn } from "@/lib/site-pages";
 import { getPersonSchema, getOrganizationSchema, jsonLdGraph, WEBSITE_ID, ORG_ID } from "@/lib/schema";
@@ -33,8 +32,8 @@ export const generateMetadata = () => pageMetadata(
 );
 
 export default async function Home() {
-  const [featuredBook, articles, personSchema, { identity, homepage, pages, ecosystem }, heroSlides, partnerApps, services, blogLatest] = await Promise.all([
-    getFeaturedBook(),
+  const [featuredBooks, articles, personSchema, { identity, homepage, pages, ecosystem }, heroSlides, partnerApps, services, blogLatest] = await Promise.all([
+    getFeaturedBooks(2),
     getArticles(),
     getPersonSchema(),
     getSiteSettings(),
@@ -48,8 +47,8 @@ export default async function Home() {
   // A staff pick (Content admin -> Featured) wins; otherwise the newest
   // published piece, same as before.
   const logoUrl = identity.logoUrl;
-  const latestArticle = articles.find((a) => a.featured) ?? articles[0];
-  const latestPosts = blogLatest.posts.slice(0, 3);
+  const featuredArticles = [...articles.filter((a) => a.featured), ...articles.filter((a) => !a.featured)].slice(0, 2);
+  const latestPosts = blogLatest.posts.slice(0, 4);
   const jsonLd = jsonLdGraph([
     { "@type": "WebSite", "@id": WEBSITE_ID, name: SITE_NAME, url: SITE_URL, publisher: { "@id": ORG_ID } },
     getOrganizationSchema(SITE_NAME),
@@ -63,12 +62,12 @@ export default async function Home() {
 
       <section style={css("padding:var(--space-8) var(--space-6);background:var(--om-teal-light);")}>
         <div style={css("max-width:1280px;margin:0 auto;border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-lg);display:flex;flex-wrap:wrap;min-height:520px;")}>
-          <div style={css("flex:1 1 380px;background:var(--om-navy);color:#f1eefb;padding:var(--space-8);display:flex;flex-direction:column;justify-content:center;gap:var(--space-4);position:relative;overflow:hidden;")}>
+          <div style={css("flex:1 1 380px;background:var(--om-navy);color:#f1eefb;padding:var(--space-8);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:var(--space-4);position:relative;overflow:hidden;")}>
             <Geo variant="lattice" size={360} opacity={0.22} style={{ right: -90, top: -70 }} />
             <Geo variant="orbit" size={220} color="#7fd6ee" opacity={0.18} style={{ left: -70, bottom: -60 }} />
             <Image src={logoUrl || "/images/ominet-digital-logo.svg"} alt="Ominet Digital" width={72} height={70} priority style={css("display:block;height:70px;width:auto;")} />
-            <div style={css("font-family:var(--font-heading);font-size:clamp(40px,5.8vw,68px);letter-spacing:0.08em;color:#fff;font-weight:900;line-height:1;margin-top:calc(var(--space-2) * -1);")}>OMINET DIGITAL</div>
-            <h1 style={css("font-family:var(--font-heading);font-size:clamp(20px,2.3vw,26px);line-height:1.3;font-weight:400;letter-spacing:0.01em;margin:0;color:#e4def7;max-width:30ch;")}>
+            <div style={css("font-family:var(--font-heading);font-size:clamp(32px,4vw,46px);letter-spacing:0.1em;color:#fff;font-weight:900;line-height:1;margin-top:calc(var(--space-2) * -1);")}>OMINET DIGITAL</div>
+            <h1 style={css("font-family:var(--font-heading);font-size:clamp(20px,2.4vw,30px);line-height:1.3;font-weight:400;letter-spacing:0.01em;margin:0;color:#e4def7;max-width:28ch;")}>
               {homepage.heroHeading.split("\n").map((line, i, arr) => (
                 <span key={i}>
                   {line}
@@ -76,8 +75,8 @@ export default async function Home() {
                 </span>
               ))}
             </h1>
-            <p style={css("font-size:16px;line-height:1.6;opacity:0.85;max-width:40ch;margin:0;")}>{homepage.heroSubheading}</p>
-            <div style={css("display:flex;gap:var(--space-3);flex-wrap:wrap;margin-top:var(--space-2);")}>
+            <p style={css("font-size:16px;line-height:1.6;opacity:0.85;max-width:44ch;margin:0;")}>{homepage.heroSubheading}</p>
+            <div style={css("display:flex;gap:var(--space-3);flex-wrap:wrap;justify-content:center;margin-top:var(--space-2);")}>
               {on("services") && <Link href="/services"><button type="button" className="btn btn-primary" style={css("border-radius:var(--radius-md);")}>Explore Our Services</button></Link>}
               <Link href={on("media") ? "/media" : on("books") ? "/books" : "/discuss-a-project"}><button type="button" className="btn btn-secondary" style={css("border-radius:var(--radius-md);border-color:rgba(255,255,255,0.4);color:#fff;")}>Explore Our Work</button></Link>
               </div>
@@ -92,21 +91,59 @@ export default async function Home() {
         </div>
       </section>
 
-      {on("books") && featuredBook && (
-        <section style={css("padding:var(--space-8) var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;gap:var(--space-8);position:relative;overflow:hidden;")}>
+      {on("books") && featuredBooks.length > 0 && (
+        <section style={css("padding:var(--space-8) var(--space-6);position:relative;overflow:hidden;")}>
           <Geo variant="facets" size={300} opacity={0.2} style={{ right: -60, top: -40 }} />
-          <div style={css("aspect-ratio:1/1;position:relative;flex:1 1 240px;max-width:320px;border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-md);")}>
-            {featuredBook.coverImageUrl ? (
-              <Image src={featuredBook.coverImageUrl} alt="" fill sizes="(max-width: 700px) 90vw, 320px" style={{ objectFit: "cover" }} />
-            ) : (
-              <PlaceholderImage label="Book cover" />
-            )}
+          <div style={css("display:flex;justify-content:space-between;align-items:flex-end;gap:var(--space-4);flex-wrap:wrap;margin-bottom:var(--space-5);")}>
+            <div style={css("font-size:11px;letter-spacing:0.12em;color:var(--om-azure);font-weight:600;")}>BOOKS AND PUBLISHING</div>
+            <div style={css("display:flex;gap:var(--space-3);flex-wrap:wrap;align-items:center;")}>
+              <Link href="/books" className="btn btn-secondary">Browse all books</Link>
+            </div>
+          </div>
+          <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:var(--space-8);position:relative;")}>
+            {featuredBooks.map((b) => (
+              <div key={b.slug} style={css("display:flex;flex-wrap:wrap;align-items:flex-start;gap:var(--space-5);")}>
+                <div style={css("aspect-ratio:1/1;position:relative;flex:1 1 150px;max-width:200px;border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-md);")}>
+                  {b.coverImageUrl ? (
+                    <Image src={b.coverImageUrl} alt="" fill sizes="(max-width: 700px) 60vw, 200px" style={{ objectFit: "cover" }} />
+                  ) : (
+                    <PlaceholderImage label="Book cover" />
+                  )}
+                </div>
+                <div style={css("flex:2 1 220px;display:flex;flex-direction:column;justify-content:center;")}>
+                  <h2 style={css("font-family:var(--font-heading);font-size:clamp(24px,2.6vw,30px);margin:0 0 var(--space-2);")}>{b.title}</h2>
+                  <ReadMoreExcerpt text={b.excerpt} style={css("font-size:15px;line-height:1.65;opacity:0.75;max-width:48ch;margin:0 0 var(--space-4);")} />
+                  <div style={css("display:flex;gap:var(--space-3);flex-wrap:wrap;align-items:center;")}>
+                    <Link href={`/books/${b.slug}`}><button type="button" className="btn btn-primary">View book</button></Link>
+                    <Link href={`/books/${b.slug}`}>Where to buy &rarr;</Link>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <AdSlot slotKey="home_top" />
 
       <div className="hr" />
 
-
+      {on("services") && homeServices.length > 0 && (
+        <section style={css("padding:var(--space-8) var(--space-6);")}>
+          <div style={css("display:flex;justify-content:space-between;align-items:flex-end;gap:var(--space-4);flex-wrap:wrap;margin-bottom:var(--space-5);")}>
+            <div>
+              <div style={css("font-size:11px;letter-spacing:0.12em;color:var(--om-azure);font-weight:600;margin-bottom:var(--space-2);")}>WHAT WE DO</div>
+              <h2 style={css("font-family:var(--font-heading);font-size:clamp(28px,4vw,40px);margin:0;")}>One creative partner. Multiple professional solutions.</h2>
+            </div>
+            <Link href="/services" className="btn btn-secondary">All services</Link>
+          </div>
+          <div className="omd-grid">
+            {homeServices.map((x, i) => (
+              <ArtCard key={x.slug} href={`/services/${x.slug}`} kind="service" slug={x.slug} imageUrl={x.featuredImageUrl} kicker={`${String(i + 1).padStart(2, "0")}${x.category ? " · " + x.category : ""}`} title={x.title} description={x.shortDescription} cta="Explore service" />
+            ))}
+          </div>
+        </section>
+      )}
 
       <div className="hr" />
 
@@ -130,53 +167,12 @@ export default async function Home() {
 
       <div className="hr" />
 
-      {on("services") && homeServices.length > 0 && (
-        <section style={css("padding:var(--space-8) var(--space-6);")}>
-          <div style={css("display:flex;justify-content:space-between;align-items:flex-end;gap:var(--space-4);flex-wrap:wrap;margin-bottom:var(--space-5);")}>
-            <div>
-              <div style={css("font-size:11px;letter-spacing:0.12em;color:var(--om-azure);font-weight:600;margin-bottom:var(--space-2);")}>WHAT WE DO</div>
-              <h2 style={css("font-family:var(--font-heading);font-size:clamp(28px,4vw,40px);margin:0;")}>One creative partner. Multiple professional solutions.</h2>
-            </div>
-            <Link href="/services" className="btn btn-secondary">All services</Link>
-          </div>
-          <div className="omd-grid">
-            {homeServices.map((x, i) => (
-              <ArtCard key={x.slug} href={`/services/${x.slug}`} kind="service" slug={x.slug} imageUrl={x.featuredImageUrl} kicker={`${String(i + 1).padStart(2, "0")}${x.category ? " · " + x.category : ""}`} title={x.title} description={x.shortDescription} cta="Explore service" />
-            ))}
-          </div>
-        </section>
-      )}
-
-
-      <div className="hr" />
-
-
-          </div>
-          <div style={css("flex:2 1 380px;display:flex;flex-direction:column;justify-content:center;")}>
-            <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>BOOKS AND PUBLISHING</div>
-            <h2 style={css("font-family:var(--font-heading);font-size:36px;margin:0 0 var(--space-2);")}>{featuredBook.title}</h2>
-            <ReadMoreExcerpt
-              text={featuredBook.excerpt}
-              style={css("font-size:16px;line-height:1.7;opacity:0.75;max-width:52ch;margin:0 0 var(--space-4);")}
-            />
-            <div style={css("display:flex;gap:var(--space-3);flex-wrap:wrap;")}>
-              <Link href={`/books/${featuredBook.slug}`}><button type="button" className="btn btn-primary">View book</button></Link>
-              <Link href="/books" className="btn btn-secondary">Browse all books</Link>
-              <Link href={`/books/${featuredBook.slug}`}>Where to buy &rarr;</Link>
-              <a href={AMAZON_AUTHOR_URL} target="_blank" rel="noopener noreferrer">Find my books on Amazon &rarr;</a>
-            </div>
-          </div>
-        </section>
-      )}
-
-      <div className="hr" />
-
       {on("blog") && latestPosts.length > 0 && (
         <section style={css("padding:var(--space-8) var(--space-6);")}>
           <div style={css("display:flex;justify-content:space-between;align-items:flex-end;gap:var(--space-4);flex-wrap:wrap;margin-bottom:var(--space-5);")}>
             <div>
               <div style={css("font-size:11px;letter-spacing:0.12em;color:var(--om-azure);font-weight:600;margin-bottom:var(--space-2);")}>FROM THE BLOG</div>
-              <h2 style={css("font-family:var(--font-heading);font-size:clamp(26px,3.6vw,36px);margin:0;")}>Latest posts</h2>
+              <h2 style={css("font-family:var(--font-heading);font-size:clamp(26px,3.6vw,36px);margin:0;")}>Latest writing</h2>
             </div>
             <Link href="/blog" className="btn btn-secondary">All blog posts</Link>
           </div>
@@ -188,11 +184,15 @@ export default async function Home() {
 
       {on("blog") && latestPosts.length > 0 && <div className="hr" />}
 
-      {on("writing") && latestArticle && (
+      {on("writing") && featuredArticles.length > 0 && (
         <section style={css("padding:var(--space-6) var(--space-6);")}>
-          <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-2);")}>{latestArticle.featured ? "FEATURED ARTICLE" : "LATEST ARTICLE"}</div>
-          <ArticleCard variant="lead" href={`/articles/${latestArticle.slug}`} title={latestArticle.title} excerpt={latestArticle.excerpt} category={latestArticle.category} subcategory={latestArticle.subcategory}
-            date={latestArticle.date} readTime={latestArticle.readTime} imageUrl={latestArticle.featuredImageUrl} />
+          <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>{featuredArticles.some((a) => a.featured) ? "FEATURED ARTICLES" : "LATEST ARTICLES"}</div>
+          <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:var(--space-6);")}>
+            {featuredArticles.map((a) => (
+              <ArticleCard key={a.slug} href={`/articles/${a.slug}`} title={a.title} excerpt={a.excerpt} category={a.category} subcategory={a.subcategory}
+                date={a.date} readTime={a.readTime} imageUrl={a.featuredImageUrl} />
+            ))}
+          </div>
           <div style={css("margin-top:var(--space-3);")}><Link href="/articles">Browse all articles &rarr;</Link></div>
         </section>
       )}
@@ -231,25 +231,7 @@ export default async function Home() {
         </div>
       </section>
 
-
       <PartnersStrip apps={partnerApps} />
-
-      <div className="hr" />
-
-      <section style={css("padding:var(--space-8) var(--space-6);display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--space-6);align-items:start;position:relative;overflow:hidden;")}>
-        <Geo variant="orbit" size={260} color="var(--om-azure)" opacity={0.14} style={{ left: -80, bottom: -80 }} />
-        <div>
-          <div style={css("font-size:11px;letter-spacing:0.12em;color:var(--om-azure);font-weight:600;margin-bottom:var(--space-2);")}>ABOUT OMINET DIGITAL</div>
-          <h2 style={css("font-family:var(--font-heading);font-size:clamp(26px,3.6vw,36px);margin:0;max-width:20ch;")}>A digital company built around making and publishing real work.</h2>
-        </div>
-        <div style={css("font-size:16px;line-height:1.7;opacity:0.8;")}>
-          <p style={css("margin:0 0 var(--space-3);")}>We publish books and written work, produce design, photography and video, build digital tools, and handle selected business and documentation services. Whether you arrive with a manuscript, a brand to shape or a project to scope, we start by understanding what you need and agree the work before it begins.</p>
-          <div style={css("display:flex;gap:var(--space-3);flex-wrap:wrap;")}>
-            {on("ominet-digital") && <Link href="/ominet-digital">Studio and capabilities &rarr;</Link>}
-            <Link href="/contact">Contact us &rarr;</Link>
-          </div>
-        </div>
-      </section>
 
       <AdSlot slotKey="home_middle" />
 
@@ -257,7 +239,7 @@ export default async function Home() {
 
       <section style={css("padding:var(--space-8) var(--space-6);background:var(--om-navy);color:#f1eefb;position:relative;overflow:hidden;")}>
         <Geo variant="lattice" size={300} opacity={0.2} style={{ right: -70, top: -60 }} />
-        <div style={css("max-width:640px;")}>
+        <div style={css("max-width:640px;position:relative;")}>
           <div style={css("font-family:var(--font-heading);font-size:14px;font-weight:800;letter-spacing:0.08em;color:var(--om-cyan);margin-bottom:var(--space-3);")}>PROFILE{!ecosystem.profileVisible && " · IN DEVELOPMENT"}</div>
           <h2 style={css("font-family:var(--font-heading);font-size:32px;margin:0 0 var(--space-3);color:#fff;")}>Your professional identity should be more than a CV.</h2>
           <p style={css("font-size:16px;line-height:1.7;opacity:0.85;margin:0 0 var(--space-4);")}>Activity, verification and attribution, built into one identity you carry between opportunities.</p>
@@ -265,24 +247,9 @@ export default async function Home() {
         </div>
       </section>
 
-      <div className="hr" />
-
-      <section style={css("padding:var(--space-8) var(--space-6);display:flex;flex-wrap:wrap;gap:var(--space-6);justify-content:space-between;align-items:center;")}>
-        <div style={css("flex:1 1 320px;max-width:60ch;")}>
-          <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-2);")}>THE FOUNDER</div>
-          <p style={css("font-family:var(--font-heading);font-size:22px;line-height:1.4;margin:0 0 var(--space-3);")}>Ominet Digital was founded by Omini Nfawa Eyong, a Nigerian writer, researcher and media professional.</p>
-          <div style={css("display:flex;gap:var(--space-3);flex-wrap:wrap;")}>
-            {on("founder") && <Link href="/founder">Read the founder&apos;s profile &rarr;</Link>}
-            <a href={AMAZON_AUTHOR_URL} target="_blank" rel="noopener noreferrer">Find my books on Amazon &rarr;</a>
-          </div>
-        </div>
-      </section>
-
-      <div className="hr" />
-
-      <section style={css("padding:var(--space-8) var(--space-6);background:var(--om-navy);color:#f1eefb;position:relative;overflow:hidden;")}>
-        <Geo variant="lattice" size={300} opacity={0.2} style={{ right: -70, top: -60 }} />
-        <div style={css("max-width:640px;")}>
+      <section style={css("padding:var(--space-8) var(--space-6);background:var(--om-navy);color:#f1eefb;position:relative;overflow:hidden;border-top:1px solid rgba(255,255,255,0.12);")}>
+        <Geo variant="orbit" size={300} opacity={0.2} style={{ right: -70, top: -60 }} />
+        <div style={css("max-width:640px;position:relative;")}>
           <div style={css("font-family:var(--font-heading);font-size:14px;font-weight:800;letter-spacing:0.08em;color:var(--om-cyan);margin-bottom:var(--space-3);")}>START A PROJECT</div>
           <h2 style={css("font-family:var(--font-heading);font-size:32px;margin:0 0 var(--space-3);color:#fff;")}>Tell us what you are working on.</h2>
           <p style={css("font-size:16px;line-height:1.7;opacity:0.85;margin:0 0 var(--space-4);")}>Send a project enquiry and we will respond with the next steps, or reach us directly by email or WhatsApp.</p>

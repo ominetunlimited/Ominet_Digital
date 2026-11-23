@@ -22,13 +22,14 @@ export async function ResearchProfileSection({ placement, title = "RESEARCH PROF
 }
 
 /** Link list for the dark footer column; renders nothing when empty. */
-export async function ResearchFooterLinks() {
+export async function ResearchFooterLinks({ amazonUrl }: { amazonUrl?: string } = {}) {
   const links = await getResearchProfiles("footer");
-  if (links.length === 0) return null;
+  if (links.length === 0 && !amazonUrl) return null;
   return (
     <div>
       <div style={{ fontSize: 11, letterSpacing: "0.1em", opacity: 0.6, marginBottom: "var(--space-3)" }}>RESEARCH</div>
       <div style={{ display: "grid", gap: "var(--space-2)", fontSize: 13 }}>
+        {amazonUrl && <a href={amazonUrl} target="_blank" rel="noopener noreferrer">Amazon author page</a>}
         {links.map((l) => (
           <a key={l.id} href={l.url} target="_blank" rel={REL}>{l.label}</a>
         ))}

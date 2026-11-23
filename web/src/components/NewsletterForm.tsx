@@ -5,7 +5,7 @@ import { css } from "@/lib/css";
 import { subscribeToNewsletter } from "@/lib/newsletter";
 import { useAsyncAction } from "@/lib/useAsyncAction";
 
-export default function NewsletterForm() {
+export default function NewsletterForm({ onSuccess }: { onSuccess?: () => void } = {}) {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const { busy, run } = useAsyncAction();
@@ -15,7 +15,7 @@ export default function NewsletterForm() {
     const result = await run(() => subscribeToNewsletter(email));
     if (!result) return;
     setMessage(result.ok ? result.message : result.error);
-    if (result.ok) setEmail("");
+    if (result.ok) { setEmail(""); onSuccess?.(); }
   }
 
   return (
