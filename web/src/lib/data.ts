@@ -213,6 +213,12 @@ export async function getFeaturedBook(): Promise<Book | undefined> {
   return published.find((b) => b.featured) ?? published[0];
 }
 
+/** Up to `n` books for the homepage: staff picks first, then the newest, so two works can be shown side by side. */
+export async function getFeaturedBooks(n = 2): Promise<Book[]> {
+  const { published } = await getBooks();
+  return [...published.filter((b) => b.featured), ...published.filter((b) => !b.featured)].slice(0, n);
+}
+
 export async function getBook(slug: string): Promise<Book | undefined> {
   if (!supabaseConfigured) return mockBooks.find((b) => b.slug === slug);
   const supabase = await createClient();
