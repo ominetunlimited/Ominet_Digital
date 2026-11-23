@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { shortExcerpt } from "@/lib/excerpt";
 import Link from "next/link";
 import PlaceholderImage from "@/components/PlaceholderImage";
 
@@ -12,7 +13,7 @@ export default function BlogCard({ href, title, excerpt, category, date, readTim
       </div>
       {category && <span className="bl-cat">{category}</span>}
       <h3>{title}</h3>
-      {excerpt && <p>{excerpt}</p>}
+      {excerpt && <p>{shortExcerpt(excerpt)}</p>}
       <div className="bl-meta">{[author, date, readTime].filter(Boolean).map((x, i) => <span key={i}>{x}</span>)}</div>
       <Link href={href} className="bl-link" aria-label={`Read: ${title}`} />
     </article>
