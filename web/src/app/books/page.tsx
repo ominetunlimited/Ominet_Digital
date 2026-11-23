@@ -30,7 +30,7 @@ export default async function BooksPage() {
   const jsonLd = collectionPageSchema("Books", "/books", [...published, ...upcomingBooks].map((b) => b.title));
 
   return (
-    <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>
+    <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:clip;")}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ "@context": "https://schema.org", ...jsonLd }) }} />
       <Nav />
       <svg width="150" height="150" viewBox="0 0 150 150" style={css("position:absolute;right:32px;top:24px;pointer-events:none;")} aria-hidden="true">

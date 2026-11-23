@@ -29,7 +29,7 @@ export default async function WorkItemPage({ params }: { params: Promise<{ slug:
     url: `${SITE_URL}/work/${p.slug}`, image: p.coverImageUrl ?? undefined, datePublished: p.publishedAt ?? undefined,
   };
   return (
-    <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>
+    <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:clip;")}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Nav />
       <article style={css("padding:var(--space-8) var(--space-6);max-width:880px;margin:0 auto;")}>

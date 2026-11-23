@@ -18,7 +18,7 @@ export async function generateMetadata() {
 export default async function WorkPage() {
   const items = await getPortfolio();
   return (
-    <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>
+    <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:clip;")}>
       <Nav />
       <section style={css("padding:var(--space-8) var(--space-6) var(--space-6);")}>
         <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>WORK</div>

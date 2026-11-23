@@ -41,7 +41,7 @@ export default async function AboutPage() {
   const h2 = css("font-family:var(--font-heading);font-size:clamp(26px,3.6vw,34px);margin:0 0 var(--space-4);");
   const body = css("font-size:16px;line-height:1.75;opacity:0.85;max-width:64ch;margin:0 0 var(--space-3);");
   return (
-    <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>
+    <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:clip;")}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Nav />
 

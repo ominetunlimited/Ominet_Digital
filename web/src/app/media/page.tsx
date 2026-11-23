@@ -26,7 +26,7 @@ export default async function MediaPage() {
   const [videos, photos] = await Promise.all([getVideoPosts(), getMediaPhotos()]);
 
   return (
-    <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>
+    <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:clip;")}>
       <Nav />
       <svg width="220" height="220" viewBox="0 0 220 220" style={css("position:absolute;right:-40px;top:20px;pointer-events:none;")} aria-hidden="true">
         <rect x="1" y="1" width="218" height="218" fill="none" stroke="var(--color-accent)" strokeWidth="1" opacity="0.18" />

@@ -82,7 +82,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
   ]);
 
   return (
-    <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>
+    <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:clip;")}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <PreviewBanner status={service.status} editHref={service.id ? `/admin/services/${service.id}` : undefined} />
       <Nav />

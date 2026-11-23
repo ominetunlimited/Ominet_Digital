@@ -33,7 +33,7 @@ export default async function StorePage() {
   const [products, user] = await Promise.all([getProducts(), getCurrentUser()]);
 
   return (
-    <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>
+    <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:clip;")}>
       <Nav />
       <svg width="150" height="150" viewBox="0 0 150 150" style={css("position:absolute;right:32px;top:24px;pointer-events:none;")} aria-hidden="true">
         <g fill="var(--om-coral)" opacity="0.2">

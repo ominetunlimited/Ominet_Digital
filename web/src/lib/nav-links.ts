@@ -38,7 +38,10 @@ export function structuredNav(p: PagesSettings, live: { profile: boolean; cortex
     children.length === 0 ? null : children.length === 1 ? { label, href: children[0].href } : { label, children };
 
   const items: (NavItem | null)[] = [
-    group("Explore", list([page("blog"), page("writing"), page("books"), page("media")])),
+    group("Explore", list([page("blog"), page("writing"), page("media")])),
+    // Books and the Store are products that should sell, so they sit on the top bar, not inside a dropdown.
+    page("books") ? { label: "Books", href: "/books" } : null,
+    page("store") ? { label: "Store", href: "/store" } : null,
     page("services") ? { label: "Services", href: "/services" } : null,
     // Work appears only once at least one project is published.
     live.work && page("work") ? { label: "Work", href: "/work" } : null,

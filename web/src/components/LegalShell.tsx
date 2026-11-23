@@ -6,7 +6,7 @@ import { css } from "@/lib/css";
 /** Shared frame for plain trust pages (Terms, Cookies, Contact). */
 export default function LegalShell({ eyebrow, title, intro, children }: { eyebrow: string; title: string; intro?: string; children: ReactNode }) {
   return (
-    <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>
+    <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:clip;")}>
       <Nav />
       <main id="main" style={css("padding:var(--space-8) var(--space-6);max-width:820px;")}>
         <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>{eyebrow}</div>

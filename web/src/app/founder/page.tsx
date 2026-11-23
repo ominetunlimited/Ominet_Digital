@@ -24,7 +24,7 @@ export default async function AboutPage() {
     breadcrumbSchema([{ name: "Home", path: "/" }, { name: "Founder", path: "/founder" }]),
   ]);
   return (
-    <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:hidden;")}>
+    <div style={css("max-width:1440px;margin:0 auto;background:var(--color-bg);position:relative;overflow:clip;")}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Nav />
       <svg width="300" height="300" viewBox="0 0 300 300" style={css("position:absolute;right:-90px;top:20px;pointer-events:none;")} aria-hidden="true">
