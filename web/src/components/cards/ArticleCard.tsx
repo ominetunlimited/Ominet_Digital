@@ -2,12 +2,13 @@ import Image from "next/image";
 import { shortExcerpt } from "@/lib/excerpt";
 import Link from "next/link";
 import PlaceholderImage from "@/components/PlaceholderImage";
+import ReadsBadge from "@/components/ReadsBadge";
 import type { ArtKind } from "@/lib/card-art";
 
 /** Editorial writing card: type leads, artwork supports. `lead` is the magazine opener; `row` is the compact list entry. */
-export default function ArticleCard({ href, title, excerpt, category, subcategory, date, readTime, imageUrl, paid, variant = "row", kind = "article", cta = "Read article" }: {
+export default function ArticleCard({ href, title, excerpt, category, subcategory, date, readTime, imageUrl, paid, variant = "row", kind = "article", cta = "Read article", reads }: {
   href: string; title: string; excerpt?: string; category: string; subcategory?: string; date?: string; readTime?: string; imageUrl?: string | null; paid?: boolean;
-  variant?: "lead" | "row"; kind?: ArtKind; cta?: string;
+  variant?: "lead" | "row"; kind?: ArtKind; cta?: string; reads?: number;
 }) {
   return (
     <article className={`ar-card ar-${variant}`}>
@@ -22,7 +23,7 @@ export default function ArticleCard({ href, title, excerpt, category, subcategor
         <h3 className="ar-title">{title}</h3>
         {excerpt && <p className="ar-excerpt">{shortExcerpt(excerpt)}</p>}
         <div className="ar-foot">
-          <span>{[date, readTime].filter(Boolean).join("  ·  ")}</span>
+          <span>{[date, readTime].filter(Boolean).join("  ·  ")}<ReadsBadge reads={reads} /></span>
           <span className="ar-cta" aria-hidden="true">{cta} <span>&rarr;</span></span>
         </div>
       </div>

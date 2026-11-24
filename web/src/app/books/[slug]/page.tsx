@@ -1,3 +1,6 @@
+import { getReadCount } from "@/lib/reads";
+import ReadsBadge from "@/components/ReadsBadge";
+import ReadTracker from "@/components/ReadTracker";
 import RichText from "@/components/RichText";
 import Link from "next/link";
 import Image from "next/image";
@@ -58,6 +61,7 @@ export default async function BookDetailPage({ params }: { params: Promise<{ slu
   const { slug } = await params;
   const book = await getBook(slug);
   if (!book) notFound();
+  const readCount = await getReadCount("books", book.slug);
 
   const currentPath = `/books/${book.slug}`;
   const [user, engagement, reviewSummary, delivery, owned] = await Promise.all([
@@ -111,7 +115,7 @@ export default async function BookDetailPage({ params }: { params: Promise<{ slu
         <div style={css("flex:2 1 380px;")}>
           <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>{book.kind.toUpperCase()}</div>
           <h1 style={css("font-family:var(--font-heading);font-size:48px;margin:0 0 var(--space-2);")}>{book.title}</h1>
-          <div style={css("font-size:15px;opacity:0.65;margin-bottom:var(--space-4);")}>Omini Nfawa &middot; {book.year}{book.pages ? ` · ${book.pages}` : ""}</div>
+          <div style={css("font-size:15px;opacity:0.65;margin-bottom:var(--space-4);display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;")}><span>Omini Nfawa &middot; {book.year}{book.pages ? ` · ${book.pages}` : ""}</span><ReadsBadge reads={readCount} /><ReadTracker kind="books" slug={book.slug} /></div>
           <p style={css("font-size:17px;line-height:1.7;opacity:0.8;max-width:56ch;margin:0 0 var(--space-4);")}>{truncate(book.excerpt, 320)}</p>
 
           {book.id && delivery && <BookAccess bookId={book.id} delivery={delivery} owned={owned} signedIn={Boolean(user)} />}

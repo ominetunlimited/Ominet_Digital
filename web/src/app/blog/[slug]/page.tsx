@@ -1,3 +1,6 @@
+import { getReadCounts } from "@/lib/reads";
+import ReadsBadge from "@/components/ReadsBadge";
+import ReadTracker from "@/components/ReadTracker";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -62,6 +65,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     getEngagement({ contentId: post.id }),
     createClient().then(async (sb) => (sb ? (await sb.auth.getUser()).data.user : null)).catch(() => null),
   ]);
+  const reads = await getReadCounts("blog", [post.slug, ...related.map((r) => r.slug)]);
   const currentPath = `/blog/${post.slug}`;
   const url = `${SITE_URL}/blog/${post.slug}`;
   const square = ogVariant(post.socialImageUrl || post.featuredImageUrl || post.ogImageUrl, "square");
@@ -106,6 +110,8 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           <span><time dateTime={post.publishedAt ?? undefined}>{fmtDate(post.publishedAt)}</time></span>
           {showUpdated && <span>Updated <time dateTime={post.updatedAt!}>{fmtDate(post.updatedAt)}</time></span>}
           {post.readMinutes && <span>{readLabel(post.readMinutes)}</span>}
+          <ReadsBadge reads={reads[post.slug] ?? 0} />
+          <ReadTracker kind="blog" slug={post.slug} />
         </div>
         <div style={css("position:relative;aspect-ratio:16/9;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-6);")}>
           {post.featuredImageUrl ? <Image src={post.featuredImageUrl} alt={post.featuredImageAlt ?? ""} fill priority sizes="(max-width: 760px) 100vw, 720px" style={{ objectFit: "cover" }} /> : <PlaceholderImage kind="article" title={post.title} />}
@@ -143,7 +149,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         <section aria-labelledby="bl-rel" style={css("max-width:1200px;margin:0 auto;padding:0 var(--space-6) var(--space-8);")}>
           <h2 id="bl-rel" style={css("font-family:var(--font-heading);font-size:26px;margin:0 0 var(--space-4);")}>Related articles</h2>
           <div className="bl-grid">
-            {related.map((p) => <BlogCard key={p.id} href={`/blog/${p.slug}`} title={p.title} excerpt={p.excerpt || p.dek} category={p.category?.name} date={fmtDate(p.publishedAt)} readTime={readLabel(p.readMinutes)} author={p.authorName} imageUrl={p.featuredImageUrl} imageAlt={p.featuredImageAlt} />)}
+            {related.map((p) => <BlogCard key={p.id} href={`/blog/${p.slug}`} title={p.title} excerpt={p.excerpt || p.dek} category={p.category?.name} date={fmtDate(p.publishedAt)} readTime={readLabel(p.readMinutes)} author={p.authorName} imageUrl={p.featuredImageUrl} imageAlt={p.featuredImageAlt} reads={reads[p.slug] ?? 0} />)}
           </div>
         </section>
       )}
