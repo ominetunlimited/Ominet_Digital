@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useEditor, EditorContent, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import TextAlign from "@tiptap/extension-text-align";
 import { Placeholder } from "@tiptap/extensions";
+import Image from "@tiptap/extension-image";
+import { uploadMedia } from "@/lib/admin/media-actions";
+import { compressImage } from "@/lib/compressImage";
 import { css } from "@/lib/css";
 import { sanitizeRichHtml, toRichHtml } from "@/lib/rich-text";
 
@@ -47,6 +50,31 @@ function setLink(editor: Editor) {
 export default function RichTextEditor({ value, onChange, placeholder, minHeight = 260 }: { value: string; onChange: (html: string) => void; placeholder?: string; minHeight?: number }) {
   const [source, setSource] = useState(false);
   const [sourceText, setSourceText] = useState("");
+  const [imgBusy, setImgBusy] = useState(false);
+  const [imgError, setImgError] = useState("");
+  const fileRef = useRef<HTMLInputElement>(null);
+  const editorRef = useRef<Editor | null>(null);
+
+  async function insertImageFile(file: File) {
+    const ed = editorRef.current;
+    if (!ed) return;
+    if (!file.type.startsWith("image/")) return void setImgError("That file is not a picture.");
+    setImgError("");
+    setImgBusy(true);
+    try {
+      const compressed = await compressImage(file);
+      const fd = new FormData();
+      fd.set("file", compressed);
+      const res = await uploadMedia(fd);
+      if (!res.ok || !res.url) return void setImgError(res.ok ? "Upload failed." : res.error);
+      const alt = window.prompt("Describe this picture in a few words (for readers using screen readers and for search). Leave empty if it is purely decorative.", "") ?? "";
+      ed.chain().focus().setImage({ src: res.url, alt: alt.trim() }).run();
+    } catch {
+      setImgError("Could not upload the picture. Try a smaller file.");
+    } finally {
+      setImgBusy(false);
+    }
+  }
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -54,13 +82,29 @@ export default function RichTextEditor({ value, onChange, placeholder, minHeight
       StarterKit.configure({ heading: { levels: [1, 2, 3] }, code: false, codeBlock: false, link: { openOnClick: false, autolink: true, protocols: ["mailto", "tel"] } }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
       Placeholder.configure({ placeholder: placeholder ?? "" }),
+      Image.configure({ inline: true, allowBase64: false }),
     ],
     content: toRichHtml(value),
     editorProps: {
       attributes: { role: "textbox", "aria-multiline": "true", "aria-label": "Content", class: "rte-body rte-editable", "data-placeholder": placeholder ?? "" },
+      handlePaste: (_v, event) => {
+        const f = Array.from(event.clipboardData?.files ?? []).find((x) => x.type.startsWith("image/"));
+        if (!f) return false;
+        void insertImageFile(f);
+        return true;
+      },
+      handleDrop: (_v, event) => {
+        const f = Array.from((event as DragEvent).dataTransfer?.files ?? []).find((x) => x.type.startsWith("image/"));
+        if (!f) return false;
+        event.preventDefault();
+        void insertImageFile(f);
+        return true;
+      },
     },
     onUpdate: ({ editor: ed }) => onChange(ed.isEmpty ? "" : sanitizeRichHtml(ed.getHTML())),
   });
+
+  useEffect(() => { editorRef.current = editor; }, [editor]);
 
   // Keep the toolbar's active states in sync without re-rendering on every keystroke elsewhere.
   const [, force] = useState(0);
@@ -115,6 +159,8 @@ export default function RichTextEditor({ value, onChange, placeholder, minHeight
         <Btn title="Bullet list" active={editor.isActive("bulletList")} disabled={source} onClick={() => editor.chain().focus().toggleBulletList().run()}>&bull; List</Btn>
         <Btn title="Blockquote" active={editor.isActive("blockquote")} disabled={source} onClick={() => editor.chain().focus().toggleBlockquote().run()}>&ldquo; Quote</Btn>
         <Btn title="Insert or edit link" active={editor.isActive("link")} disabled={source} onClick={() => setLink(editor)}>Link</Btn>
+        <Btn title="Insert a picture at the cursor (you can also paste or drop one into the text)" disabled={source || imgBusy} onClick={() => fileRef.current?.click()}>{imgBusy ? "Uploading…" : "Picture"}</Btn>
+        <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) void insertImageFile(f); e.target.value = ""; }} />
         <Btn title="Remove link" disabled={source || !editor.isActive("link")} onClick={() => editor.chain().focus().extendMarkRange("link").unsetLink().run()}>Unlink</Btn>
         <Btn title="Align left" active={editor.isActive({ textAlign: "left" })} disabled={source} onClick={() => align("left")}>&#8676;</Btn>
         <Btn title="Align centre" active={editor.isActive({ textAlign: "center" })} disabled={source} onClick={() => align("center")}>&#8596;</Btn>
@@ -125,6 +171,7 @@ export default function RichTextEditor({ value, onChange, placeholder, minHeight
         <Btn title="Clear formatting" disabled={source} onClick={() => editor.chain().focus().clearNodes().unsetAllMarks().run()}>Clear</Btn>
         <Btn title={source ? "Back to the visual editor" : "Edit the HTML source"} active={source} onClick={toggleSource}>{source ? "Visual" : "HTML"}</Btn>
       </div>
+      {imgError && <p role="alert" style={css("font-size:13px;color:var(--om-coral);margin:var(--space-2) 0;")}>{imgError}</p>}
       {source ? (
         <textarea
           aria-label="HTML source"
@@ -142,6 +189,8 @@ export default function RichTextEditor({ value, onChange, placeholder, minHeight
       <style>{`
         .rte-editable{outline:none;min-height:${Math.max(120, minHeight - 40)}px;}
         .rte-editable p.is-editor-empty:first-child::before{content:attr(data-placeholder);opacity:0.4;float:left;height:0;pointer-events:none;}
+        .rte-editable img{max-width:100%;height:auto;border-radius:6px;vertical-align:middle;}
+        .rte-editable img.ProseMirror-selectednode{outline:2px solid var(--color-accent);}
         .rte-editable:focus-visible{outline:2px solid var(--color-accent);outline-offset:4px;}
       `}</style>
     </div>

@@ -8,6 +8,7 @@ import PlaceholderImage from "@/components/PlaceholderImage";
 import { css } from "@/lib/css";
 import { pageMetadata, SITE_URL } from "@/lib/seo";
 import { getBlogIndex, getCategoryTree, getCategoryBySlug, getFeaturedPost, getArchiveMonths, fmtDate, readLabel } from "@/lib/blog";
+import { getReadCounts } from "@/lib/reads";
 import { jsonLdGraph, breadcrumbSchema } from "@/lib/schema";
 
 export type BlogSP = { q?: string; category?: string; month?: string; page?: string };
@@ -24,6 +25,7 @@ export default async function BlogIndex({ sp: rawSp, categorySlug }: { sp: BlogS
   ]);
   const showFeatured = !filtered && page === 1 ? featured : null;
   const list = showFeatured ? posts.filter((p) => p.id !== showFeatured.id) : posts;
+  const reads = await getReadCounts("blog", list.map((p) => p.slug));
   const href = (over: Record<string, string>) => {
     const m: Record<string, string> = { q: sp.q ?? "", month: sp.month ?? "", page: "", ...over };
     const qs = Object.entries(m).filter(([, v]) => v).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join("&");
@@ -82,7 +84,7 @@ export default async function BlogIndex({ sp: rawSp, categorySlug }: { sp: BlogS
           <p style={css("font-size:16px;opacity:0.75;padding:var(--space-8) 0;")}>{filtered ? "No articles match that search." : showFeatured ? "More articles are on the way." : "The first articles are on the way. Subscribe below to hear when they are published."}</p>
         ) : (
           <div className="bl-grid">
-            {list.map((p) => <BlogCard key={p.id} href={`/blog/${p.slug}`} title={p.title} excerpt={p.excerpt || p.dek} category={p.category?.name} date={fmtDate(p.publishedAt)} readTime={readLabel(p.readMinutes)} author={p.authorName} imageUrl={p.featuredImageUrl} imageAlt={p.featuredImageAlt} />)}
+            {list.map((p) => <BlogCard key={p.id} href={`/blog/${p.slug}`} title={p.title} excerpt={p.excerpt || p.dek} category={p.category?.name} date={fmtDate(p.publishedAt)} readTime={readLabel(p.readMinutes)} author={p.authorName} imageUrl={p.featuredImageUrl} imageAlt={p.featuredImageAlt} reads={reads[p.slug] ?? 0} />)}
           </div>
         )}
 

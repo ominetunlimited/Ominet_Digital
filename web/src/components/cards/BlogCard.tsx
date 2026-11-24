@@ -2,9 +2,10 @@ import Image from "next/image";
 import { shortExcerpt } from "@/lib/excerpt";
 import Link from "next/link";
 import PlaceholderImage from "@/components/PlaceholderImage";
+import ReadsBadge from "@/components/ReadsBadge";
 
-export default function BlogCard({ href, title, excerpt, category, date, readTime, author, imageUrl, imageAlt }: {
-  href: string; title: string; excerpt?: string | null; category?: string | null; date?: string; readTime?: string; author?: string; imageUrl?: string | null; imageAlt?: string | null;
+export default function BlogCard({ href, title, excerpt, category, date, readTime, author, imageUrl, imageAlt, reads }: {
+  href: string; title: string; excerpt?: string | null; category?: string | null; date?: string; readTime?: string; author?: string; imageUrl?: string | null; imageAlt?: string | null; reads?: number;
 }) {
   return (
     <article className="bl-card">
@@ -14,7 +15,7 @@ export default function BlogCard({ href, title, excerpt, category, date, readTim
       {category && <span className="bl-cat">{category}</span>}
       <h3>{title}</h3>
       {excerpt && <p>{shortExcerpt(excerpt)}</p>}
-      <div className="bl-meta">{[author, date, readTime].filter(Boolean).map((x, i) => <span key={i}>{x}</span>)}</div>
+      <div className="bl-meta">{[author, date, readTime].filter(Boolean).map((x, i) => <span key={i}>{x}</span>)}<ReadsBadge reads={reads} /></div>
       <Link href={href} className="bl-link" aria-label={`Read: ${title}`} />
     </article>
   );

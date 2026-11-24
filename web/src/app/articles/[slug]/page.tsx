@@ -1,3 +1,6 @@
+import { getReadCount } from "@/lib/reads";
+import ReadsBadge from "@/components/ReadsBadge";
+import ReadTracker from "@/components/ReadTracker";
 import RichText from "@/components/RichText";
 import Image from "next/image";
 import { notFound, redirect } from "next/navigation";
@@ -58,6 +61,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
   if (flag?.in_blog) redirect(`/blog/${slug}`);
   const article = await getArticle(slug);
   if (!article) notFound();
+  const readCount = await getReadCount("articles", article.slug);
 
   const [unlocked, user, engagement, reviewSummary, featuredBook, otherArticles, extras] = await Promise.all([
     article.access !== "paid" ? Promise.resolve(true) : hasEntitlement(article.id),
@@ -124,7 +128,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
         </div>
         <h1 style={css("font-family:var(--font-heading);font-size:44px;line-height:1.1;margin:0 0 var(--space-3);")}>{article.title}</h1>
         {article.dek && <p style={css("font-size:19px;line-height:1.5;opacity:0.75;margin:0 0 var(--space-4);")}>{article.dek}</p>}
-        <div style={css("font-size:13px;opacity:0.6;margin-bottom:var(--space-4);")}>By {article.author}{extras?.contributors ? ` · With ${extras.contributors}` : ""}{extras?.updatedAt && article.date && new Date(extras.updatedAt).getTime() - new Date(article.date).getTime() > 2 * 86400000 ? ` · Updated ${new Date(extras.updatedAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "Africa/Lagos" })}` : ""}</div>
+        <div style={css("font-size:13px;opacity:0.6;margin-bottom:var(--space-4);display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;")}><span>By {article.author}{extras?.contributors ? ` · With ${extras.contributors}` : ""}{extras?.updatedAt && article.date && new Date(extras.updatedAt).getTime() - new Date(article.date).getTime() > 2 * 86400000 ? ` · Updated ${new Date(extras.updatedAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "Africa/Lagos" })}` : ""}</span><ReadsBadge reads={readCount} /><ReadTracker kind="articles" slug={article.slug} /></div>
         {extras?.abstract && <div style={css("font-size:16px;line-height:1.7;padding:var(--space-4);background:var(--color-surface);border-radius:var(--radius-md);margin-bottom:var(--space-5);")}><strong style={css("display:block;font-size:11px;letter-spacing:0.1em;opacity:0.6;margin-bottom:6px;")}>ABSTRACT</strong>{extras.abstract}</div>}
         {toc.length > 0 && (
           <nav aria-label="Table of contents" style={css("margin-bottom:var(--space-6);font-size:14px;")}>

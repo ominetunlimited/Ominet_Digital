@@ -1,3 +1,4 @@
+import { getReadCounts } from "@/lib/reads";
 import Link from "next/link";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
@@ -44,7 +45,9 @@ export default async function ArticlesPage({
 }) {
   const { category, sort = "newest" } = await searchParams;
   const allArticles = await getArticles();
-  const articles = sortArticles(category ? allArticles.filter((a) => a.category === category) : allArticles, sort);
+  const articles0 = sortArticles(category ? allArticles.filter((a) => a.category === category) : allArticles, sort);
+  const artReads = await getReadCounts("articles", articles0.map((a) => a.slug));
+  const articles = articles0;
   const jsonLd = collectionPageSchema("Articles", "/articles", articles.map((a) => a.title));
 
   function withParams(next: { category?: string; sort?: string }) {
@@ -117,7 +120,7 @@ export default async function ArticlesPage({
             const [first, ...rest] = articles;
             const card = (a: Article, variant: "lead" | "row") => (
               <ArticleCard key={a.slug} variant={variant} href={`/articles/${a.slug}`} title={a.title} excerpt={a.excerpt} category={a.category} subcategory={a.subcategory}
-                date={a.date} readTime={a.readTime} imageUrl={a.featuredImageUrl} paid={a.access === "paid"} />
+                date={a.date} readTime={a.readTime} imageUrl={a.featuredImageUrl} paid={a.access === "paid"} reads={artReads[a.slug] ?? 0} />
             );
             return (
               <>

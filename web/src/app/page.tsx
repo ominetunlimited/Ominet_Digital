@@ -1,3 +1,4 @@
+import { getReadCounts } from "@/lib/reads";
 import Link from "next/link";
 import Image from "next/image";
 import Nav from "@/components/Nav";
@@ -49,6 +50,7 @@ export default async function Home() {
   const logoUrl = identity.logoUrl;
   const featuredArticles = [...articles.filter((a) => a.featured), ...articles.filter((a) => !a.featured)].slice(0, 2);
   const latestPosts = blogLatest.posts.slice(0, 4);
+  const [blogReads, articleReads] = await Promise.all([getReadCounts("blog", latestPosts.map((p) => p.slug)), getReadCounts("articles", featuredArticles.map((a) => a.slug))]);
   const jsonLd = jsonLdGraph([
     { "@type": "WebSite", "@id": WEBSITE_ID, name: SITE_NAME, url: SITE_URL, publisher: { "@id": ORG_ID } },
     getOrganizationSchema(SITE_NAME),
@@ -177,7 +179,7 @@ export default async function Home() {
             <Link href="/blog" className="btn btn-secondary">All blog posts</Link>
           </div>
           <div className="bl-grid">
-            {latestPosts.map((p) => <BlogCard key={p.id} href={`/blog/${p.slug}`} title={p.title} excerpt={p.excerpt || p.dek} category={p.category?.name} date={fmtDate(p.publishedAt)} readTime={readLabel(p.readMinutes)} author={p.authorName} imageUrl={p.featuredImageUrl} imageAlt={p.featuredImageAlt} />)}
+            {latestPosts.map((p) => <BlogCard key={p.id} href={`/blog/${p.slug}`} title={p.title} excerpt={p.excerpt || p.dek} category={p.category?.name} date={fmtDate(p.publishedAt)} readTime={readLabel(p.readMinutes)} author={p.authorName} imageUrl={p.featuredImageUrl} imageAlt={p.featuredImageAlt} reads={blogReads[p.slug] ?? 0} />)}
           </div>
         </section>
       )}
@@ -190,7 +192,7 @@ export default async function Home() {
           <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:var(--space-6);")}>
             {featuredArticles.map((a) => (
               <ArticleCard key={a.slug} href={`/articles/${a.slug}`} title={a.title} excerpt={a.excerpt} category={a.category} subcategory={a.subcategory}
-                date={a.date} readTime={a.readTime} imageUrl={a.featuredImageUrl} />
+                date={a.date} readTime={a.readTime} imageUrl={a.featuredImageUrl} reads={articleReads[a.slug] ?? 0} />
             ))}
           </div>
           <div style={css("margin-top:var(--space-3);")}><Link href="/articles">Browse all articles &rarr;</Link></div>

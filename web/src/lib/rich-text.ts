@@ -8,11 +8,11 @@
 
 import sanitizeHtml from "sanitize-html";
 
-const ALLOWED_TAGS = ["p", "br", "h1", "h2", "h3", "h4", "strong", "b", "em", "i", "u", "s", "ul", "ol", "li", "blockquote", "a", "hr"];
+const ALLOWED_TAGS = ["p", "br", "h1", "h2", "h3", "h4", "strong", "b", "em", "i", "u", "s", "ul", "ol", "li", "blockquote", "a", "hr", "img"];
 const ALIGN = ["left", "center", "right", "justify"];
 
 const escapeHtml = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-const looksLikeHtml = (s: string) => /<\/?(p|br|h[1-6]|ul|ol|li|strong|em|b|i|u|a|blockquote|div|span|hr)\b[^>]*>/i.test(s);
+const looksLikeHtml = (s: string) => /<\/?(p|br|h[1-6]|ul|ol|li|strong|em|b|i|u|a|blockquote|div|span|hr|img)\b[^>]*>/i.test(s);
 
 /** Plain text from older records becomes tidy HTML; HTML passes through. */
 export function toRichHtml(value: string | null | undefined): string {
@@ -57,11 +57,13 @@ export function sanitizeRichHtml(html: string | null | undefined): string {
   if (!input) return "";
   const clean = sanitizeHtml(input, {
     allowedTags: ALLOWED_TAGS,
-    allowedAttributes: { a: ["href", "target", "rel"], p: ["style"], h1: ["style"], h2: ["style"], h3: ["style"], h4: ["style"], li: ["style"] },
+    allowedAttributes: { a: ["href", "target", "rel"], img: ["src", "alt", "width", "height", "loading", "decoding"], p: ["style"], h1: ["style"], h2: ["style"], h3: ["style"], h4: ["style"], li: ["style"] },
     allowedStyles: { "*": { "text-align": [new RegExp(`^(${ALIGN.join("|")})$`)] } },
     allowedSchemes: ["http", "https", "mailto", "tel"],
+    allowedSchemesByTag: { img: ["https"] },
     allowProtocolRelative: false,
     transformTags: {
+      img: (tag, attribs) => ({ tagName: "img", attribs: { src: attribs.src ?? "", alt: attribs.alt ?? "", loading: "lazy", decoding: "async" } }),
       b: "strong",
       i: "em",
       a: (tag, attribs) => {
@@ -69,9 +71,9 @@ export function sanitizeRichHtml(html: string | null | undefined): string {
         return { tagName: "a", attribs: { href: attribs.href ?? "", ...(external ? { target: "_blank", rel: "noopener noreferrer" } : {}) } };
       },
     },
-    exclusiveFilter: (frame) => ["p", "h1", "h2", "h3", "h4", "li", "blockquote"].includes(frame.tag) && !frame.text.trim(),
+    exclusiveFilter: (frame) => ["p", "h1", "h2", "h3", "h4", "li", "blockquote"].includes(frame.tag) && !frame.text.trim() && frame.mediaChildren.length === 0,
   });
-  return clean.replace(/(<p>(\s|&nbsp;)*<\/p>)+/g, "").trim();
+  return clean.replace(/<img(?![^>]*\ssrc=)[^>]*>/gi, "").replace(/(<p>(\s|&nbsp;)*<\/p>)+/g, "").trim();
 }
 
 /** Visible text only, for meta descriptions, excerpts and JSON-LD. */

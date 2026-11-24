@@ -12,6 +12,7 @@
     "@napi-rs/canvas": "^1.0.9",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.117.1",
+    "@tiptap/extension-image": "^3.34.0",
     "@tiptap/extension-text-align": "^3.34.0",
     "@tiptap/extensions": "^3.34.0",
     "@tiptap/pm": "^3.34.0",

@@ -26,3 +26,10 @@ X blocks or warns on links using third-party security vendors, industry and NGO 
 ## What is already in order on our side
 Strict security headers (HSTS, a content security policy, no framing), a sitemap and robots file, a single canonical URL, HTTPS only, and no third-party scripts unless AdSense is switched on.
 After the rebrand branch is deployed, re-run step 2 once, because the live site still serves the old build until you merge.
+
+## Findings from the November 2026 check
+
+- Nothing in the site's code, headers or robots.txt triggers an X block. X's "potentially harmful" notice comes from its own and partner reputation lists, which cannot be queried from Vercel or Supabase.
+- The apex domain (ominetdigital.com.ng) answers with a 308 redirect to www. Post the www address directly so link checkers see no redirect chain.
+- The duplicate Vercel domain (ominet-digital-ftpx.vercel.app) serves the same site. Redirect it to www in Vercel (Project, Settings, Domains) so there is one address and one reputation.
+- Steps for the owner: check the domain on Google Safe Browsing and VirusTotal, confirm it in Google Search Console, then send X an appeal through the Help Center link in the error message. Test with a fresh www post after each step.
