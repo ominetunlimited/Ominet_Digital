@@ -42,11 +42,13 @@ Each item says what it is, why it ranks there, how we do it without harming what
 - **Evidence.** The live setting stores the number as `09026057899`. The site builds the link as `wa.me/09026057899`, which WhatsApp rejects. The Contact page already uses the correct `2349026057899`, so only the setting-driven buttons are broken.
 - **Fix, two parts.** (a) In admin, change the saved WhatsApp number to `2349026057899`. (b) A tiny code change that converts a Nigerian local number (starting with 0) to the international form, so this cannot recur. One shared helper, used by the button and the Services page.
 - **Done when.** Tapping any WhatsApp button on a phone opens a chat with +234 902 605 7899.
+- **Status, 27 November 2026.** Both parts are in place. The saved setting is `+2349026057899`, and `normaliseWhatsApp` (`web/src/lib/whatsapp-number.ts`) is used by the WhatsApp button and the Services page. Checked in the code and the database. A real tap on a phone has not been tested yet.
 
 ### 3. One company email everywhere (verified, small)
 - **Evidence.** The default booking email in code and the saved setting is `ominetmedia@gmail.com`, while the rest of the site uses `info@ominetdigital.com.ng`. The outside review says the gmail address appears on the homepage contact area (reported, not yet seen by me).
 - **Fix.** Change the saved setting in admin; search the site for any visible gmail address; keep gmail only if you deliberately want internal alerts there.
 - **Done when.** No public page shows a personal gmail address.
+- **Status, 27 November 2026.** The saved booking and support emails are both `info@ominetdigital.com.ng`, and no gmail address appears anywhere in `web/src`. Checked in the code and the database. Rendered public pages have not been checked one by one.
 
 ### 4. Confirm live basics (you, about 10 minutes)
 - View source on the home page, one article and one service page. Confirm the canonical tag starts with `https://www.ominetdigital.com.ng`.
@@ -54,6 +56,8 @@ Each item says what it is, why it ranks there, how we do it without harming what
 - Search Console: confirm ownership and submit `/sitemap.xml`.
 - Check that Mailgun and Selar links work for a real customer.
 - **Why.** The Improvement Plan flagged these in October. The code now blocks vercel.app canonicals, but I cannot see live pages from here.
+- **Status, 27 November 2026.** The `*.vercel.app` address now redirects to `www.ominetdigital.com.ng` with a 308. The redirect is set in the Vercel domain settings and was confirmed in the browser by the owner. Still open: the Search Console sitemap resubmission, and the canonical tag check on live pages.
+- **Search Console, 27 November 2026.** The coverage export lists 8 pages as "Crawled, currently not indexed". Changes made in response: blog category pages with fewer than three published posts are now `noindex` and left out of the sitemap (PR #26), `/store` and `/contact` gained internal links (PR #27), and the sitemap reports real `lastmod` dates (PR #28). Indexing is Google's decision. Do not click Validate Fix until the remaining content changes are live, and note that the article `the-dual-edge-of-religious-doctrine` has only about 90 words of body text and needs real content.
 
 ### 5. Account security (you)
 - Two-factor authentication on admin, GitHub, Vercel, Supabase, Mailgun and AdSense.
