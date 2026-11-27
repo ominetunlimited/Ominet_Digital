@@ -5,6 +5,8 @@ const supabaseHostname = supabaseUrl ? new URL(supabaseUrl).hostname : undefined
 const supabaseOrigin = supabaseUrl ? new URL(supabaseUrl).origin : "";
 const isProd = process.env.NODE_ENV === "production";
 const adsenseOn = Boolean(process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID);
+// Google Analytics 4 is allowed through the policy only when a valid measurement ID is configured.
+const gaOn = /^G-[A-Z0-9]{6,14}$/.test((process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "").trim());
 
 /**
  * Content Security Policy. Inline scripts have to stay allowed: a nonce would
@@ -15,12 +17,12 @@ const adsenseOn = Boolean(process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID);
  */
 const csp = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${adsenseOn ? " https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.google.com https://*.doubleclick.net" : ""}`,
+  `script-src 'self' 'unsafe-inline'${adsenseOn ? " https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.google.com https://*.doubleclick.net" : ""}${gaOn ? " https://www.googletagmanager.com" : ""}`,
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com data:",
   "img-src 'self' data: blob: https:",
   "media-src 'self' blob: https:",
-  `connect-src 'self' ${supabaseOrigin}${adsenseOn ? " https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com" : ""}`.trim(),
+  `connect-src 'self' ${supabaseOrigin}${adsenseOn ? " https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com" : ""}${gaOn ? " https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com" : ""}`.trim(),
   // Embeds the owner can add to portfolio items (videos, slides). Nothing else may be framed.
   adsenseOn
     ? "frame-src https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com https://www.youtube-nocookie.com https://player.vimeo.com https://www.canva.com"
