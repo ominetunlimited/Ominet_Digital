@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Analytics from "@/components/Analytics";
+import ConsentManager from "@/components/ConsentManager";
 import { SiteSettingsProvider } from "@/components/SiteSettingsProvider";
 import NewsletterFloat from "@/components/NewsletterFloat";
 import { countPublishedPortfolio } from "@/lib/portfolio";
@@ -55,6 +56,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body>
         <Analytics />
+        {/* Renders nothing unless a Google Analytics ID is configured; Google Analytics loads only after the visitor accepts. */}
+        <ConsentManager />
         {/* Only links that are switched on are handed to the browser — hidden ones never appear in the page source. */}
         <SiteSettingsProvider value={{ social: social.filter((s) => s.enabled && s.url), siteName: identity.siteName, whatsapp: contact.whatsapp, logoUrl: identity.logoUrl, pages, products: { profile: ecosystem.profileVisible, cortexa: ecosystem.cortexaVisible, work: workCount > 0 } }}>
           {children}

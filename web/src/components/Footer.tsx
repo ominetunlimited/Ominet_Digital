@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import SocialLinks from "@/components/SocialLinks";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import CookieSettingsLink from "@/components/CookieSettingsLink";
 import { ResearchFooterLinks } from "@/components/ResearchProfileLinks";
 import { getSiteSettings } from "@/lib/site-settings";
 import { AMAZON_AUTHOR_URL } from "@/lib/links";
@@ -70,6 +71,7 @@ export default async function Footer() {
             {footer.privacyUrl && <a href={footer.privacyUrl}>Privacy policy</a>}
             {footer.termsUrl && <a href={footer.termsUrl}>Terms</a>}
             <Link href="/cookies">Cookies and ads</Link>
+            <CookieSettingsLink />
           </div>
         </div>
       </div>
