@@ -234,23 +234,26 @@ export async function getBook(slug: string): Promise<Book | undefined> {
 }
 
 export async function getAllSlugs() {
+  type SlugEntry = { slug: string; updatedAt: string | null };
   if (!supabaseConfigured) {
     return {
-      articles: mockArticles.map((a) => a.slug),
-      books: mockBooks.map((b) => b.slug),
-      services: [] as string[],
+      articles: mockArticles.map((a): SlugEntry => ({ slug: a.slug, updatedAt: null })),
+      books: mockBooks.map((b): SlugEntry => ({ slug: b.slug, updatedAt: null })),
+      services: [] as SlugEntry[],
     };
   }
   const supabase = await createClient();
   const [{ data: articleRows }, { data: bookRows }, { data: serviceRows }] = await Promise.all([
-    supabase!.from("content").select("slug").eq("status", "published").eq("in_blog", false),
-    supabase!.from("books").select("slug"),
-    supabase!.from("services").select("slug").eq("status", "published"),
+    supabase!.from("content").select("slug,updated_at").eq("status", "published").eq("in_blog", false),
+    supabase!.from("books").select("slug,updated_at"),
+    supabase!.from("services").select("slug,updated_at").eq("status", "published"),
   ]);
+  // updatedAt is the record's real last-edit time, so the sitemap can report an honest lastmod.
+  const toEntry = (r: { slug: unknown; updated_at?: unknown }): SlugEntry => ({ slug: r.slug as string, updatedAt: (r.updated_at as string | null) ?? null });
   return {
-    articles: (articleRows ?? []).map((r) => r.slug as string),
-    books: (bookRows ?? []).map((r) => r.slug as string),
-    services: (serviceRows ?? []).map((r) => r.slug as string),
+    articles: (articleRows ?? []).map(toEntry),
+    books: (bookRows ?? []).map(toEntry),
+    services: (serviceRows ?? []).map(toEntry),
   };
 }
 
