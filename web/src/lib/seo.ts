@@ -10,8 +10,8 @@ const ENV_URL = (process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/+$/, "");
 export const SITE_URL = ENV_URL && !/\.vercel\.app$/i.test(ENV_URL) ? ENV_URL : process.env.NODE_ENV === "development" && !ENV_URL ? "http://localhost:3000" : CANONICAL_URL;
 /** Built-in fallback name; the live name comes from Admin → Site settings. */
 export const SITE_NAME = "Ominet Digital";
-/** Home page title: brand plus what people search for. Kept near 60 characters so search results do not cut it off. */
-const HOME_TITLE = "Ominet Digital | Publishing, Design and Media Services in Nigeria";
+/** Home page title: brand plus what people search for. Kept under 60 characters so search results do not cut it off. */
+const HOME_TITLE = "Ominet Digital | Publishing, Design and Media";
 
 /**
  * Consistent title/description/OG/canonical for a static page. The site name is
