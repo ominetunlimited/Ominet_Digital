@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import PlaceholderImage from "@/components/PlaceholderImage";
@@ -90,6 +91,13 @@ export default async function StorePage() {
           })}
         </div>
         )}
+      </section>
+
+      <div className="hr" />
+
+      <section style={css("padding:var(--space-8) var(--space-6);")}>
+        <div style={css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);")}>MORE FROM OMINET DIGITAL</div>
+        <p style={css("font-size:16px;line-height:1.6;opacity:0.75;max-width:60ch;margin:0 0 var(--space-4);")}>Looking for something specific? Browse our published <Link href="/books">books</Link>, read the latest posts on the <Link href="/blog">blog</Link>, explore long-form <Link href="/articles">articles and research</Link>, or see the <Link href="/services">professional services</Link> we offer. Questions about an item? <Link href="/contact">Get in touch</Link>.</p>
       </section>
 
       <div className="hr" />
