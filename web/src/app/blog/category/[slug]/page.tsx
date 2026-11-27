@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import BlogIndex, { type BlogSP } from "@/components/blog/BlogIndex";
 import { pageMetadata } from "@/lib/seo";
-import { getCategoryBySlug } from "@/lib/blog";
+import { getCategoryBySlug, MIN_INDEXABLE_CATEGORY_POSTS } from "@/lib/blog";
 
 export const revalidate = 60;
 
@@ -16,8 +16,10 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
     node.seoDescription || node.description || `Blog posts about ${node.name.toLowerCase()} from Ominet Digital.`,
     `/blog/category/${slug}`
   );
-  // Each post has one canonical URL under /blog; archives are indexable only on their first, unfiltered page.
-  return sp.q || sp.month || (sp.page && sp.page !== "1") ? { ...base, robots: { index: false, follow: true } } : base;
+  // Each post has one canonical URL under /blog; archives are indexable only on their first, unfiltered page,
+  // and only once the category holds enough published posts to be more than a thin page.
+  const thin = node.count < MIN_INDEXABLE_CATEGORY_POSTS;
+  return thin || sp.q || sp.month || (sp.page && sp.page !== "1") ? { ...base, robots: { index: false, follow: true } } : base;
 }
 
 export default async function BlogCategoryPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<BlogSP> }) {
