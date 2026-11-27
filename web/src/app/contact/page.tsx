@@ -22,6 +22,8 @@ export default async function ContactPage() {
       <p>For writing, research, publishing, design, media or other services, use the <Link href="/discuss-a-project">project enquiry form</Link>. You receive a reference number and an acknowledgement email.</p>
       <h2>Website</h2>
       <p><a href="https://www.ominetdigital.com.ng">https://www.ominetdigital.com.ng</a></p>
+      <h2>Explore Ominet Digital</h2>
+      <p>Before you write, you may find what you need in our <Link href="/services">services</Link>, our published <Link href="/books">books</Link>, the <Link href="/blog">blog</Link> or the <Link href="/articles">articles and research</Link> section.</p>
       <p>Please do not send passwords, PINs or one-time codes by any channel. We never need them.</p>
     </LegalShell>
   );
