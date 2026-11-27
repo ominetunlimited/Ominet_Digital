@@ -42,6 +42,12 @@ export async function promoteDue() {
   try { await createAdminClient()?.rpc("publish_due_content"); } catch { /* best effort */ }
 }
 
+/**
+ * A category archive with fewer published posts than this is a thin page. It stays reachable for visitors,
+ * but search engines are told not to index it and it is left out of the sitemap until it has enough posts.
+ */
+export const MIN_INDEXABLE_CATEGORY_POSTS = 3;
+
 export async function getBlogCategories(): Promise<BlogCategory[]> {
   const tree = await getCategoryTree();
   return tree.map(({ id, name, slug, description, order }) => ({ id, name, slug, description, order }));

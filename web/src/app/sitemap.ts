@@ -4,7 +4,7 @@ import { getAllSlugs, getMediaPhotos, getVideoPosts } from "@/lib/data";
 import { getSiteSettings } from "@/lib/site-settings";
 import { SITE_PAGES, isPageOn } from "@/lib/site-pages";
 import { getPortfolio } from "@/lib/portfolio";
-import { getBlogSlugs, getCategoryTree } from "@/lib/blog";
+import { getBlogSlugs, getCategoryTree, MIN_INDEXABLE_CATEGORY_POSTS } from "@/lib/blog";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const { articles, books, services } = await getAllSlugs();
@@ -15,7 +15,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // An empty portfolio is not offered to search engines (the page itself is noindex too).
   const [vids, pics] = await Promise.all([getVideoPosts(1), getMediaPhotos(1)]);
   const mediaEmpty = vids.length === 0 && pics.length === 0;
-  const cats = on("blog") ? (await getCategoryTree()).flatMap((c) => [c, ...c.children]).filter((c) => c.count > 0) : [];
+  const cats = on("blog") ? (await getCategoryTree()).flatMap((c) => [c, ...c.children]).filter((c) => c.count >= MIN_INDEXABLE_CATEGORY_POSTS) : [];
   const STATIC_ROUTES = ["", "/discuss-a-project", "/contact", "/terms", "/cookies", "/privacy", ...SITE_PAGES.filter((p) => on(p.key) && !(p.key === "profile" && !ecosystem.profileVisible) && !(p.key === "cortexa-office" && !ecosystem.cortexaVisible) && p.key !== "search" && !(p.key === "work" && work.length === 0) && !(p.key === "media" && mediaEmpty)).map((p) => p.path)];
 
   return [
