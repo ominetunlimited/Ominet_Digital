@@ -25,11 +25,15 @@ export async function getPersonSchema(name = "Omini Nfawa", jobTitle = DEFAULT_J
     "@type": "Person",
     "@id": PERSON_ID,
     name,
-    url: `${SITE_URL}/about`,
+    // /about is the company page; the founder's own page is /founder.
+    url: `${SITE_URL}/founder`,
     jobTitle,
     ...(sameAs.length > 0 ? { sameAs } : {}),
   };
 }
+
+/** The company's own logo (480 x 465 PNG), used when no logo is set in Site settings. Absolute, as Google requires. */
+const DEFAULT_LOGO_URL = `${SITE_URL}/images/ominet-digital-logo.png`;
 
 /** The Organization entity for the site itself. */
 export function getOrganizationSchema(name: string, logoUrl?: string) {
@@ -38,7 +42,7 @@ export function getOrganizationSchema(name: string, logoUrl?: string) {
     "@id": ORG_ID,
     name,
     url: SITE_URL,
-    ...(logoUrl ? { logo: logoUrl } : {}),
+    logo: logoUrl || DEFAULT_LOGO_URL,
     founder: { "@id": PERSON_ID },
   };
 }
