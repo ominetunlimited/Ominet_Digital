@@ -90,6 +90,9 @@ From your strategy brief, the parts that fit the current build:
 
 ### 10. Measure what works
 - Install Google Analytics 4 behind the cookie consent banner. Track form submissions, WhatsApp clicks, email clicks and newsletter signups.
+- Status 2026-11-28 (verified in code and on production): the consent banner and GA4 loader are merged (PR #32) and do nothing until `NEXT_PUBLIC_GA_MEASUREMENT_ID` is set in Vercel. Conversion events for enquiries, bookings, newsletter signups and email, phone and WhatsApp clicks are merged (PR #33). Still to do by you: set the ID, redeploy, and confirm events in GA Realtime. AdSense still loads without a consent choice (your decision, Option B); move it behind the banner once approved.
+- Status 2026-11-28: `/thank-you` is live (PR #35), `noindex`, shown only after the server confirms a project enquiry. Other forms still confirm inline. The live submit has not been tested; please send one test enquiry.
+- Status 2026-11-28: the 404 page now has search and section links and still returns HTTP 404 with `noindex` (PR #34); `/search` reads `?q=`.
 - Monthly numbers: service page visits, enquiries by source, signups, top search pages, enquiry-to-call rate.
 - Add campaign tags to shared links.
 
