@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { css } from "@/lib/css";
 import { createClient } from "@/lib/supabase/server";
+import { getViewCounts } from "@/lib/admin/view-counts";
 import ServiceListRow from "@/components/admin/ServiceListRow";
 
 export const metadata = { title: "Services — Admin", robots: { index: false, follow: false } };
@@ -11,6 +12,7 @@ export default async function AdminServicesPage() {
     ? await supabase.from("services").select("id,slug,title,status,featured,display_order,price_cents,currency,pricing_mode").order("display_order", { ascending: true })
     : { data: [] };
   const services = data ?? [];
+  const views = supabase ? await getViewCounts(supabase, services.map((s) => (s.slug ? `/services/${s.slug}` : ""))) : {};
 
   return (
     <div>
@@ -26,7 +28,7 @@ export default async function AdminServicesPage() {
             <tr><th>Title</th><th>Price</th><th>Status</th><th>Featured</th><th>Order</th><th></th></tr>
           </thead>
           <tbody>
-            {services.map((s) => <ServiceListRow key={s.id} item={s} />)}
+            {services.map((s) => <ServiceListRow key={s.id} item={s} views={views[`/services/${s.slug}`] ?? 0} />)}
           </tbody>
         </table>
       )}

@@ -15,12 +15,15 @@ export default function RowActions({
   title,
   previewHref,
   published,
+  views,
 }: {
   kind: ShareKind;
   id: string;
   title: string;
   previewHref: string | null;
   published: boolean;
+  /** Total page views of the public page, when known. */
+  views?: number;
 }) {
   const [open, setOpen] = useState(false);
   const [info, setInfo] = useState<ShareInfo | null>(null);
@@ -67,14 +70,16 @@ export default function RowActions({
           href={previewHref}
           target="_blank"
           rel="noopener"
-          className="btn btn-ghost btn-icon"
-          aria-label={`Preview ${title}`}
-          title={published ? "Open the live page in a new tab" : "Preview the draft in a new tab"}
+          className="btn btn-ghost"
+          style={css("display:inline-flex;align-items:center;gap:6px;padding:0 8px;min-width:36px;height:36px;text-decoration:none;")}
+          aria-label={`Preview ${title}${typeof views === "number" ? `, ${views.toLocaleString("en-GB")} ${views === 1 ? "view" : "views"}` : ""}`}
+          title={`${published ? "Open the live page in a new tab" : "Preview the draft in a new tab"}${typeof views === "number" ? `. ${views.toLocaleString("en-GB")} total ${views === 1 ? "view" : "views"}.` : ""}`}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12Z" />
             <circle cx="12" cy="12" r="3" />
           </svg>
+          {typeof views === "number" && <span style={css("font-size:13px;font-variant-numeric:tabular-nums;")}>{views.toLocaleString("en-GB")}</span>}
         </a>
       )}
       <button

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { css } from "@/lib/css";
 import { createClient } from "@/lib/supabase/server";
 import RowActions from "@/components/admin/RowActions";
+import { getViewCounts } from "@/lib/admin/view-counts";
 
 export const metadata = { title: "Books — Admin", robots: { index: false, follow: false } };
 
@@ -11,6 +12,7 @@ export default async function AdminBooksListPage() {
     ? await supabase.from("books").select("id,slug,title,kind,year,status,featured").order("created_at", { ascending: false })
     : { data: [] };
   const items = data ?? [];
+  const views = supabase ? await getViewCounts(supabase, items.map((r) => (r.slug ? `/books/${r.slug}` : ""))) : {};
 
   return (
     <div>
@@ -32,7 +34,7 @@ export default async function AdminBooksListPage() {
                 <td data-label="Year">{r.year}</td>
                 <td data-label="Status">{r.status}</td>
                 <td data-label="Featured">{r.featured ? "★" : ""}</td>
-                <td data-label="Actions"><RowActions kind="books" id={r.id} title={r.title} previewHref={r.slug ? `/books/${r.slug}` : null} published={r.status === "published"} /></td>
+                <td data-label="Actions"><RowActions kind="books" id={r.id} title={r.title} previewHref={r.slug ? `/books/${r.slug}` : null} published={r.status === "published"} views={views[`/books/${r.slug}`] ?? 0} /></td>
               </tr>
             ))}
           </tbody>
