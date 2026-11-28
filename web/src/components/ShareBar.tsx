@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { css } from "@/lib/css";
 import { FacebookIcon, XIcon, LinkedInIcon, WhatsAppIcon, InstagramIcon } from "@/components/icons/SocialIcons";
-import { track } from "@/lib/analytics/track-client";
+import { track as trackEvent } from "@/lib/analytics/track-client";
 import { buildShareText } from "@/lib/share-text";
 
 function popup(url: string) {
@@ -15,8 +15,10 @@ function popup(url: string) {
  * shown as text: WhatsApp, X, Threads and the copied link. Facebook and LinkedIn read the page itself
  * to build their preview card, so they get the full address.
  */
-export default function ShareBar({ url, title, shortUrl, excerpt }: { url: string; title: string; shortUrl?: string | null; excerpt?: string | null }) {
+export default function ShareBar({ url, title, shortUrl, excerpt, quiet = false }: { url: string; title: string; shortUrl?: string | null; excerpt?: string | null; quiet?: boolean }) {
   const link = shortUrl || url;
+  // Shares made by staff from the admin panel are not visitor shares, so they are not counted in analytics.
+  const track = (name: string, meta?: Record<string, unknown>) => { if (!quiet) trackEvent(name, meta); };
   // Title, a short excerpt and "Read more: <link>", trimmed to what each platform allows.
   const text = (platform: Parameters<typeof buildShareText>[0], withLink = true) => buildShareText(platform, { title, excerpt, link }, { withLink });
   const [copied, setCopied] = useState<string | null>(null);

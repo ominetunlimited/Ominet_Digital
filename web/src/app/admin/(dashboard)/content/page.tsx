@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { css } from "@/lib/css";
 import { createClient } from "@/lib/supabase/server";
+import RowActions from "@/components/admin/RowActions";
 
 export const metadata = { title: "Content — Admin", robots: { index: false, follow: false } };
 
 export default async function AdminContentListPage() {
   const supabase = await createClient();
   const { data } = supabase
-    ? await supabase.from("content").select("id,title,type,access,status,published_at").order("created_at", { ascending: false })
+    ? await supabase.from("content").select("id,slug,title,type,access,status,in_blog,published_at").order("created_at", { ascending: false })
     : { data: [] };
   const items = data ?? [];
 
@@ -22,7 +23,7 @@ export default async function AdminContentListPage() {
         <p style={css("font-size:14px;opacity:0.6;")}>Nothing here yet.</p>
       ) : (
         <table className="table table-responsive" style={css("width:100%;")}>
-          <thead><tr><th>Title</th><th>Type</th><th>Access</th><th>Status</th></tr></thead>
+          <thead><tr><th>Title</th><th>Type</th><th>Access</th><th>Status</th><th><span style={css("position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);")}>Actions</span></th></tr></thead>
           <tbody>
             {items.map((r) => (
               <tr key={r.id}>
@@ -30,6 +31,7 @@ export default async function AdminContentListPage() {
                 <td data-label="Type">{r.type}</td>
                 <td data-label="Access"><span className={r.access === "paid" ? "tag tag-accent" : "tag tag-outline"}>{r.access}</span></td>
                 <td data-label="Status">{r.status}</td>
+                <td data-label="Actions"><RowActions kind="content" id={r.id} title={r.title} previewHref={r.slug ? `${r.in_blog ? "/blog" : "/articles"}/${r.slug}` : null} published={r.status === "published"} /></td>
               </tr>
             ))}
           </tbody>
