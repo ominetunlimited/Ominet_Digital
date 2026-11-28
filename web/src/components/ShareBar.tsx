@@ -4,6 +4,7 @@ import { useState } from "react";
 import { css } from "@/lib/css";
 import { FacebookIcon, XIcon, LinkedInIcon, WhatsAppIcon, InstagramIcon } from "@/components/icons/SocialIcons";
 import { track } from "@/lib/analytics/track-client";
+import { buildShareText } from "@/lib/share-text";
 
 function popup(url: string) {
   window.open(url, "_blank", "noopener,noreferrer,width=600,height=500");
@@ -14,14 +15,16 @@ function popup(url: string) {
  * shown as text: WhatsApp, X, Threads and the copied link. Facebook and LinkedIn read the page itself
  * to build their preview card, so they get the full address.
  */
-export default function ShareBar({ url, title, shortUrl }: { url: string; title: string; shortUrl?: string | null }) {
+export default function ShareBar({ url, title, shortUrl, excerpt }: { url: string; title: string; shortUrl?: string | null; excerpt?: string | null }) {
   const link = shortUrl || url;
+  // Title, a short excerpt and "Read more: <link>", trimmed to what each platform allows.
+  const text = (platform: Parameters<typeof buildShareText>[0], withLink = true) => buildShareText(platform, { title, excerpt, link }, { withLink });
   const [copied, setCopied] = useState<string | null>(null);
   const canNativeShare = typeof navigator !== "undefined" && Boolean(navigator.share);
 
   async function nativeShare() {
     try {
-      await navigator.share({ title, url: link });
+      await navigator.share({ title, text: buildShareText("whatsapp", { title, excerpt, link }, { withLink: false }).replace(/\n\nRead more:$/, ""), url: link });
       track("share", { platform: "native" });
     } catch {
       // user cancelled — nothing to fall back to
@@ -30,9 +33,9 @@ export default function ShareBar({ url, title, shortUrl }: { url: string; title:
 
   // Instagram and TikTok have no web address that pre-fills a post with a link, so the honest option
   // is to copy the short link and say where to paste it.
-  async function copyLink(platform = "copy_link", note = "Link copied") {
+  async function copyLink(platform = "copy_link", note = "Link copied", content = link) {
     try {
-      await navigator.clipboard.writeText(link);
+      await navigator.clipboard.writeText(content);
       setCopied(note);
       track("share", { platform });
       setTimeout(() => setCopied(null), 4000);
@@ -56,7 +59,7 @@ export default function ShareBar({ url, title, shortUrl }: { url: string; title:
         type="button"
         className="btn btn-ghost btn-icon"
         aria-label="Share on X"
-        onClick={() => { track("share", { platform: "x" }); popup(`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(link)}`); }}
+        onClick={() => { track("share", { platform: "x" }); popup(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text("x", false))}&url=${encodeURIComponent(link)}`); }}
       >
         <XIcon size={14} />
       </button>
@@ -72,7 +75,7 @@ export default function ShareBar({ url, title, shortUrl }: { url: string; title:
         type="button"
         className="btn btn-ghost btn-icon"
         aria-label="Share on WhatsApp"
-        onClick={() => { track("share", { platform: "whatsapp" }); popup(`https://wa.me/?text=${encodeURIComponent(`${title} ${link}`)}`); }}
+        onClick={() => { track("share", { platform: "whatsapp" }); popup(`https://wa.me/?text=${encodeURIComponent(text("whatsapp"))}`); }}
       >
         <WhatsAppIcon size={14} />
       </button>
@@ -81,15 +84,15 @@ export default function ShareBar({ url, title, shortUrl }: { url: string; title:
         className="btn btn-ghost"
         style={css("font-size:12px;padding:4px 10px;min-height:32px;")}
         aria-label="Share on Threads"
-        onClick={() => { track("share", { platform: "threads" }); popup(`https://www.threads.net/intent/post?text=${encodeURIComponent(`${title} ${link}`)}`); }}
+        onClick={() => { track("share", { platform: "threads" }); popup(`https://www.threads.net/intent/post?text=${encodeURIComponent(text("threads"))}`); }}
       >
         Threads
       </button>
       <button
         type="button"
         className="btn btn-ghost btn-icon"
-        aria-label="Copy link for Instagram"
-        onClick={() => copyLink("instagram", "Link copied. Paste it in your Instagram story link sticker, bio or message.")}
+        aria-label="Copy caption for Instagram"
+        onClick={() => copyLink("instagram", "Caption and link copied. Paste it into your Instagram caption or message. For a story, use the link sticker.", text("caption"))}
       >
         <InstagramIcon size={14} />
       </button>
@@ -97,8 +100,8 @@ export default function ShareBar({ url, title, shortUrl }: { url: string; title:
         type="button"
         className="btn btn-ghost"
         style={css("font-size:12px;padding:4px 10px;min-height:32px;")}
-        aria-label="Copy link for TikTok"
-        onClick={() => copyLink("tiktok", "Link copied. Paste it in your TikTok bio or video description.")}
+        aria-label="Copy caption for TikTok"
+        onClick={() => copyLink("tiktok", "Caption and link copied. Paste it into your TikTok video description.", text("caption"))}
       >
         TikTok
       </button>
