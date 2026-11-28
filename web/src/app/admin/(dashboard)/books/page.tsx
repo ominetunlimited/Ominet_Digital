@@ -34,7 +34,7 @@ export default async function AdminBooksListPage() {
                 <td data-label="Year">{r.year}</td>
                 <td data-label="Status">{r.status}</td>
                 <td data-label="Featured">{r.featured ? "★" : ""}</td>
-                <td data-label="Actions"><RowActions kind="books" id={r.id} title={r.title} previewHref={r.slug ? `/books/${r.slug}` : null} published={r.status === "published"} views={views[`/books/${r.slug}`] ?? 0} /></td>
+                <td data-label="Actions"><RowActions kind="books" id={r.id} title={r.title} status={r.status} previewHref={r.slug ? `/books/${r.slug}` : null} editHref={`/admin/books/${r.id}`} views={views[`/books/${r.slug}`] ?? 0} /></td>
               </tr>
             ))}
           </tbody>

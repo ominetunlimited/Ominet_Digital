@@ -21,15 +21,9 @@ export type ServiceListItem = {
 };
 
 export default function ServiceListRow({ item, views }: { item: ServiceListItem; views?: number }) {
-  const [status, setStatus] = useState(item.status);
   const [featured, setFeatured] = useState(item.featured);
   const [order, setOrder] = useState(item.display_order);
   const { busy, error, run } = useAdminAction();
-
-  async function updateStatus(next: string) {
-    setStatus(next);
-    await run(() => setServiceFields(item.id, { status: next }));
-  }
 
   async function toggleFeatured() {
     const next = !featured;
@@ -45,13 +39,7 @@ export default function ServiceListRow({ item, views }: { item: ServiceListItem;
     <tr>
       <td data-label="Title"><Link href={`/admin/services/${item.id}`}>{item.title}</Link></td>
       <td data-label="Price">{item.pricing_mode === "quote" ? "Quote" : formatMoney(item.price_cents, item.currency)}</td>
-      <td data-label="Status">
-        <select className="input" style={css("font-size:12px;padding:2px 6px;")} value={status} onChange={(e) => updateStatus(e.target.value)} disabled={busy}>
-          <option value="draft">draft</option>
-          <option value="published">published</option>
-          <option value="archived">archived</option>
-        </select>
-      </td>
+      <td data-label="Status">{item.status}</td>
       <td data-label="Featured">
         <input type="checkbox" checked={featured} onChange={toggleFeatured} disabled={busy} />
       </td>
@@ -67,7 +55,7 @@ export default function ServiceListRow({ item, views }: { item: ServiceListItem;
         />
       </td>
       <td data-label="Actions">
-        <RowActions kind="services" id={item.id} title={item.title} previewHref={item.slug ? `/services/${item.slug}` : null} published={status === "published"} views={views} />
+        <RowActions kind="services" id={item.id} title={item.title} status={item.status} previewHref={item.slug ? `/services/${item.slug}` : null} editHref={`/admin/services/${item.id}`} views={views} />
         {error && <span style={css("font-size:11px;color:var(--om-coral);display:block;")}>{error}</span>}
       </td>
     </tr>

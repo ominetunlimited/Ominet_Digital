@@ -34,7 +34,7 @@ export default async function AdminContentListPage() {
                 <td data-label="Type">{r.type}</td>
                 <td data-label="Access"><span className={r.access === "paid" ? "tag tag-accent" : "tag tag-outline"}>{r.access}</span></td>
                 <td data-label="Status">{r.status}</td>
-                <td data-label="Actions"><RowActions kind="content" id={r.id} title={r.title} previewHref={pathOf(r)} published={r.status === "published"} views={views[pathOf(r) ?? ""] ?? 0} /></td>
+                <td data-label="Actions"><RowActions kind="content" id={r.id} title={r.title} status={r.status} previewHref={pathOf(r)} editHref={`/admin/content/${r.id}`} views={views[pathOf(r) ?? ""] ?? 0} /></td>
               </tr>
             ))}
           </tbody>
