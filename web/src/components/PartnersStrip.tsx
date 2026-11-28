@@ -26,7 +26,7 @@ export default function PartnersStrip({ apps }: { apps: PartnerApp[] }) {
           >
             {a.imageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={a.imageUrl} alt="" style={css("width:48px;height:48px;object-fit:contain;flex:none;")} />
+              <img src={a.imageUrl} alt="" loading="lazy" decoding="async" style={css("width:48px;height:48px;object-fit:contain;flex:none;")} />
             ) : (
               <div
                 style={css(

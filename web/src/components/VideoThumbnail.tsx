@@ -13,7 +13,7 @@ export default function VideoThumbnail({ url, thumbnailUrl }: { url: string; thu
     >
       {thumbnailUrl && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={thumbnailUrl} alt="" style={css("position:absolute;inset:0;width:100%;height:100%;object-fit:cover;")} />
+        <img src={thumbnailUrl} alt="" loading="lazy" decoding="async" style={css("position:absolute;inset:0;width:100%;height:100%;object-fit:cover;")} />
       )}
       <span
         style={css(

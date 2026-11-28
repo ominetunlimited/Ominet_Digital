@@ -66,7 +66,7 @@ export default async function StorePage() {
                     <div style={css("aspect-ratio:1;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-3);")}>
                       {p.imageUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={p.imageUrl} alt="" style={css("width:100%;height:100%;object-fit:cover;")} />
+                        <img src={p.imageUrl} alt="" loading="lazy" decoding="async" style={css("width:100%;height:100%;object-fit:cover;")} />
                       ) : (
                         <PlaceholderImage label="Product" />
                       )}
