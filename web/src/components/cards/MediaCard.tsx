@@ -12,7 +12,7 @@ export default function MediaCard({ href, title, caption, thumbUrl, label = "Vid
         {thumbUrl ? (
           // Remote video thumbnails come from arbitrary hosts, so a plain img avoids needing each host allow-listed.
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={thumbUrl} alt="" loading="lazy" className="md-img" />
+          <img src={thumbUrl} alt="" loading="lazy" decoding="async" className="md-img" />
         ) : <PlaceholderImage kind="media" title={title} />}
         <span className="md-scrim" aria-hidden="true" />
         {isVideo && (

@@ -78,7 +78,7 @@ export default async function OminetDigitalPage() {
                   <div style={css("aspect-ratio:4/3;border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-3);background:var(--color-neutral-100);")}>
                     {g.kind === "image" ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={g.url} alt={g.title ?? ""} style={css("width:100%;height:100%;object-fit:cover;display:block;")} />
+                      <img src={g.url} alt={g.title ?? ""} loading="lazy" decoding="async" style={css("width:100%;height:100%;object-fit:cover;display:block;")} />
                     ) : g.kind === "video" ? (
                       <video src={g.url} controls controlsList={g.allow_download ? undefined : "nodownload"} style={css("width:100%;height:100%;object-fit:cover;display:block;")} />
                     ) : (

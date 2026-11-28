@@ -87,6 +87,8 @@ const nextConfig: NextConfig = {
     ];
   },
   images: {
+    // Modern formats first: AVIF is usually 30-50% smaller than WebP, and each browser is sent the best one it supports.
+    formats: ["image/avif", "image/webp"],
     // Lets next/image resize, re-encode and lazy-load covers/photos that
     // live in Supabase Storage instead of serving the original upload as-is.
     remotePatterns: supabaseHostname
