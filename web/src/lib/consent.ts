@@ -9,8 +9,22 @@ export const CONSENT_OPEN_EVENT = "omd-consent-open";
 /** Fired on window for analytics events that may be forwarded to Google Analytics (detail: { name }). */
 export const GA_EVENT = "omd-ga-event";
 
-/** Only these first-party events are mirrored to Google Analytics, and only by name, with no extra data. */
-export const GA_FORWARDED_EVENTS = new Set(["download", "outbound_click", "share"]);
+/** Only these first-party events are mirrored to Google Analytics. */
+export const GA_FORWARDED_EVENTS = new Set([
+  "download",
+  "outbound_click",
+  "share",
+  "enquiry_submitted",
+  "booking_submitted",
+  "newsletter_signup",
+  "contact_click",
+]);
+
+/**
+ * The only extra details that may go with a forwarded event. They are fixed labels or public slugs
+ * (a link kind, a platform, a book or service slug), never anything a visitor typed.
+ */
+export const GA_SAFE_PARAMS = ["kind", "platform", "book_slug", "service_slug"] as const;
 
 const RAW_GA_ID = (process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "").trim();
 /** The GA4 measurement ID, or "" when none is set or the value is not shaped like one. Google Analytics stays off without it. */

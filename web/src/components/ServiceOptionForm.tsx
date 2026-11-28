@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { css } from "@/lib/css";
 import { useAsyncAction } from "@/lib/useAsyncAction";
+import { track } from "@/lib/analytics/track-client";
 import { submitOptionEnquiry } from "@/lib/option-enquiries";
 import { fieldsFor, FLAVOUR_COPY, SECURITY_NOTICE } from "@/lib/service-option-forms";
 import type { Flavour } from "@/lib/service-options";
@@ -48,7 +49,10 @@ export default function ServiceOptionForm({ serviceSlug, flavour, options, prese
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     const res = await run(() => submitOptionEnquiry({ serviceSlug, optionKeys: picked, ...c, values: vals, uploadIds: files.filter((f) => f.state === "done" && f.id).map((f) => f.id as string) }));
-    if (res?.ok) setDone({ reference: res.reference, ack: res.acknowledgementSent });
+    if (res?.ok) {
+      setDone({ reference: res.reference, ack: res.acknowledgementSent });
+      track("enquiry_submitted", { kind: "service_request" }); // only after the server confirmed it; nothing the visitor typed is sent
+    }
   }
 
   if (done) {

@@ -15,6 +15,11 @@ const KNOWN_EVENTS = new Set([
   "signup",
   "purchase",
   "payment_failed",
+  // Conversion events, sent only after the server confirmed the action. They carry no personal data.
+  "enquiry_submitted",
+  "booking_submitted",
+  "newsletter_signup",
+  "contact_click",
 ]);
 
 const MAX_METADATA_CHARS = 2000;

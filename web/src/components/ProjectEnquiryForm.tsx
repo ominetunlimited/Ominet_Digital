@@ -5,6 +5,7 @@ import { css } from "@/lib/css";
 import { submitEnquiry, type EnquiryInput } from "@/lib/enquiries";
 import { groupForService } from "@/lib/enquiry-fields";
 import { useAsyncAction } from "@/lib/useAsyncAction";
+import { track } from "@/lib/analytics/track-client";
 import { ACCEPT, ACCEPT_LABEL, MAX_FILES, MAX_FILE_BYTES, prettySize } from "@/lib/enquiry-upload";
 
 type Attached = { key: string; name: string; size: number; state: "uploading" | "done" | "error"; id?: string; error?: string };
@@ -58,7 +59,10 @@ export default function ProjectEnquiryForm({ services, preselect }: { services: 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     const res = await run(() => submitEnquiry({ ...v, serviceIds: picked, serviceDetails: details, uploadIds: files.filter((f) => f.state === "done" && f.id).map((f) => f.id as string) }));
-    if (res?.ok) setDone({ reference: res.reference, ack: res.acknowledgementSent });
+    if (res?.ok) {
+      setDone({ reference: res.reference, ack: res.acknowledgementSent });
+      track("enquiry_submitted", { kind: "project" }); // only after the server confirmed it; nothing the visitor typed is sent
+    }
   }
 
   if (done) {

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { css } from "@/lib/css";
 import { subscribeToNewsletter } from "@/lib/newsletter";
 import { useAsyncAction } from "@/lib/useAsyncAction";
+import { track } from "@/lib/analytics/track-client";
 
 export default function NewsletterForm({ onSuccess }: { onSuccess?: () => void } = {}) {
   const [email, setEmail] = useState("");
@@ -15,7 +16,7 @@ export default function NewsletterForm({ onSuccess }: { onSuccess?: () => void }
     const result = await run(() => subscribeToNewsletter(email));
     if (!result) return;
     setMessage(result.ok ? result.message : result.error);
-    if (result.ok) { setEmail(""); onSuccess?.(); }
+    if (result.ok) { setEmail(""); track("newsletter_signup"); onSuccess?.(); } // the email address is never sent
   }
 
   return (

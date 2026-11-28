@@ -4,6 +4,7 @@ import { useState } from "react";
 import { css } from "@/lib/css";
 import { submitBooking } from "@/lib/bookings";
 import { useAsyncAction } from "@/lib/useAsyncAction";
+import { track } from "@/lib/analytics/track-client";
 
 export default function BookingForm({ serviceId, serviceTitle, ctaLabel, supportEmail }: { serviceId: string; serviceTitle: string; ctaLabel: string; supportEmail: string }) {
   const SUPPORT_EMAIL = supportEmail;
@@ -18,7 +19,10 @@ export default function BookingForm({ serviceId, serviceTitle, ctaLabel, support
 
   async function submit() {
     const result = await run(() => submitBooking({ serviceId, ...values }));
-    if (result?.ok) setReference(result.reference);
+    if (result?.ok) {
+      setReference(result.reference);
+      track("booking_submitted"); // only after the server confirmed it; nothing the visitor typed is sent
+    }
   }
 
   if (reference) {
