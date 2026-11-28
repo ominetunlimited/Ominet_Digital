@@ -20,7 +20,7 @@ export type ServiceListItem = {
   pricing_mode: string;
 };
 
-export default function ServiceListRow({ item }: { item: ServiceListItem }) {
+export default function ServiceListRow({ item, views }: { item: ServiceListItem; views?: number }) {
   const [status, setStatus] = useState(item.status);
   const [featured, setFeatured] = useState(item.featured);
   const [order, setOrder] = useState(item.display_order);
@@ -67,7 +67,7 @@ export default function ServiceListRow({ item }: { item: ServiceListItem }) {
         />
       </td>
       <td data-label="Actions">
-        <RowActions kind="services" id={item.id} title={item.title} previewHref={item.slug ? `/services/${item.slug}` : null} published={status === "published"} />
+        <RowActions kind="services" id={item.id} title={item.title} previewHref={item.slug ? `/services/${item.slug}` : null} published={status === "published"} views={views} />
         {error && <span style={css("font-size:11px;color:var(--om-coral);display:block;")}>{error}</span>}
       </td>
     </tr>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { css } from "@/lib/css";
 import { createClient } from "@/lib/supabase/server";
 import RowActions from "@/components/admin/RowActions";
+import { getViewCounts } from "@/lib/admin/view-counts";
 
 export const metadata = { title: "Content — Admin", robots: { index: false, follow: false } };
 
@@ -11,6 +12,8 @@ export default async function AdminContentListPage() {
     ? await supabase.from("content").select("id,slug,title,type,access,status,in_blog,published_at").order("created_at", { ascending: false })
     : { data: [] };
   const items = data ?? [];
+  const pathOf = (r: (typeof items)[number]) => (r.slug ? `${r.in_blog ? "/blog" : "/articles"}/${r.slug}` : null);
+  const views = supabase ? await getViewCounts(supabase, items.map((r) => pathOf(r) ?? "")) : {};
 
   return (
     <div>
@@ -31,7 +34,7 @@ export default async function AdminContentListPage() {
                 <td data-label="Type">{r.type}</td>
                 <td data-label="Access"><span className={r.access === "paid" ? "tag tag-accent" : "tag tag-outline"}>{r.access}</span></td>
                 <td data-label="Status">{r.status}</td>
-                <td data-label="Actions"><RowActions kind="content" id={r.id} title={r.title} previewHref={r.slug ? `${r.in_blog ? "/blog" : "/articles"}/${r.slug}` : null} published={r.status === "published"} /></td>
+                <td data-label="Actions"><RowActions kind="content" id={r.id} title={r.title} previewHref={pathOf(r)} published={r.status === "published"} views={views[pathOf(r) ?? ""] ?? 0} /></td>
               </tr>
             ))}
           </tbody>
