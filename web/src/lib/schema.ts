@@ -10,7 +10,6 @@
 import { SITE_URL } from "./seo";
 import { getSiteSettings } from "./site-settings";
 import { getResearchProfiles } from "./research";
-import { SOCIAL_ACCOUNTS } from "./social";
 import { OFFICIAL_EMAIL, OFFICIAL_WHATSAPP_NUMBER } from "./links";
 
 export const PERSON_ID = `${SITE_URL}/#person`;
@@ -38,13 +37,13 @@ export async function getPersonSchema(name = "Omini Nfawa", jobTitle = DEFAULT_J
 const DEFAULT_LOGO_URL = `${SITE_URL}/images/ominet-digital-logo.png`;
 
 /**
- * The company's own accounts. LinkedIn is left out on purpose: the saved address is a personal /in/ profile,
- * which belongs to the Person entity, not the company.
+ * The Organization entity for the site itself. sameAs lists the company accounts saved in Site settings.
+ * LinkedIn is left out on purpose: the saved address is a personal /in/ profile, which belongs to the
+ * Person entity, not the company.
  */
-const ORG_SAME_AS = SOCIAL_ACCOUNTS.filter((a) => a.platform !== "linkedin").map((a) => a.url);
-
-/** The Organization entity for the site itself. */
-export function getOrganizationSchema(name: string, logoUrl?: string) {
+export async function getOrganizationSchema(name: string, logoUrl?: string) {
+  const { social } = await getSiteSettings(); // cached per request, so no extra query
+  const sameAs = social.filter((s) => s.enabled && s.url && s.platform !== "linkedin").map((s) => s.url);
   return {
     "@type": "Organization",
     "@id": ORG_ID,
@@ -52,7 +51,7 @@ export function getOrganizationSchema(name: string, logoUrl?: string) {
     url: SITE_URL,
     logo: logoUrl || DEFAULT_LOGO_URL,
     founder: { "@id": PERSON_ID },
-    sameAs: ORG_SAME_AS,
+    ...(sameAs.length > 0 ? { sameAs } : {}),
     contactPoint: [
       {
         "@type": "ContactPoint",

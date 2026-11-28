@@ -53,7 +53,7 @@ export default async function Home() {
   const [blogReads, articleReads] = await Promise.all([getReadCounts("blog", latestPosts.map((p) => p.slug)), getReadCounts("articles", featuredArticles.map((a) => a.slug))]);
   const jsonLd = jsonLdGraph([
     { "@type": "WebSite", "@id": WEBSITE_ID, name: SITE_NAME, url: SITE_URL, publisher: { "@id": ORG_ID } },
-    getOrganizationSchema(SITE_NAME),
+    await getOrganizationSchema(SITE_NAME),
     personSchema,
   ]);
 

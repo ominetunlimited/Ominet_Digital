@@ -78,7 +78,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     {
       "@type": "BlogPosting", "@id": `${url}#article`, headline: post.title, description: post.seoDescription || post.excerpt || post.dek || undefined,
       image: [square.url, wide.url], datePublished: post.publishedAt ?? undefined, dateModified: post.updatedAt ?? post.publishedAt ?? undefined,
-      author, publisher: getOrganizationSchema(identity.siteName), mainEntityOfPage: url,
+      author, publisher: await getOrganizationSchema(identity.siteName), mainEntityOfPage: url,
       articleSection: post.category?.name, about: post.categories.filter((c) => !c.primary).map((c) => ({ "@type": "Thing", name: c.name })), keywords: post.tags.length ? post.tags.map((t) => t.name).join(", ") : undefined, inLanguage: "en",
     },
     breadcrumbSchema([
