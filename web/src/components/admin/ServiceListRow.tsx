@@ -6,9 +6,11 @@ import { css } from "@/lib/css";
 import { setServiceFields } from "@/lib/admin/service-actions";
 import { formatMoney } from "@/lib/money";
 import { useAdminAction } from "@/lib/admin/useAdminAction";
+import RowActions from "@/components/admin/RowActions";
 
 export type ServiceListItem = {
   id: string;
+  slug?: string | null;
   title: string;
   status: string;
   featured: boolean;
@@ -64,7 +66,10 @@ export default function ServiceListRow({ item }: { item: ServiceListItem }) {
           disabled={busy}
         />
       </td>
-      <td data-label="">{error && <span style={css("font-size:11px;color:var(--om-coral);")}>{error}</span>}</td>
+      <td data-label="Actions">
+        <RowActions kind="services" id={item.id} title={item.title} previewHref={item.slug ? `/services/${item.slug}` : null} published={status === "published"} />
+        {error && <span style={css("font-size:11px;color:var(--om-coral);display:block;")}>{error}</span>}
+      </td>
     </tr>
   );
 }

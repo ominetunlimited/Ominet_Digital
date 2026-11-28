@@ -8,7 +8,7 @@ export const metadata = { title: "Services — Admin", robots: { index: false, f
 export default async function AdminServicesPage() {
   const supabase = await createClient();
   const { data } = supabase
-    ? await supabase.from("services").select("id,title,status,featured,display_order,price_cents,currency,pricing_mode").order("display_order", { ascending: true })
+    ? await supabase.from("services").select("id,slug,title,status,featured,display_order,price_cents,currency,pricing_mode").order("display_order", { ascending: true })
     : { data: [] };
   const services = data ?? [];
 

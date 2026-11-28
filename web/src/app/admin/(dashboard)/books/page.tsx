@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { css } from "@/lib/css";
 import { createClient } from "@/lib/supabase/server";
+import RowActions from "@/components/admin/RowActions";
 
 export const metadata = { title: "Books — Admin", robots: { index: false, follow: false } };
 
 export default async function AdminBooksListPage() {
   const supabase = await createClient();
   const { data } = supabase
-    ? await supabase.from("books").select("id,title,kind,year,status,featured").order("created_at", { ascending: false })
+    ? await supabase.from("books").select("id,slug,title,kind,year,status,featured").order("created_at", { ascending: false })
     : { data: [] };
   const items = data ?? [];
 
@@ -22,7 +23,7 @@ export default async function AdminBooksListPage() {
         <p style={css("font-size:14px;opacity:0.6;")}>No books yet.</p>
       ) : (
         <table className="table table-responsive" style={css("width:100%;")}>
-          <thead><tr><th>Title</th><th>Kind</th><th>Year</th><th>Status</th><th>Featured</th></tr></thead>
+          <thead><tr><th>Title</th><th>Kind</th><th>Year</th><th>Status</th><th>Featured</th><th><span style={css("position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);")}>Actions</span></th></tr></thead>
           <tbody>
             {items.map((r) => (
               <tr key={r.id}>
@@ -31,6 +32,7 @@ export default async function AdminBooksListPage() {
                 <td data-label="Year">{r.year}</td>
                 <td data-label="Status">{r.status}</td>
                 <td data-label="Featured">{r.featured ? "★" : ""}</td>
+                <td data-label="Actions"><RowActions kind="books" id={r.id} title={r.title} previewHref={r.slug ? `/books/${r.slug}` : null} published={r.status === "published"} /></td>
               </tr>
             ))}
           </tbody>
