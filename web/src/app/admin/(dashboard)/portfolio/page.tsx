@@ -2,12 +2,13 @@ import Link from "next/link";
 import { css } from "@/lib/css";
 import { createClient } from "@/lib/supabase/server";
 import { LABELS } from "@/lib/portfolio-labels";
+import RowActions from "@/components/admin/RowActions";
 
 export const metadata = { title: "Work — Admin", robots: { index: false, follow: false } };
 
 export default async function AdminPortfolioPage() {
   const supabase = await createClient();
-  const { data } = supabase ? await supabase.from("portfolio_items").select("id,title,label,status,featured,display_order,updated_at").order("display_order").order("updated_at", { ascending: false }) : { data: [] };
+  const { data } = supabase ? await supabase.from("portfolio_items").select("id,slug,title,label,status,featured,display_order,updated_at").order("display_order").order("updated_at", { ascending: false }) : { data: [] };
   const items = data ?? [];
   return (
     <div>
@@ -20,12 +21,12 @@ export default async function AdminPortfolioPage() {
         <p style={css("font-size:14px;opacity:0.6;")}>No projects yet.</p>
       ) : (
         <table className="table table-responsive" style={css("width:100%;")}>
-          <thead><tr><th>Title</th><th>Kind</th><th>Status</th><th>Featured</th><th></th></tr></thead>
+          <thead><tr><th>Title</th><th>Kind</th><th>Status</th><th>Featured</th><th><span style={css("position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);")}>Actions</span></th></tr></thead>
           <tbody>
             {items.map((p) => (
               <tr key={p.id}>
                 <td>{p.title}</td><td>{LABELS[p.label]?.name ?? p.label}</td><td>{p.status}</td><td>{p.featured ? "Yes" : ""}</td>
-                <td><Link href={`/admin/portfolio/${p.id}`}>Edit</Link></td>
+                <td><RowActions kind="portfolio" id={p.id} title={p.title} status={p.status} previewHref={p.slug ? `/work/${p.slug}` : null} editHref={`/admin/portfolio/${p.id}`} /></td>
               </tr>
             ))}
           </tbody>
