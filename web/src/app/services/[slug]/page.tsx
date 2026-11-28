@@ -132,7 +132,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           </p>}
 
           <div style={css("margin-top:var(--space-6);")}>
-            <ShareBar url={`${SITE_URL}/services/${service.slug}`} shortUrl={await getShortUrl(`/services/${service.slug}`)} title={service.title} />
+            <ShareBar url={`${SITE_URL}/services/${service.slug}`} shortUrl={await getShortUrl(`/services/${service.slug}`)} title={service.title} excerpt={service.shortDescription} />
           </div>
         </div>
       </section>

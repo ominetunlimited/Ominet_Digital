@@ -138,7 +138,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             {post.authorBio && <p style={css("font-size:14px;line-height:1.6;opacity:0.78;margin:var(--space-1) 0 0;")}>{post.authorBio}</p>}
           </div>
         </div>
-        <ShareBar url={url} shortUrl={await getShortUrl(`/blog/${post.slug}`)} title={post.title} />
+        <ShareBar url={url} shortUrl={await getShortUrl(`/blog/${post.slug}`)} title={post.title} excerpt={post.excerpt || post.dek} />
 
         <LikeButton target={{ contentId: post.id }} initialCount={engagement.likeCount} initialLiked={engagement.likedByMe} currentPath={currentPath} />
         <div className="hr" style={css("margin:var(--space-6) 0;")} />

@@ -193,7 +193,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
 
         {isResearch && <ResearchProfileSection placement="research" title="THE AUTHOR'S RESEARCH PROFILES" padded={false} />}
 
-        <ShareBar url={`${SITE_URL}/articles/${article.slug}`} shortUrl={await getShortUrl(`/articles/${article.slug}`)} title={article.title} />
+        <ShareBar url={`${SITE_URL}/articles/${article.slug}`} shortUrl={await getShortUrl(`/articles/${article.slug}`)} title={article.title} excerpt={article.excerpt} />
 
         {(featuredBook || moreFromOmini) && (
           <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--space-4);margin-bottom:var(--space-8);")}>

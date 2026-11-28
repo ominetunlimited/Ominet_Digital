@@ -147,7 +147,7 @@ export default async function BookDetailPage({ params }: { params: Promise<{ slu
 
           <AdSlot slotKey="book_page" />
 
-          <ShareBar url={`${SITE_URL}/books/${book.slug}`} shortUrl={await getShortUrl(`/books/${book.slug}`)} title={book.title} />
+          <ShareBar url={`${SITE_URL}/books/${book.slug}`} shortUrl={await getShortUrl(`/books/${book.slug}`)} title={book.title} excerpt={book.excerpt} />
         </div>
       </section>
 
