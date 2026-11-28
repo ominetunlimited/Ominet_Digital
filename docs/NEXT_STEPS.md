@@ -124,6 +124,12 @@ From your strategy brief, the parts that fit the current build:
 | Em dash in a homepage line | Not found in the homepage file. Page title template does use one. |
 | Mailgun workflows and consent split | Largely built; segmentation and preferences are future work. Step 11. |
 
+## Update, 28 November 2026
+
+Built and merged (PRs #34 to #46): custom 404 and search; `/thank-you` page; own-domain short links (`/s/<code>`); share bar with title, excerpt and "Read more" for WhatsApp, X, Threads, Facebook, LinkedIn, plus copy-caption for Instagram and TikTok; 15-icon `SocialLogo` set; admin rows with preview eye, view counts, Share, Edit, Publish, Unpublish, Archive and Delete; logo loading screen; AVIF images and lazy loading; lazy AdSense unit and a `blog_inline` ad position (all positions still off).
+
+Open for the owner: ad go-live steps in `docs/AD_READINESS.md`; decide whether to self-host the Archivo font (declared in CSS but never loaded); check the icon pack licence; test real shares on a phone; test the signed-in admin actions.
+
 ## Part D. Suggested order of work
 
 1. You: steps 1, 4 and 5 (credentials, live checks, two-factor). Parallel to everything else.
