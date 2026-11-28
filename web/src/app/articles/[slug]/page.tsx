@@ -12,6 +12,7 @@ import PlaceholderImage from "@/components/PlaceholderImage";
 import VideoThumbnail from "@/components/VideoThumbnail";
 import PaywallGate from "@/components/PaywallGate";
 import ShareBar from "@/components/ShareBar";
+import { getShortUrl } from "@/lib/short-links";
 import AdSlot from "@/components/AdSlot";
 import NewsletterForm from "@/components/NewsletterForm";
 import Link from "next/link";
@@ -192,7 +193,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
 
         {isResearch && <ResearchProfileSection placement="research" title="THE AUTHOR'S RESEARCH PROFILES" padded={false} />}
 
-        <ShareBar url={`${SITE_URL}/articles/${article.slug}`} title={article.title} />
+        <ShareBar url={`${SITE_URL}/articles/${article.slug}`} shortUrl={await getShortUrl(`/articles/${article.slug}`)} title={article.title} />
 
         {(featuredBook || moreFromOmini) && (
           <div style={css("display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--space-4);margin-bottom:var(--space-8);")}>

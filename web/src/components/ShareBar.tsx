@@ -2,32 +2,40 @@
 
 import { useState } from "react";
 import { css } from "@/lib/css";
-import { FacebookIcon, XIcon, LinkedInIcon } from "@/components/icons/SocialIcons";
+import { FacebookIcon, XIcon, LinkedInIcon, WhatsAppIcon, InstagramIcon } from "@/components/icons/SocialIcons";
 import { track } from "@/lib/analytics/track-client";
 
 function popup(url: string) {
   window.open(url, "_blank", "noopener,noreferrer,width=600,height=500");
 }
 
-export default function ShareBar({ url, title }: { url: string; title: string }) {
-  const [copied, setCopied] = useState(false);
+/**
+ * `url` is the full page address. `shortUrl` (our own /s/<code> address) is used wherever the link is
+ * shown as text: WhatsApp, X, Threads and the copied link. Facebook and LinkedIn read the page itself
+ * to build their preview card, so they get the full address.
+ */
+export default function ShareBar({ url, title, shortUrl }: { url: string; title: string; shortUrl?: string | null }) {
+  const link = shortUrl || url;
+  const [copied, setCopied] = useState<string | null>(null);
   const canNativeShare = typeof navigator !== "undefined" && Boolean(navigator.share);
 
   async function nativeShare() {
     try {
-      await navigator.share({ title, url });
+      await navigator.share({ title, url: link });
       track("share", { platform: "native" });
     } catch {
       // user cancelled — nothing to fall back to
     }
   }
 
-  async function copyLink() {
+  // Instagram and TikTok have no web address that pre-fills a post with a link, so the honest option
+  // is to copy the short link and say where to paste it.
+  async function copyLink(platform = "copy_link", note = "Link copied") {
     try {
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-      track("share", { platform: "copy_link" });
-      setTimeout(() => setCopied(false), 2000);
+      await navigator.clipboard.writeText(link);
+      setCopied(note);
+      track("share", { platform });
+      setTimeout(() => setCopied(null), 4000);
     } catch {
       // clipboard unavailable — nothing to fall back to
     }
@@ -48,7 +56,7 @@ export default function ShareBar({ url, title }: { url: string; title: string })
         type="button"
         className="btn btn-ghost btn-icon"
         aria-label="Share on X"
-        onClick={() => { track("share", { platform: "x" }); popup(`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`); }}
+        onClick={() => { track("share", { platform: "x" }); popup(`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(link)}`); }}
       >
         <XIcon size={14} />
       </button>
@@ -60,6 +68,40 @@ export default function ShareBar({ url, title }: { url: string; title: string })
       >
         <LinkedInIcon size={14} />
       </button>
+      <button
+        type="button"
+        className="btn btn-ghost btn-icon"
+        aria-label="Share on WhatsApp"
+        onClick={() => { track("share", { platform: "whatsapp" }); popup(`https://wa.me/?text=${encodeURIComponent(`${title} ${link}`)}`); }}
+      >
+        <WhatsAppIcon size={14} />
+      </button>
+      <button
+        type="button"
+        className="btn btn-ghost"
+        style={css("font-size:12px;padding:4px 10px;min-height:32px;")}
+        aria-label="Share on Threads"
+        onClick={() => { track("share", { platform: "threads" }); popup(`https://www.threads.net/intent/post?text=${encodeURIComponent(`${title} ${link}`)}`); }}
+      >
+        Threads
+      </button>
+      <button
+        type="button"
+        className="btn btn-ghost btn-icon"
+        aria-label="Copy link for Instagram"
+        onClick={() => copyLink("instagram", "Link copied. Paste it in your Instagram story link sticker, bio or message.")}
+      >
+        <InstagramIcon size={14} />
+      </button>
+      <button
+        type="button"
+        className="btn btn-ghost"
+        style={css("font-size:12px;padding:4px 10px;min-height:32px;")}
+        aria-label="Copy link for TikTok"
+        onClick={() => copyLink("tiktok", "Link copied. Paste it in your TikTok bio or video description.")}
+      >
+        TikTok
+      </button>
       {canNativeShare && (
         <button type="button" className="btn btn-ghost btn-icon" aria-label="More sharing options" onClick={nativeShare}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -68,10 +110,10 @@ export default function ShareBar({ url, title }: { url: string; title: string })
           </svg>
         </button>
       )}
-      <button type="button" className="btn btn-ghost btn-icon" aria-label="Copy link" onClick={copyLink}>
+      <button type="button" className="btn btn-ghost btn-icon" aria-label="Copy link" onClick={() => copyLink()}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
       </button>
-      {copied && <span style={css("font-size:12px;opacity:0.6;")}>Copied!</span>}
+      {copied && <span role="status" style={css("font-size:12px;opacity:0.7;")}>{copied}</span>}
     </div>
   );
 }

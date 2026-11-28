@@ -7,6 +7,7 @@ import PreviewBanner from "@/components/PreviewBanner";
 import Footer from "@/components/Footer";
 import PlaceholderImage from "@/components/PlaceholderImage";
 import ShareBar from "@/components/ShareBar";
+import { getShortUrl } from "@/lib/short-links";
 import TrackedLink from "@/components/TrackedLink";
 import BookingForm from "@/components/BookingForm";
 import RelatedSection from "@/components/RelatedSection";
@@ -131,7 +132,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           </p>}
 
           <div style={css("margin-top:var(--space-6);")}>
-            <ShareBar url={`${SITE_URL}/services/${service.slug}`} title={service.title} />
+            <ShareBar url={`${SITE_URL}/services/${service.slug}`} shortUrl={await getShortUrl(`/services/${service.slug}`)} title={service.title} />
           </div>
         </div>
       </section>
