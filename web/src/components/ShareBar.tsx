@@ -2,9 +2,18 @@
 
 import { useState } from "react";
 import { css } from "@/lib/css";
-import { FacebookIcon, XIcon, LinkedInIcon, WhatsAppIcon, InstagramIcon } from "@/components/icons/SocialIcons";
+import SocialLogo, { type SocialLogoName } from "@/components/SocialLogo";
 import { track as trackEvent } from "@/lib/analytics/track-client";
 import { buildShareText } from "@/lib/share-text";
+
+/** One coloured platform icon as a button. The icon is decorative; the button's own label names the action. */
+function IconButton({ icon, label, onClick }: { icon: SocialLogoName; label: string; onClick: () => void }) {
+  return (
+    <button type="button" className="share-icon" aria-label={label} title={label} onClick={onClick}>
+      <SocialLogo name={icon} size={36} />
+    </button>
+  );
+}
 
 function popup(url: string) {
   window.open(url, "_blank", "noopener,noreferrer,width=600,height=500");
@@ -49,64 +58,13 @@ export default function ShareBar({ url, title, shortUrl, excerpt, quiet = false 
   return (
     <div style={css("display:flex;gap:var(--space-2);align-items:center;flex-wrap:wrap;padding:var(--space-4) 0;border-top:2px solid var(--color-divider);border-bottom:2px solid var(--color-divider);margin-bottom:var(--space-6);")}>
       <span style={css("font-size:12px;opacity:0.6;margin-right:var(--space-2);")}>SHARE</span>
-      <button
-        type="button"
-        className="btn btn-ghost btn-icon"
-        aria-label="Share on Facebook"
-        onClick={() => { track("share", { platform: "facebook" }); popup(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`); }}
-      >
-        <FacebookIcon size={14} />
-      </button>
-      <button
-        type="button"
-        className="btn btn-ghost btn-icon"
-        aria-label="Share on X"
-        onClick={() => { track("share", { platform: "x" }); popup(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text("x", false))}&url=${encodeURIComponent(link)}`); }}
-      >
-        <XIcon size={14} />
-      </button>
-      <button
-        type="button"
-        className="btn btn-ghost btn-icon"
-        aria-label="Share on LinkedIn"
-        onClick={() => { track("share", { platform: "linkedin" }); popup(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`); }}
-      >
-        <LinkedInIcon size={14} />
-      </button>
-      <button
-        type="button"
-        className="btn btn-ghost btn-icon"
-        aria-label="Share on WhatsApp"
-        onClick={() => { track("share", { platform: "whatsapp" }); popup(`https://wa.me/?text=${encodeURIComponent(text("whatsapp"))}`); }}
-      >
-        <WhatsAppIcon size={14} />
-      </button>
-      <button
-        type="button"
-        className="btn btn-ghost"
-        style={css("font-size:12px;padding:4px 10px;min-height:32px;")}
-        aria-label="Share on Threads"
-        onClick={() => { track("share", { platform: "threads" }); popup(`https://www.threads.net/intent/post?text=${encodeURIComponent(text("threads"))}`); }}
-      >
-        Threads
-      </button>
-      <button
-        type="button"
-        className="btn btn-ghost btn-icon"
-        aria-label="Copy caption for Instagram"
-        onClick={() => copyLink("instagram", "Caption and link copied. Paste it into your Instagram caption or message. For a story, use the link sticker.", text("caption"))}
-      >
-        <InstagramIcon size={14} />
-      </button>
-      <button
-        type="button"
-        className="btn btn-ghost"
-        style={css("font-size:12px;padding:4px 10px;min-height:32px;")}
-        aria-label="Copy caption for TikTok"
-        onClick={() => copyLink("tiktok", "Caption and link copied. Paste it into your TikTok video description.", text("caption"))}
-      >
-        TikTok
-      </button>
+      <IconButton icon="whatsapp" label="Share on WhatsApp" onClick={() => { track("share", { platform: "whatsapp" }); popup(`https://wa.me/?text=${encodeURIComponent(text("whatsapp"))}`); }} />
+      <IconButton icon="facebook" label="Share on Facebook" onClick={() => { track("share", { platform: "facebook" }); popup(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`); }} />
+      <IconButton icon="x" label="Share on X" onClick={() => { track("share", { platform: "x" }); popup(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text("x", false))}&url=${encodeURIComponent(link)}`); }} />
+      <IconButton icon="threads" label="Share on Threads" onClick={() => { track("share", { platform: "threads" }); popup(`https://www.threads.net/intent/post?text=${encodeURIComponent(text("threads"))}`); }} />
+      <IconButton icon="instagram" label="Copy caption for Instagram" onClick={() => copyLink("instagram", "Caption and link copied. Paste it into your Instagram caption or message. For a story, use the link sticker.", text("caption"))} />
+      <IconButton icon="tiktok" label="Copy caption for TikTok" onClick={() => copyLink("tiktok", "Caption and link copied. Paste it into your TikTok video description.", text("caption"))} />
+      <IconButton icon="linkedin" label="Share on LinkedIn" onClick={() => { track("share", { platform: "linkedin" }); popup(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`); }} />
       {canNativeShare && (
         <button type="button" className="btn btn-ghost btn-icon" aria-label="More sharing options" onClick={nativeShare}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

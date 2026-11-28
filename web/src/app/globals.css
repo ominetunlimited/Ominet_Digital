@@ -688,3 +688,9 @@ html, body { background: var(--color-bg); }
 .reads-badge { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
 .reads-badge svg { flex: none; opacity: .85; }
 .ar-foot .reads-badge { margin-left: 10px; }
+
+/* Coloured platform buttons in the share bar. */
+.share-icon { display: inline-flex; width: 36px; height: 36px; padding: 0; border: 0; background: none; border-radius: 9px; cursor: pointer; transition: transform 0.12s ease; }
+.share-icon:hover { transform: translateY(-1px) scale(1.06); }
+.share-icon:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .share-icon { transition: none; } .share-icon:hover { transform: none; } }
