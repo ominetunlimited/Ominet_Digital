@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import { css } from "@/lib/css";
@@ -9,8 +10,18 @@ import type { Article, Book } from "@/lib/content";
 const FILTERS = ["All", "Writing", "Books"] as const;
 type Filter = (typeof FILTERS)[number];
 
+// useSearchParams needs a Suspense boundary so the page can still be prerendered.
 export default function SearchPage() {
-  const [query, setQuery] = useState("");
+  return (
+    <Suspense fallback={null}>
+      <SearchPageInner />
+    </Suspense>
+  );
+}
+
+function SearchPageInner() {
+  // A link such as /search?q=books starts with that search already filled in and run.
+  const [query, setQuery] = useState(useSearchParams().get("q")?.slice(0, 200) ?? "");
   const [results, setResults] = useState<{ articles: Article[]; books: Book[] } | null>(null);
   // The query `results` actually answers — lets loading be derived instead
   // of tracked as its own state set synchronously inside the effect.
