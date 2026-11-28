@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Archivo } from "next/font/google";
 import Analytics from "@/components/Analytics";
 import ConsentManager from "@/components/ConsentManager";
 import { SiteSettingsProvider } from "@/components/SiteSettingsProvider";
@@ -7,6 +8,9 @@ import { countPublishedPortfolio } from "@/lib/portfolio";
 import { getSiteSettings } from "@/lib/site-settings";
 import { SITE_URL } from "@/lib/seo";
 import "./globals.css";
+
+// Self-hosted by Next at build time: no request to Google when a visitor loads the site, and the fallback is size-matched to avoid layout shift.
+const archivo = Archivo({ subsets: ["latin"], display: "swap", variable: "--font-archivo" });
 
 const ADSENSE_CLIENT_ID = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
 
@@ -45,7 +49,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const { social, identity, contact, pages, ecosystem } = await getSiteSettings();
   const workCount = await countPublishedPortfolio();
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={archivo.variable} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
         {ADSENSE_CLIENT_ID && (
