@@ -9,6 +9,7 @@ import Footer from "@/components/Footer";
 import PreviewBanner from "@/components/PreviewBanner";
 import RichText from "@/components/RichText";
 import ShareBar from "@/components/ShareBar";
+import { getShortUrl } from "@/lib/short-links";
 import NewsletterForm from "@/components/NewsletterForm";
 import BlogCard from "@/components/cards/BlogCard";
 import PlaceholderImage from "@/components/PlaceholderImage";
@@ -137,7 +138,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             {post.authorBio && <p style={css("font-size:14px;line-height:1.6;opacity:0.78;margin:var(--space-1) 0 0;")}>{post.authorBio}</p>}
           </div>
         </div>
-        <ShareBar url={url} title={post.title} />
+        <ShareBar url={url} shortUrl={await getShortUrl(`/blog/${post.slug}`)} title={post.title} />
 
         <LikeButton target={{ contentId: post.id }} initialCount={engagement.likeCount} initialLiked={engagement.likedByMe} currentPath={currentPath} />
         <div className="hr" style={css("margin:var(--space-6) 0;")} />

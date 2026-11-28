@@ -10,6 +10,8 @@
 import { SITE_URL } from "./seo";
 import { getSiteSettings } from "./site-settings";
 import { getResearchProfiles } from "./research";
+import { SOCIAL_ACCOUNTS } from "./social";
+import { OFFICIAL_EMAIL, OFFICIAL_WHATSAPP_NUMBER } from "./links";
 
 export const PERSON_ID = `${SITE_URL}/#person`;
 export const ORG_ID = `${SITE_URL}/#organization`;
@@ -35,6 +37,12 @@ export async function getPersonSchema(name = "Omini Nfawa", jobTitle = DEFAULT_J
 /** The company's own logo (480 x 465 PNG), used when no logo is set in Site settings. Absolute, as Google requires. */
 const DEFAULT_LOGO_URL = `${SITE_URL}/images/ominet-digital-logo.png`;
 
+/**
+ * The company's own accounts. LinkedIn is left out on purpose: the saved address is a personal /in/ profile,
+ * which belongs to the Person entity, not the company.
+ */
+const ORG_SAME_AS = SOCIAL_ACCOUNTS.filter((a) => a.platform !== "linkedin").map((a) => a.url);
+
 /** The Organization entity for the site itself. */
 export function getOrganizationSchema(name: string, logoUrl?: string) {
   return {
@@ -44,6 +52,15 @@ export function getOrganizationSchema(name: string, logoUrl?: string) {
     url: SITE_URL,
     logo: logoUrl || DEFAULT_LOGO_URL,
     founder: { "@id": PERSON_ID },
+    sameAs: ORG_SAME_AS,
+    contactPoint: [
+      {
+        "@type": "ContactPoint",
+        contactType: "customer service",
+        email: OFFICIAL_EMAIL,
+        telephone: `+${OFFICIAL_WHATSAPP_NUMBER}`,
+      },
+    ],
   };
 }
 

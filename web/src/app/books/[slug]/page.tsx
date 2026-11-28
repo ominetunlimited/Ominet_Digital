@@ -10,6 +10,7 @@ import PreviewBanner from "@/components/PreviewBanner";
 import Footer from "@/components/Footer";
 import PlaceholderImage from "@/components/PlaceholderImage";
 import ShareBar from "@/components/ShareBar";
+import { getShortUrl } from "@/lib/short-links";
 import TrackedLink from "@/components/TrackedLink";
 import { css } from "@/lib/css";
 import { getBook } from "@/lib/data";
@@ -146,7 +147,7 @@ export default async function BookDetailPage({ params }: { params: Promise<{ slu
 
           <AdSlot slotKey="book_page" />
 
-          <ShareBar url={`${SITE_URL}/books/${book.slug}`} title={book.title} />
+          <ShareBar url={`${SITE_URL}/books/${book.slug}`} shortUrl={await getShortUrl(`/books/${book.slug}`)} title={book.title} />
         </div>
       </section>
 
