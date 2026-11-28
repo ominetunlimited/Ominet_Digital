@@ -70,7 +70,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
       "@id": `${SITE_URL}/services/${service.slug}#service`,
       name: service.title,
       description: service.shortDescription,
-      provider: getOrganizationSchema(siteIdentity.siteName),
+      provider: await getOrganizationSchema(siteIdentity.siteName),
       areaServed: service.locationMode === "remote" ? "Remote" : undefined,
       url: `${SITE_URL}/services/${service.slug}`,
     },

@@ -34,7 +34,7 @@ export default async function AboutPage() {
   const { identity, pages } = await getSiteSettings();
   const on = (k: string) => isPageOn(pages, k);
   const jsonLd = jsonLdGraph([
-    getOrganizationSchema(identity.siteName, identity.logoUrl || undefined),
+    await getOrganizationSchema(identity.siteName, identity.logoUrl || undefined),
     breadcrumbSchema([{ name: "Home", path: "/" }, { name: "About Ominet Digital", path: "/about" }]),
   ]);
   const label = css("font-size:11px;letter-spacing:0.1em;opacity:0.5;margin-bottom:var(--space-3);");

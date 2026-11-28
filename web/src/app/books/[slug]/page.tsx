@@ -81,7 +81,7 @@ export default async function BookDetailPage({ params }: { params: Promise<{ slu
       "@id": `${SITE_URL}/books/${book.slug}#book`,
       name: book.title,
       author: personSchema,
-      publisher: getOrganizationSchema(identity.siteName),
+      publisher: await getOrganizationSchema(identity.siteName),
       datePublished: book.year,
       bookFormat: book.formats?.[0] ? `https://schema.org/${book.formats[0] === "Ebook" ? "EBook" : book.formats[0]}` : undefined,
       description: book.excerpt,

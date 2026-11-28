@@ -97,7 +97,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
       ...(extras?.updatedAt ? { dateModified: extras.updatedAt } : {}),
       ...(article.featuredImageUrl ? { image: [article.featuredImageUrl] } : {}),
       author: personSchema,
-      publisher: getOrganizationSchema(siteIdentity.siteName),
+      publisher: await getOrganizationSchema(siteIdentity.siteName),
       mainEntityOfPage: `${SITE_URL}/articles/${article.slug}`,
       ...(article.externalUrl ? { sameAs: [article.externalUrl] } : {}),
     },
