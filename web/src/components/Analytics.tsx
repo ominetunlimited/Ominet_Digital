@@ -26,6 +26,14 @@ export default function Analytics() {
       const href = (link.getAttribute("href") || "").trim();
       if (!href) return;
 
+      // Contact actions: record the kind of link only, never the address or number.
+      const lower = href.toLowerCase();
+      const contactKind = lower.startsWith("mailto:") ? "email" : lower.startsWith("tel:") ? "phone" : /^https?:\/\/(wa\.me|api\.whatsapp\.com)\//.test(lower) ? "whatsapp" : null;
+      if (contactKind) {
+        track("contact_click", { kind: contactKind });
+        return;
+      }
+
       const isDownloadLink =
         link.hasAttribute("download") ||
         href.includes("/download") ||

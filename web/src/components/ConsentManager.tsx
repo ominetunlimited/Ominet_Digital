@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
-import { CONSENT_OPEN_EVENT, GA_EVENT, GA_FORWARDED_EVENTS, GA_ID, parseConsent, readRawConsent, saveConsent, subscribeConsent } from "@/lib/consent";
+import { CONSENT_OPEN_EVENT, GA_EVENT, GA_FORWARDED_EVENTS, GA_ID, GA_SAFE_PARAMS, parseConsent, readRawConsent, saveConsent, subscribeConsent } from "@/lib/consent";
 import { disableGa, gaEvent, loadGa } from "@/lib/ga";
 
 const ADS_ON = Boolean(process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID);
@@ -49,8 +49,16 @@ export default function ConsentManager() {
   useEffect(() => {
     if (!analytics || !GA_ID) return;
     const onEvent = (e: Event) => {
-      const name = (e as CustomEvent<{ name: string }>).detail?.name;
-      if (name && GA_FORWARDED_EVENTS.has(name)) gaEvent(name);
+      const detail = (e as CustomEvent<{ name: string; params?: Record<string, unknown> }>).detail;
+      const name = detail?.name;
+      if (!name || !GA_FORWARDED_EVENTS.has(name)) return;
+      // Pass on only the allowed short text details; everything else is dropped.
+      const safe: Record<string, string> = {};
+      for (const key of GA_SAFE_PARAMS) {
+        const value = detail.params?.[key];
+        if (typeof value === "string" && value) safe[key] = value.slice(0, 80);
+      }
+      gaEvent(name, safe);
     };
     window.addEventListener(GA_EVENT, onEvent);
     return () => window.removeEventListener(GA_EVENT, onEvent);

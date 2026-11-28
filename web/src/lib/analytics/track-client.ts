@@ -7,8 +7,9 @@ import { GA_EVENT } from "@/lib/consent";
 // break the click/share/purchase-link action it's attached to.
 export function track(eventType: string, metadata?: Record<string, unknown>) {
   try {
-    // Lets the consent manager mirror a few events to Google Analytics, by name only, if the visitor accepted it.
-    window.dispatchEvent(new CustomEvent(GA_EVENT, { detail: { name: eventType } }));
+    // Lets the consent manager mirror a few events to Google Analytics if the visitor accepted it.
+    // It decides which events and which details are allowed through; see GA_FORWARDED_EVENTS and GA_SAFE_PARAMS.
+    window.dispatchEvent(new CustomEvent(GA_EVENT, { detail: { name: eventType, params: metadata } }));
     fetch("/api/track", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
